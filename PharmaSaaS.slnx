@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="PharmaSaaS.Application/PharmaSaaS.Application.csproj" />
+    <Project Path="PharmaSaaS.Domain/PharmaSaaS.Domain.csproj" />
+    <Project Path="PharmaSaaS.Infrastructure/PharmaSaaS.Infrastructure.csproj" />
+    <Project Path="PharmaSaaS.Presentation/PharmaSaaS.Presentation.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="PharmaSaaS.Application.Test/PharmaSaaS.Application.Test.csproj" Id="a39f33aa-9420-4f0b-bce8-f2da3671db23" />
+  </Folder>
+</Solution>

@@ -1,0 +1,15 @@
+﻿global using FluentValidation;
+global using Mapster;
+global using PharmaSaaS.Application.Abstractions.Messaging;
+global using PharmaSaaS.Application.Contracts.Auth;
+global using PharmaSaaS.Application.Contracts.Common;
+global using PharmaSaaS.Application.Contracts.Profile;
+global using PharmaSaaS.Application.Contracts.Roles;
+global using PharmaSaaS.Application.Contracts.Users;
+global using PharmaSaaS.Application.Interfaces.Infrastructure;
+global using PharmaSaaS.Application.Tenants;
+global using PharmaSaaS.Domain.Abstraction;
+global using PharmaSaaS.Domain.Constants;
+global using PharmaSaaS.Domain.Entities;
+global using PharmaSaaS.Domain.Errors;
+global using PharmaSaaS.Domain.Repositories;

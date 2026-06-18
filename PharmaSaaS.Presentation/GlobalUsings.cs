@@ -1,0 +1,14 @@
+global using Asp.Versioning.ApiExplorer;
+global using FluentValidation;
+global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.AspNetCore.Mvc.Filters;
+global using Microsoft.AspNetCore.RateLimiting;
+global using PharmaSaaS.Application.Abstractions.Messaging;
+global using PharmaSaaS.Application.Interfaces.Infrastructure;
+global using PharmaSaaS.Domain.Constants;
+global using PharmaSaaS.Domain.Entities;
+global using PharmaSaaS.Infrastructure.Authentication.Filters;
+global using PharmaSaaS.Infrastructure.Settings;
+global using PharmaSaaS.Presentation.Settings;
+global using StatusCodes = Microsoft.AspNetCore.Http.StatusCodes;
