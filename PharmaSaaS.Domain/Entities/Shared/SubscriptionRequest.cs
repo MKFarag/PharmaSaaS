@@ -1,0 +1,29 @@
+namespace PharmaSaaS.Domain.Entities.Shared;
+
+public sealed class SubscriptionRequest
+{
+    public string Id { get; set; } = string.Empty;
+    public string PharmacyName { get; private set; } = string.Empty;
+    public string OwnerName { get; private set; } = string.Empty;
+    public string PhoneNumber { get; private set; } = string.Empty;
+    public string Email { get; private set; } = string.Empty;
+    public DateTime CreatedAt { get; private set; }
+    public string Status { get; private set; } = string.Empty;
+
+    public static SubscriptionRequest Create(string pharmacyName, string ownerName, string phoneNumber, string email)
+        => new()
+        {
+            PharmacyName = pharmacyName,
+            OwnerName = ownerName,
+            PhoneNumber = phoneNumber,
+            Email = email,
+            CreatedAt = DateTime.UtcNow,
+            Status = "Pending"
+        };
+
+    public void Approve() => Status = "Approved";
+
+    public void Reject() => Status = "Rejected";
+
+    public void Contact() => Status = "Contacted";
+}

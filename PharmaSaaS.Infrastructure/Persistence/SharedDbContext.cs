@@ -2,5 +2,12 @@
 
 public class SharedDbContext(DbContextOptions options) : DbContext(options)
 {
+    public DbSet<Pharmacy> Pharmacies { get; set; }
+    public DbSet<SubscriptionRequest> SubscriptionRequests { get; set; }
 
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly(),
+            type => type.Namespace?.Contains("Configurations.Shared") == true);
+    }
 }
