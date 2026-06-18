@@ -24,8 +24,11 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations.Shared
 
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.Shared.Pharmacy", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -35,13 +38,21 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations.Shared
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<DateTime?>("SubscriptionEnd")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly?>("SubscriptionEnd")
+                        .HasColumnType("date");
 
-                    b.Property<DateTime?>("SubscriptionStart")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly?>("SubscriptionStart")
+                        .HasColumnType("date");
+
+                    b.Property<string>("TenantId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "Name")
+                        .IsUnique();
 
                     b.ToTable("Pharmacies", (string)null);
                 });

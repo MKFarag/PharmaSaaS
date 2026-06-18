@@ -12,3 +12,4 @@ global using PharmaSaaS.Infrastructure.Authentication.Filters;
 global using PharmaSaaS.Infrastructure.Settings;
 global using PharmaSaaS.Presentation.Settings;
 global using StatusCodes = Microsoft.AspNetCore.Http.StatusCodes;
+global using PharmaSaaS.Presentation.Attributes;

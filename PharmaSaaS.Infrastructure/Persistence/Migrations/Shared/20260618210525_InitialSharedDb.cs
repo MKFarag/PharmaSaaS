@@ -15,10 +15,12 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations.Shared
                 name: "Pharmacies",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TenantId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    SubscriptionStart = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    SubscriptionEnd = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    SubscriptionStart = table.Column<DateOnly>(type: "date", nullable: true),
+                    SubscriptionEnd = table.Column<DateOnly>(type: "date", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -42,6 +44,12 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations.Shared
                 {
                     table.PrimaryKey("PK_SubscriptionRequests", x => x.Id);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Pharmacies_TenantId_Name",
+                table: "Pharmacies",
+                columns: new[] { "TenantId", "Name" },
+                unique: true);
         }
 
         /// <inheritdoc />

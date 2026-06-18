@@ -7,8 +7,19 @@ public class TenantSubscriptionMiddleware(RequestDelegate next)
 {
     private readonly RequestDelegate _next = next;
 
+    private static readonly string[] _excludedPaths =
+        ["/swagger", "/redoc", "/health", "/jobs"];
+
     public async Task InvokeAsync(HttpContext context, ITenantService tenantService)
     {
+        var path = context.Request.Path.Value?.ToLowerInvariant() ?? string.Empty;
+
+        if (_excludedPaths.Any(p => path.StartsWith(p)))
+        {
+            await _next(context);
+            return;
+        }
+
         var endpoint = context.GetEndpoint();
         var isSystemOwner = endpoint?.Metadata.GetMetadata<SystemOwnerAttribute>() is not null;
 

@@ -319,6 +319,7 @@ public static class DependencyInjection
                     options.ConfigureDocument(description);
                     options.AddBearerSecurity();
                     options.OperationProcessors.Add(new ApiVersionHeaderOperationProcessor(description));
+                    options.OperationProcessors.Add(new TenantHeaderOperationProcessor());
                 });
             }
 

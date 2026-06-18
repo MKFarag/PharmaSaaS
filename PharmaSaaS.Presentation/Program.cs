@@ -55,10 +55,10 @@ app.MapHangfireDashboard("/jobs", new DashboardOptions
     IsReadOnlyFunc = context => true
 });
 
-RecurringJob.AddOrUpdate<IRecurringJobService>(
-    "RemoveExpiredRefreshTokens",
-    x => x.RemoveExpiredRefreshTokenAsync(),
-    Cron.DayInterval(RefreshToken.AutoRemoveAfterDays));
+//RecurringJob.AddOrUpdate<IRecurringJobService>(
+//    "RemoveExpiredRefreshTokens",
+//    x => x.RemoveExpiredRefreshTokenAsync(),
+//    Cron.DayInterval(RefreshToken.AutoRemoveAfterDays));
 
 app.UseCors();
 

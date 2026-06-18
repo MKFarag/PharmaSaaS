@@ -6,28 +6,37 @@ namespace PharmaSaaS.Infrastructure.Persistence;
 public sealed class UnitOfWork : IUnitOfWork
 {
     private readonly ApplicationDbContext _context;
+    private readonly SharedDbContext _sharedDbContext;
     private IDbContextTransaction? _currentTransaction;
     private bool _disposed = false;
+
+    // Shared
+    public IPharmacyRepository Pharmacies { get; private set; }
 
     public IUserRepository Users { get; private set; }
     public IRoleRepository Roles { get; private set; }
 
     public UnitOfWork(
         ApplicationDbContext context,
+        SharedDbContext sharedDbContext,
         UserManager<ApplicationUser> userManager,
         RoleManager<ApplicationRole> roleManager)
     {
         _context = context;
+        _sharedDbContext = sharedDbContext;
+
+        // Shared
+        Pharmacies = new PharmacyRepository(_sharedDbContext);
 
         Users = new UserRepository(_context, userManager);
         Roles = new RoleRepository(_context, roleManager);
     }
 
-    public int Complete()
-        => _context.SaveChanges();
-
     public async Task<int> CompleteAsync(CancellationToken cancellationToken = default)
         => await _context.SaveChangesAsync(cancellationToken);
+
+    public async Task<int> SharedCompleteAsync(CancellationToken cancellationToken = default)
+        => await _sharedDbContext.SaveChangesAsync(cancellationToken);
 
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
@@ -71,6 +80,7 @@ public sealed class UnitOfWork : IUnitOfWork
             {
                 _currentTransaction?.Dispose();
                 _context?.Dispose();
+                _sharedDbContext?.Dispose();
             }
 
             _disposed = true;

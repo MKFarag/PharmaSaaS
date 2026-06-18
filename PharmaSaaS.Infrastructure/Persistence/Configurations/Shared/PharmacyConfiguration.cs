@@ -6,6 +6,9 @@ internal class PharmacyConfiguration : IEntityTypeConfiguration<Pharmacy>
     {
         builder.ToTable("Pharmacies");
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).ValueGeneratedOnAdd();
+        builder.Property(x => x.TenantId).HasMaxLength(50).IsRequired();
         builder.Property(x => x.Name).HasMaxLength(200).IsRequired();
+        builder.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
     }
 }
