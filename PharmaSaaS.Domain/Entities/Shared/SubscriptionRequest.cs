@@ -18,12 +18,12 @@ public sealed class SubscriptionRequest
             PhoneNumber = phoneNumber,
             Email = email,
             CreatedAt = DateTime.UtcNow,
-            Status = "Pending"
+            Status = SubscriptionRequestStatus.Pending
         };
 
-    public void Approve() => Status = "Approved";
+    public void Approve() => Status = SubscriptionRequestStatus.Approved;
 
-    public void Reject() => Status = "Rejected";
+    public void Reject() => Status = SubscriptionRequestStatus.Rejected;
 
-    public void Contact() => Status = "Contacted";
+    public void Contact() => Status = SubscriptionRequestStatus.Contacted;
 }

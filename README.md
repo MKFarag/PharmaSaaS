@@ -58,13 +58,8 @@ This keeps infrastructure-level credentials out of application data and simplifi
 
 ### Shared Database Administration
 
-Platform management endpoints are protected using a custom Admin Key header:
+Platform management endpoints are protected using a `[SystemOwner]` authorization attribute backed by JWT tokens. Only users with the system owner role can access these operations:
 
-```http
-X-Admin-Key: <secret-key>
-```
-
-This applies to platform-level operations only:
 - Pharmacy management
 - Subscription management
 - Subscription request review
@@ -100,9 +95,10 @@ Expired subscriptions block write operations while preserving read access to his
 - Password management (change, reset)
 
 ### 🏪 Pharmacy Onboarding
-- Submit a subscription request (public)
-- Admin reviews and approves or rejects requests
-- Approved pharmacies are provisioned automatically
+- Submit a subscription request (public, IP rate-limited, idempotent)
+- Admin reviews and approves, rejects, or marks as contacted
+- Approved requests automatically create a new pharmacy tenant record
+- Pharmacy management (list, get, update name, toggle active status, set subscription end date)
 
 ### 💊 Products & Inventory
 - Add and manage products (name, barcode, concentration, dosage form, category)
@@ -151,7 +147,7 @@ Expired subscriptions block write operations while preserving read access to his
 
 ### Shared Database
 
-**Pharmacies:** Id - Name - SubscriptionStart - SubscriptionEnd - IsActive
+**Pharmacies:** Id - TenantId - Name - SubscriptionStart - SubscriptionEnd - IsActive
 
 **SubscriptionRequests:** Id - PharmacyName - OwnerName - PhoneNumber - Email - CreatedAt - Status
 
@@ -250,14 +246,15 @@ Tables are ordered by implementation priority.
 ```mermaid
 erDiagram
     Pharmacies {
-        uuid Id PK
+        int Id PK
+        string TenantId
         string Name
         date SubscriptionStart
         date SubscriptionEnd
         bool IsActive
     }
     SubscriptionRequests {
-        uuid Id PK
+        string Id PK
         string PharmacyName
         string OwnerName
         string PhoneNumber
@@ -451,7 +448,7 @@ erDiagram
 2. The request is saved to the shared database with a `Pending` status.
 3. An email notification is sent to the platform team.
 4. The request is reviewed manually and its status updated to `Contacted`, `Approved`, or `Rejected`.
-5. Upon approval, a tenant database is provisioned, seeded with default roles and permissions, and the tenant entry is added to `AppSettings`.
+5. Upon approval, a new `Pharmacy` entity is created in the shared database with a generated `TenantId`, and an email notification is sent with the status update. The tenant's database connection string and configuration are maintained in `AppSettings`.
 
 ### 2. Daily Operations
 
@@ -484,8 +481,8 @@ A staff member photographs a handwritten prescription and submits it to the AI e
 **No ConnectionString in the Shared Database**
 Tenant connection strings are treated as infrastructure configuration, not application data. Storing them in `AppSettings` keeps database credentials out of the shared DB and makes environment-specific overrides straightforward.
 
-**Admin Key over JWT for Platform Endpoints**
-The shared database management layer uses a simple `X-Admin-Key` header rather than a full identity stack. This avoids bootstrapping a separate identity provider for platform operations and keeps the admin surface minimal and explicit.
+**SystemOwner JWT for Platform Endpoints**
+The shared database management layer uses a `[SystemOwner]` authorization attribute backed by JWT tokens. A dedicated system owner account with a fixed email is seeded during application startup, avoiding the need for a separate identity provider while keeping platform operations secure and auditable.
 
 **Flat Subscription Model**
 Version 1 has no multi-plan system. All pharmacies access the same feature set. Subscription validity is determined solely by date range and the `IsActive` flag, avoiding plan migration complexity for the MVP.

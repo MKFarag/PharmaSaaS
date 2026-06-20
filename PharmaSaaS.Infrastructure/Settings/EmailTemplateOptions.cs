@@ -8,6 +8,7 @@ public class EmailTemplateOptions
     public string City { get; init; } = string.Empty;
     public string Country { get; init; } = string.Empty;
     public string SupportEmail { get; init; } = string.Empty;
+    public string PlatformAdminEmail { get; init; } = string.Empty;
 
     public partial class Placeholders
     {
@@ -22,6 +23,16 @@ public class EmailTemplateOptions
         public static readonly string ChangeDate = "{{ChangeDate}}";
         public static readonly string NewEmail = "{{NewEmail}}";
         public static readonly string ExpiryTime = "{{ExpiryTime}}";
+        public static readonly string PharmacyName = "{{PharmacyName}}";
+        public static readonly string OwnerName = "{{OwnerName}}";
+        public static readonly string PhoneNumber = "{{PhoneNumber}}";
+        public static readonly string Email = "{{Email}}";
+        public static readonly string RequestDate = "{{RequestDate}}";
+        public static readonly string RequestStatus = "{{RequestStatus}}";
+        public static readonly string SubscriptionEnd = "{{SubscriptionEnd}}";
+        public static readonly string StatusClass = "{{StatusClass}}";
+        public static readonly string UpdateDate = "{{UpdateDate}}";
+        public static readonly string StatusMessage = "{{StatusMessage}}";
     }
 
     public partial class TemplatesNames
@@ -29,5 +40,7 @@ public class EmailTemplateOptions
         public static readonly string EmailConfirmationLink = nameof(EmailConfirmationLink);
         public static readonly string ChangeEmailNotification = nameof(ChangeEmailNotification);
         public static readonly string ResetPassword = nameof(ResetPassword);
+        public static readonly string NewSubscriptionRequestNotification = nameof(NewSubscriptionRequestNotification);
+        public static readonly string SubscriptionRequestStatusUpdate = nameof(SubscriptionRequestStatusUpdate);
     }
 }

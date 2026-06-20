@@ -48,6 +48,58 @@ public class NotificationService
         await EnqueueEmailAsync(oldEmail, $"{_templateOptions.TitleName} — Email Address Changed", EmailTemplateOptions.TemplatesNames.ChangeEmailNotification, placeholders);
     }
 
+    public async Task SendNewSubscriptionRequestNotificationAsync(string pharmacyName, string ownerName, string phoneNumber, string email, DateTime requestDate)
+    {
+        if (string.IsNullOrWhiteSpace(_templateOptions.PlatformAdminEmail))
+            return;
+
+        var placeholders = BuildPlaceholders("Admin", new Dictionary<string, string>
+        {
+            { EmailTemplateOptions.Placeholders.PharmacyName, pharmacyName },
+            { EmailTemplateOptions.Placeholders.OwnerName, ownerName },
+            { EmailTemplateOptions.Placeholders.PhoneNumber, phoneNumber },
+            { EmailTemplateOptions.Placeholders.Email, email },
+            { EmailTemplateOptions.Placeholders.RequestDate, requestDate.ToString("f") }
+        });
+
+        await EnqueueEmailAsync(_templateOptions.PlatformAdminEmail, $"{_templateOptions.TitleName} — New Subscription Request", EmailTemplateOptions.TemplatesNames.NewSubscriptionRequestNotification, placeholders);
+    }
+
+    public async Task SendSubscriptionRequestStatusUpdateAsync(string requesterEmail, string pharmacyName, string status, DateOnly? subscriptionEnd = null)
+    {
+        var statusClass = status.ToLowerInvariant();
+        var statusLabel = status;
+        var statusMessage = status switch
+        {
+            "Approved" => "Congratulations! Your pharmacy has been approved. You will receive further instructions to set up your account.",
+            "Rejected" => "Unfortunately, your subscription request has been rejected. If you have any questions, please contact our support team.",
+            "Contacted" => "Our team has been notified about your request. We will reach out to you shortly to discuss the next steps.",
+            _ => "Your subscription request status has been updated."
+        };
+
+        var placeholders = BuildPlaceholders(pharmacyName, new Dictionary<string, string>
+        {
+            { EmailTemplateOptions.Placeholders.PharmacyName, pharmacyName },
+            { EmailTemplateOptions.Placeholders.RequestStatus, statusLabel },
+            { EmailTemplateOptions.Placeholders.StatusClass, statusClass },
+            { EmailTemplateOptions.Placeholders.StatusMessage, statusMessage },
+            { EmailTemplateOptions.Placeholders.UpdateDate, DateTime.UtcNow.ToString("f") }
+        });
+
+        if (subscriptionEnd.HasValue)
+        {
+            var subscriptionRow =
+                $@"<div class=""info-row"">
+                    <span class=""info-key"">Subscription end</span>
+                    <span class=""info-val"">{subscriptionEnd.Value:yyyy-MM-dd}</span>
+                </div>";
+
+            placeholders[EmailTemplateOptions.Placeholders.SubscriptionEnd] = subscriptionRow;
+        }
+
+        await EnqueueEmailAsync(requesterEmail, $"{_templateOptions.TitleName} — Subscription Request {statusLabel}", EmailTemplateOptions.TemplatesNames.SubscriptionRequestStatusUpdate, placeholders);
+    }
+
     private async Task EnqueueEmailAsync(string email, string subject, string templateName, Dictionary<string, string> placeholders)
     {
         var body = await TemplateRenderer.RenderAsync(templateName, placeholders);

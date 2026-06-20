@@ -12,6 +12,7 @@ public sealed class UnitOfWork : IUnitOfWork
 
     // Shared
     public IPharmacyRepository Pharmacies { get; private set; }
+    public ISubscriptionRequestRepository SubscriptionRequests { get; private set; }
 
     public IUserRepository Users { get; private set; }
     public IRoleRepository Roles { get; private set; }
@@ -27,6 +28,7 @@ public sealed class UnitOfWork : IUnitOfWork
 
         // Shared
         Pharmacies = new PharmacyRepository(_sharedDbContext);
+        SubscriptionRequests = new SubscriptionRequestRepository(_sharedDbContext);
 
         Users = new UserRepository(_context, userManager);
         Roles = new RoleRepository(_context, roleManager);

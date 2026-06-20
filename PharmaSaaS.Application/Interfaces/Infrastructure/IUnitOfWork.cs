@@ -4,6 +4,7 @@ public interface IUnitOfWork : IDisposable
 {
     // Shared
     IPharmacyRepository Pharmacies { get; }
+    ISubscriptionRequestRepository SubscriptionRequests { get; }
 
     IUserRepository Users { get; }
     IRoleRepository Roles { get; }
