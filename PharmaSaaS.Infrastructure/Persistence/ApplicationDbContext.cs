@@ -5,7 +5,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
     #region DbSet
 
-
+    public DbSet<Category> Categories { get; set; }
+    public DbSet<DosageForm> DosageForms { get; set; }
+    public DbSet<Product> Products { get; set; }
+    public DbSet<Inventory> Inventory { get; set; }
+    public DbSet<ExpiryReport> ExpiryReports { get; set; }
 
     #endregion
 
@@ -40,7 +44,17 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         #region Allow Cascade Delete
 
+        builder.Entity<Product>()
+            .HasMany<Inventory>()
+            .WithOne(x => x.Product)
+            .HasForeignKey(x => x.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Entity<Product>()
+            .HasMany<ExpiryReport>()
+            .WithOne(x => x.Product)
+            .HasForeignKey(x => x.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         #endregion
     }
