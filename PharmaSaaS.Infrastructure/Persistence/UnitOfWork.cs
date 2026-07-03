@@ -17,6 +17,10 @@ public sealed class UnitOfWork : IUnitOfWork
     public IUserRepository Users { get; private set; }
     public IRoleRepository Roles { get; private set; }
 
+    public IGenericRepository<Category> Categories { get; private set; }
+    public IGenericRepository<DosageForm> DosageForms { get; private set; }
+    public IGenericRepository<Product> Products { get; private set; }
+
     public UnitOfWork(
         ApplicationDbContext context,
         SharedDbContext sharedDbContext,
@@ -32,6 +36,10 @@ public sealed class UnitOfWork : IUnitOfWork
 
         Users = new UserRepository(_context, userManager);
         Roles = new RoleRepository(_context, roleManager);
+
+        Categories = new GenericRepository<Category>(_context);
+        DosageForms = new GenericRepository<DosageForm>(_context);
+        Products = new GenericRepository<Product>(_context);
     }
 
     public async Task<int> CompleteAsync(CancellationToken cancellationToken = default)

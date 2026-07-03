@@ -1,6 +1,8 @@
 namespace PharmaSaaS.Application.Contracts.Pharmacies;
 
-public record SetSubscriptionRequest(DateOnly End);
+public record SetSubscriptionRequest(
+    DateOnly End
+);
 
 #region Validation
 

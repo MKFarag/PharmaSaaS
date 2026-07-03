@@ -14,5 +14,7 @@ global using PharmaSaaS.Domain.Entities;
 global using PharmaSaaS.Domain.Entities.Shared;
 global using PharmaSaaS.Domain.Errors;
 global using PharmaSaaS.Domain.Repositories;
+global using PharmaSaaS.Application.Contracts.Categories;
+global using PharmaSaaS.Application.Contracts.DosageForms;
 global using PharmaSaaS.Application.Contracts.Pharmacies;
 global using PharmaSaaS.Application.Contracts.SubscriptionRequests;

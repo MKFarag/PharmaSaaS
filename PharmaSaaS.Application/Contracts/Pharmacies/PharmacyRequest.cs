@@ -1,6 +1,8 @@
 namespace PharmaSaaS.Application.Contracts.Pharmacies;
 
-public record PharmacyRequest(string Name);
+public record PharmacyRequest(
+    string Name
+);
 
 #region Validation
 

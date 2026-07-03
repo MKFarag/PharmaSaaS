@@ -9,6 +9,10 @@ public interface IUnitOfWork : IDisposable
     IUserRepository Users { get; }
     IRoleRepository Roles { get; }
 
+    IGenericRepository<Category> Categories { get; }
+    IGenericRepository<DosageForm> DosageForms { get; }
+    IGenericRepository<Product> Products { get; }
+
     /// <summary>Save changes to the database</summary>
     /// <returns>The number of state entries written to the database</returns>
     Task<int> CompleteAsync(CancellationToken cancellationToken = default);
