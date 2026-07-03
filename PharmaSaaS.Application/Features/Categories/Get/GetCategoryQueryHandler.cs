@@ -4,7 +4,7 @@ public class GetCategoryQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<G
 {
     public async Task<Result<CategoryResponse>> Handle(GetCategoryQuery request, CancellationToken cancellationToken = default)
     {
-        if (await unitOfWork.Categories.GetAsync([request.Id], cancellationToken) is not { } category)
+        if (await unitOfWork.Categories.FindAsync(c => c.Id == request.Id, cancellationToken) is not { } category)
             return Result.Failure<CategoryResponse>(CategoryErrors.NotFound);
 
         return Result.Success(category.Adapt<CategoryResponse>());

@@ -21,7 +21,7 @@ public class UpdateCategoryCommandHandlerTest
     [Fact]
     public async Task Handle_WhenCategoryNotFound_ReturnsNotFoundError()
     {
-        A.CallTo(() => _categoryRepo.FindAsync(A<Expression<Func<Category, bool>>>.Ignored, A<CancellationToken>.Ignored))
+        A.CallTo(() => _categoryRepo.GetAsync(A<object[]>.Ignored, A<CancellationToken>.Ignored))
             .Returns((Category?)null);
 
         var command = new UpdateCategoryCommand(1, new CategoryRequest("New Name"));
@@ -38,7 +38,7 @@ public class UpdateCategoryCommandHandlerTest
         var category = Category.Create("Old Name");
         category.Id = 1;
 
-        A.CallTo(() => _categoryRepo.FindAsync(A<Expression<Func<Category, bool>>>.Ignored, A<CancellationToken>.Ignored))
+        A.CallTo(() => _categoryRepo.GetAsync(A<object[]>.Ignored, A<CancellationToken>.Ignored))
             .Returns(category);
 
         A.CallTo(() => _categoryRepo.AnyAsync(A<Expression<Func<Category, bool>>>.Ignored, A<CancellationToken>.Ignored))
@@ -58,7 +58,7 @@ public class UpdateCategoryCommandHandlerTest
         var category = Category.Create("Old Name");
         category.Id = 1;
 
-        A.CallTo(() => _categoryRepo.FindAsync(A<Expression<Func<Category, bool>>>.Ignored, A<CancellationToken>.Ignored))
+        A.CallTo(() => _categoryRepo.GetAsync(A<object[]>.Ignored, A<CancellationToken>.Ignored))
             .Returns(category);
 
         A.CallTo(() => _categoryRepo.AnyAsync(A<Expression<Func<Category, bool>>>.Ignored, A<CancellationToken>.Ignored))

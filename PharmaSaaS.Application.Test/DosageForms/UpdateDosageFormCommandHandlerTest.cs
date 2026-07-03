@@ -21,7 +21,7 @@ public class UpdateDosageFormCommandHandlerTest
     [Fact]
     public async Task Handle_WhenDosageFormNotFound_ReturnsNotFoundError()
     {
-        A.CallTo(() => _dosageFormRepo.FindAsync(A<Expression<Func<DosageForm, bool>>>.Ignored, A<CancellationToken>.Ignored))
+        A.CallTo(() => _dosageFormRepo.GetAsync(A<object[]>.Ignored, A<CancellationToken>.Ignored))
             .Returns((DosageForm?)null);
 
         var command = new UpdateDosageFormCommand(1, new DosageFormRequest("New Name"));
@@ -38,7 +38,7 @@ public class UpdateDosageFormCommandHandlerTest
         var dosageForm = DosageForm.Create("Old Name");
         dosageForm.Id = 1;
 
-        A.CallTo(() => _dosageFormRepo.FindAsync(A<Expression<Func<DosageForm, bool>>>.Ignored, A<CancellationToken>.Ignored))
+        A.CallTo(() => _dosageFormRepo.GetAsync(A<object[]>.Ignored, A<CancellationToken>.Ignored))
             .Returns(dosageForm);
 
         A.CallTo(() => _dosageFormRepo.AnyAsync(A<Expression<Func<DosageForm, bool>>>.Ignored, A<CancellationToken>.Ignored))
@@ -58,7 +58,7 @@ public class UpdateDosageFormCommandHandlerTest
         var dosageForm = DosageForm.Create("Old Name");
         dosageForm.Id = 1;
 
-        A.CallTo(() => _dosageFormRepo.FindAsync(A<Expression<Func<DosageForm, bool>>>.Ignored, A<CancellationToken>.Ignored))
+        A.CallTo(() => _dosageFormRepo.GetAsync(A<object[]>.Ignored, A<CancellationToken>.Ignored))
             .Returns(dosageForm);
 
         A.CallTo(() => _dosageFormRepo.AnyAsync(A<Expression<Func<DosageForm, bool>>>.Ignored, A<CancellationToken>.Ignored))

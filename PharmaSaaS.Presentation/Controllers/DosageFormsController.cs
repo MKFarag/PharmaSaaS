@@ -27,6 +27,7 @@ public class DosageFormsController(ISender sender) : ControllerBase
     /// <response code="200">Returns the list of dosage forms.</response>
     /// <response code="401">If the user is unauthorized.</response>
     [HttpGet("")]
+    [HasPermission(Permissions.ReadDosageForm)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
@@ -45,6 +46,7 @@ public class DosageFormsController(ISender sender) : ControllerBase
     /// <response code="404">If the dosage form is not found.</response>
     /// <response code="401">If the user is unauthorized.</response>
     [HttpGet("{id}")]
+    [HasPermission(Permissions.ReadDosageForm)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -79,6 +81,7 @@ public class DosageFormsController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     /// <response code="409">If a dosage form with the same name already exists.</response>
     [HttpPost("")]
+    [HasPermission(Permissions.AddDosageForm)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -116,6 +119,7 @@ public class DosageFormsController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     /// <response code="409">If another dosage form with the same name already exists.</response>
     [HttpPut("{id}")]
+    [HasPermission(Permissions.UpdateDosageForm)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -144,6 +148,7 @@ public class DosageFormsController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     /// <response code="409">If the dosage form is associated with one or more products.</response>
     [HttpDelete("{id}")]
+    [HasPermission(Permissions.DeleteDosageForm)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

@@ -22,6 +22,24 @@ public static class Permissions
 
     #endregion
 
+    #region Category
+
+    public const string ReadCategory = "category:read";
+    public const string AddCategory = "category:add";
+    public const string UpdateCategory = "category:modify";
+    public const string DeleteCategory = "category:delete";
+
+    #endregion
+
+    #region DosageForm
+
+    public const string ReadDosageForm = "dosage-form:read";
+    public const string AddDosageForm = "dosage-form:add";
+    public const string UpdateDosageForm = "dosage-form:modify";
+    public const string DeleteDosageForm = "dosage-form:delete";
+
+    #endregion
+
     public static IList<string?> GetAll()
         => [.. typeof(Permissions).GetFields().Select(x => x.GetValue(x) as string)];
 }
