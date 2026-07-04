@@ -1,5 +1,13 @@
 # PharmaSaaS — Agent Guide
 
+> **Read `PharmaSaaS_SystemAnalysis.xlsx` first** — it defines all modules, API endpoints, actors, inputs/outputs, use cases, and role requirements. This is the single source of truth for what every feature should do. The file is binary (xlsx = zipped XML); extract with PowerShell:
+> ```powershell
+> Add-Type -AssemblyName System.IO.Compression.FileSystem
+> $z = [System.IO.Compression.ZipFile]::OpenRead("PharmaSaaS_SystemAnalysis.xlsx")
+> foreach ($e in $z.Entries) { ... }
+> $z.Dispose()
+> ```
+
 ## Project overview
 
 .NET 10 ASP.NET Core Web API — Clean Architecture + DDD + CQRS. Mid-development MVP.
