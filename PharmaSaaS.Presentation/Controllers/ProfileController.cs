@@ -7,6 +7,9 @@ using PharmaSaaS.Application.Features.Profile.Update;
 
 namespace PharmaSaaS.Presentation.Controllers;
 
+/// <summary>
+/// Manage the authenticated user's profile.
+/// </summary>
 [Route("me")]
 [ApiController]
 [Authorize]
