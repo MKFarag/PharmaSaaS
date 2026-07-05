@@ -6,7 +6,7 @@ public class DeleteCategoryCommandHandlerTest
 {
     private readonly IUnitOfWork _unitOfWork = A.Fake<IUnitOfWork>();
     private readonly IGenericRepository<Category> _categoryRepo = A.Fake<IGenericRepository<Category>>();
-    private readonly IGenericRepository<Product> _productRepo = A.Fake<IGenericRepository<Product>>();
+    private readonly IGenericRepositoryWithPagination<Product> _productRepo = A.Fake<IGenericRepositoryWithPagination<Product>>();
     private readonly ICacheService _cacheService = A.Fake<ICacheService>();
     private readonly ICurrentTenantGetter _currentTenantGetter = A.Fake<ICurrentTenantGetter>();
     private readonly DeleteCategoryCommandHandler _handler;

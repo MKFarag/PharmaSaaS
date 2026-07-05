@@ -40,6 +40,15 @@ public static class Permissions
 
     #endregion
 
+    #region Product
+
+    public const string ReadProduct = "product:read";
+    public const string AddProduct = "product:add";
+    public const string UpdateProduct = "product:modify";
+    public const string DeleteProduct = "product:delete";
+
+    #endregion
+
     public static IList<string?> GetAll()
         => [.. typeof(Permissions).GetFields().Select(x => x.GetValue(x) as string)];
 }

@@ -6,23 +6,23 @@ public class GenericRepositoryWithPagination<TEntity>(ApplicationDbContext conte
     private readonly DbSet<TEntity> _dbSet = context.Set<TEntity>();
 
     public async Task<IPaginatedList<TProjection>> GetPaginatedListAsync<TProjection>(
-        int pageNumber, int pageSize, string primaryKey, CancellationToken cancellationToken = default) where TProjection : class
+        int pageNumber, int pageSize, string defaultSortColumn, CancellationToken cancellationToken = default) where TProjection : class
     {
         var query = _dbSet.AsNoTracking().AsQueryable();
 
-        query = query.OrderBy(primaryKey, OrderBy.Ascending);
+        query = query.OrderBy(defaultSortColumn, OrderBy.Ascending);
 
         return await PaginatedList<TProjection>.CreateAsync(query.ProjectToType<TProjection>(), pageNumber, pageSize, cancellationToken);
     }
 
     public async Task<IPaginatedList<TProjection>> GetPaginatedListAsync<TProjection>(
-        int pageNumber, int pageSize, string primaryKey, string[] includes, CancellationToken cancellationToken = default) where TProjection : class
+        int pageNumber, int pageSize, string defaultSortColumn, string[] includes, CancellationToken cancellationToken = default) where TProjection : class
     {
         var query = _dbSet.AsNoTracking().AsQueryable();
 
         query = query
             .ApplyIncludesSafely(includes)
-            .OrderBy(primaryKey, OrderBy.Ascending);
+            .OrderBy(defaultSortColumn, OrderBy.Ascending);
 
         return await PaginatedList<TProjection>.CreateAsync(query.ProjectToType<TProjection>(), pageNumber, pageSize, cancellationToken);
     }
@@ -56,24 +56,24 @@ public class GenericRepositoryWithPagination<TEntity>(ApplicationDbContext conte
 
     public async Task<IPaginatedList<TProjection>> FindPaginatedListAsync<TProjection>(
         Expression<Func<TEntity, bool>> predicate,
-        int pageNumber, int pageSize, string primaryKey, CancellationToken cancellationToken = default) where TProjection : class
+        int pageNumber, int pageSize, string defaultSortColumn, CancellationToken cancellationToken = default) where TProjection : class
     {
         var query = _dbSet.AsNoTracking().Where(predicate).AsQueryable();
 
-        query = query.OrderBy(primaryKey, OrderBy.Ascending);
+        query = query.OrderBy(defaultSortColumn, OrderBy.Ascending);
 
         return await PaginatedList<TProjection>.CreateAsync(query.ProjectToType<TProjection>(), pageNumber, pageSize, cancellationToken);
     }
 
     public async Task<IPaginatedList<TProjection>> FindPaginatedListAsync<TProjection>(
         Expression<Func<TEntity, bool>> predicate,
-        int pageNumber, int pageSize, string primaryKey, string[] includes, CancellationToken cancellationToken = default) where TProjection : class
+        int pageNumber, int pageSize, string defaultSortColumn, string[] includes, CancellationToken cancellationToken = default) where TProjection : class
     {
         var query = _dbSet.AsNoTracking().Where(predicate).AsQueryable();
 
         query = query
             .ApplyIncludesSafely(includes)
-            .OrderBy(primaryKey, OrderBy.Ascending);
+            .OrderBy(defaultSortColumn, OrderBy.Ascending);
 
         return await PaginatedList<TProjection>.CreateAsync(query.ProjectToType<TProjection>(), pageNumber, pageSize, cancellationToken);
     }

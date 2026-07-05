@@ -1,5 +1,6 @@
 ﻿global using FluentValidation;
 global using Mapster;
+global using System.Linq.Expressions;
 global using PharmaSaaS.Application.Abstractions.Messaging;
 global using PharmaSaaS.Application.Contracts.Auth;
 global using PharmaSaaS.Application.Contracts.Common;
@@ -17,4 +18,5 @@ global using PharmaSaaS.Domain.Repositories;
 global using PharmaSaaS.Application.Contracts.Categories;
 global using PharmaSaaS.Application.Contracts.DosageForms;
 global using PharmaSaaS.Application.Contracts.Pharmacies;
+global using PharmaSaaS.Application.Contracts.Products;
 global using PharmaSaaS.Application.Contracts.SubscriptionRequests;

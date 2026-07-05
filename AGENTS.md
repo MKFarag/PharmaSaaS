@@ -73,9 +73,39 @@ Provisioning auto-applies on startup via `TenantProvisioningService.ProvisionAll
 - **Entities:** public auto-props + static `Create(...)` factory + behavior methods (no constructors).
 - **Handlers:** single `Handle` method, `public sealed class`, primary ctor for DI.
 - **Null checks:** `is not { }` / `is null` pattern matching. `default!` for required nav props.
+- **No magic strings.** Use `nameof(Entity.Property)` for includes, sort/search columns, and any reference to entity properties. For navigation property includes: `[nameof(Product.Category), nameof(Product.DosageForm)]`, not `["Category", "DosageForm"]`.
 - **Controller actions:** `result.IsSuccess ? Ok(result.Value) : result.ToProblem()` ternary.
 - **Test naming:** `Handle_WhenCondition_ReturnsResult`. Three-part: `// Arrange` / `// Act` / `// Assert`.
 - **Test mocking:** `A.Fake<T>()` + `A.CallTo(...).Returns(...)` + `.MustHaveHappenedOnceExactly()`.
+
+## Pagination pattern
+
+End-to-end flow for paginated, searchable, sortable lists:
+
+```
+RequestFilters (from controller)
+  → Handler receives RequestFilters, calls repo method
+  → GenericRepositoryWithPagination.ApplySearchFilter() / .OrderBy() via System.Linq.Dynamic.Core
+  → PaginatedList<T>.CreateAsync() builds the result
+  → Returns IPaginatedList<T> to controller
+```
+
+**`RequestFilters`** (`Application/Contracts/Common/RequestFilters.cs`) — input record with `PageNumber` (default 1), `PageSize` (default 10, max 250), `SearchValue`, `SearchColumn`, `SortColumn`, `SortDirection` (default `"ASC"`). Validated by `RequestFiltersValidator` (alphanumeric_underscore for column names, ASC/DESC only).
+
+**`RequestFilters.Check()`** (`Application/GlobalExtensions.cs`) — extension on `RequestFilters`. Call in the handler **after** FluentValidation. Pass `HashSet<string>` of allowed sort/search column names; it sanitizes against them (case-insensitive) and falls back to the first allowed column if invalid. Also validates `SortDirection` via `OrderBy.IsValid()`.
+
+**`IPaginatedRepository<TEntity>`** (`Domain/Repositories/IPaginatedRepository.cs`) — 8 overloads split into `GetPaginatedListAsync` (no predicate) and `FindPaginatedListAsync` (with `Expression<Func<TEntity, bool>>`). Each comes with combinations of: search, includes, or basic (page+primaryKey only).
+
+**`GenericRepositoryWithPagination<TEntity>`** (`Infrastructure/Persistence/Repositories/`) — the implementation. Uses `QueryableExtensions`:
+- `.ApplySearchFilter(searchValue, searchColumn, ColumnType)` — dynamic filter via `System.Linq.Dynamic.Core` (supports `String`, `Int`, `Bool`).
+- `.OrderBy(sortColumn, sortDirection)` — dynamic sorting via `string OrderBy`.
+- `.ApplyIncludesSafely(includes)` — applies `.Include()` with auto `AsSplitQuery()` when include depth ≥ 2 or count ≥ 3.
+
+**`PaginatedList<T>`** (`Infrastructure/Persistence/Common/PaginatedList.cs`) — static `CreateAsync(IQueryable, pageNumber, pageSize)` builds `IPaginatedList<T>` with `Items`, `TotalPages`, `HasPreviousPage`, `HasNextPage`.
+
+**`EmptyPaginatedList.Create<T>()`** (`Domain/Abstraction/IPaginatedList.cs`) — returns a zero-page `IPaginatedList<T>` with empty `Items` list. Use when no records match, avoids null checks.
+
+Repository `IGenericRepositoryWithPagination<TEntity>` combines `IGenericRepository<TEntity> + IPaginatedRepository<TEntity>`.
 
 ### XML doc comments
 
@@ -85,6 +115,6 @@ Provisioning auto-applies on startup via `TenantProvisioningService.ProvisionAll
 
 ## Implemented features (only these exist)
 
-Auth (register, login, confirm email, reset password, refresh tokens), Categories, DosageForms, Pharmacies, SubscriptionRequests, Roles, Users, Profile.
+Auth (register, login, confirm email, reset password, refresh tokens), Categories, DosageForms, Pharmacies, SubscriptionRequests, Roles, Users, Profile, Products.
 
-**Not yet implemented:** Products, Inventory, POS, Procurement, Customers, Reports, AI Prescription Parser.
+**Not yet implemented:** Inventory, POS, Procurement, Customers, Reports, AI Prescription Parser.

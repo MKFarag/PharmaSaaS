@@ -6,7 +6,7 @@ public class DeleteDosageFormCommandHandlerTest
 {
     private readonly IUnitOfWork _unitOfWork = A.Fake<IUnitOfWork>();
     private readonly IGenericRepository<DosageForm> _dosageFormRepo = A.Fake<IGenericRepository<DosageForm>>();
-    private readonly IGenericRepository<Product> _productRepo = A.Fake<IGenericRepository<Product>>();
+    private readonly IGenericRepositoryWithPagination<Product> _productRepo = A.Fake<IGenericRepositoryWithPagination<Product>>();
     private readonly ICacheService _cacheService = A.Fake<ICacheService>();
     private readonly ICurrentTenantGetter _currentTenantGetter = A.Fake<ICurrentTenantGetter>();
     private readonly DeleteDosageFormCommandHandler _handler;

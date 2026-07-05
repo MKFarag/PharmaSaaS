@@ -11,7 +11,7 @@ public interface IUnitOfWork : IDisposable
 
     IGenericRepository<Category> Categories { get; }
     IGenericRepository<DosageForm> DosageForms { get; }
-    IGenericRepository<Product> Products { get; }
+    IGenericRepositoryWithPagination<Product> Products { get; }
 
     /// <summary>Save changes to the database</summary>
     /// <returns>The number of state entries written to the database</returns>

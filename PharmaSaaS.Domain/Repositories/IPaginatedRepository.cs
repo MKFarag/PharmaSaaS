@@ -6,20 +6,20 @@ public interface IPaginatedRepository<TEntity> where TEntity : class
     /// <typeparam name="TProjection">The type to project the entities to</typeparam>
     /// <param name="pageNumber">The page number to retrieve (1-based)</param>
     /// <param name="pageSize">The number of items per page</param>
-    /// <param name="primaryKey">The primary key column name for default sorting</param>
+    /// <param name="defaultSortColumn">The column name for default sorting</param>
     /// <returns>Paginated list of projected entities</returns>
     Task<IPaginatedList<TProjection>> GetPaginatedListAsync<TProjection>(
-        int pageNumber, int pageSize, string primaryKey, CancellationToken cancellationToken = default) where TProjection : class;
+        int pageNumber, int pageSize, string defaultSortColumn, CancellationToken cancellationToken = default) where TProjection : class;
 
     /// <summary>Get paginated list of entities with includes</summary>
     /// <typeparam name="TProjection">The type to project the entities to</typeparam>
     /// <param name="pageNumber">The page number to retrieve (1-based)</param>
     /// <param name="pageSize">The number of items per page</param>
-    /// <param name="primaryKey">The primary key column name for default sorting</param>
+    /// <param name="defaultSortColumn">The column name for default sorting</param>
     /// <param name="includes">Related data to include</param>
     /// <returns>Paginated list of projected entities</returns>
     Task<IPaginatedList<TProjection>> GetPaginatedListAsync<TProjection>(
-        int pageNumber, int pageSize, string primaryKey, string[] includes, CancellationToken cancellationToken = default) where TProjection : class;
+        int pageNumber, int pageSize, string defaultSortColumn, string[] includes, CancellationToken cancellationToken = default) where TProjection : class;
 
     /// <summary>Get paginated list of entities</summary>
     /// <typeparam name="TProjection">The type to project the entities to (e.g. StudentResponse)</typeparam>
@@ -55,23 +55,23 @@ public interface IPaginatedRepository<TEntity> where TEntity : class
     /// <param name="predicate">Expression to filter entities</param>
     /// <param name="pageNumber">The page number to retrieve (1-based)</param>
     /// <param name="pageSize">The number of items per page</param>
-    /// <param name="primaryKey">The primary key column name for default sorting</param>
+    /// <param name="defaultSortColumn">The column name for default sorting</param>
     /// <returns>Paginated list of projected entities</returns>
     Task<IPaginatedList<TProjection>> FindPaginatedListAsync<TProjection>(
         Expression<Func<TEntity, bool>> predicate,
-        int pageNumber, int pageSize, string primaryKey, CancellationToken cancellationToken = default) where TProjection : class;
+        int pageNumber, int pageSize, string defaultSortColumn, CancellationToken cancellationToken = default) where TProjection : class;
 
     /// <summary>Get paginated list of entities with predicate and includes</summary>
     /// <typeparam name="TProjection">The type to project the entities to</typeparam>
     /// <param name="predicate">Expression to filter entities</param>
     /// <param name="pageNumber">The page number to retrieve (1-based)</param>
     /// <param name="pageSize">The number of items per page</param>
-    /// <param name="primaryKey">The primary key column name for default sorting</param>
+    /// <param name="defaultSortColumn">The column name for default sorting</param>
     /// <param name="includes">Related data to include</param>
     /// <returns>Paginated list of projected entities</returns>
     Task<IPaginatedList<TProjection>> FindPaginatedListAsync<TProjection>(
         Expression<Func<TEntity, bool>> predicate,
-        int pageNumber, int pageSize, string primaryKey, string[] includes, CancellationToken cancellationToken = default) where TProjection : class;
+        int pageNumber, int pageSize, string defaultSortColumn, string[] includes, CancellationToken cancellationToken = default) where TProjection : class;
 
     /// <summary>Get paginated list of entities with predicate</summary>
     /// <typeparam name="TProjection">The type to project the entities to (e.g. StudentResponse)</typeparam>
@@ -106,4 +106,3 @@ public interface IPaginatedRepository<TEntity> where TEntity : class
         int pageNumber, int pageSize, string? searchValue, string? searchColumn, string sortColumn, string sortDirection,
         ColumnType searchColumnType, string[] includes, CancellationToken cancellationToken = default) where TProjection : class;
 }
-
