@@ -1,4 +1,4 @@
-﻿namespace PharmaSaaS.Domain.Constants;
+namespace PharmaSaaS.Domain.Constants;
 
 public static class Cache
 {

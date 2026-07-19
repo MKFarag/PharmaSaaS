@@ -20,6 +20,8 @@ public sealed class UnitOfWork : IUnitOfWork
     public IGenericRepository<Category> Categories { get; private set; }
     public IGenericRepository<DosageForm> DosageForms { get; private set; }
     public IGenericRepositoryWithPagination<Product> Products { get; private set; }
+    public IGenericRepositoryWithPagination<Inventory> Inventories { get; private set; }
+    public IGenericRepositoryWithPagination<ExpiryReport> ExpiryReports { get; private set; }
 
     public UnitOfWork(
         ApplicationDbContext context,
@@ -40,6 +42,8 @@ public sealed class UnitOfWork : IUnitOfWork
         Categories = new GenericRepository<Category>(_context);
         DosageForms = new GenericRepository<DosageForm>(_context);
         Products = new GenericRepositoryWithPagination<Product>(_context);
+        Inventories = new GenericRepositoryWithPagination<Inventory>(_context);
+        ExpiryReports = new GenericRepositoryWithPagination<ExpiryReport>(_context);
     }
 
     public async Task<int> CompleteAsync(CancellationToken cancellationToken = default)

@@ -20,7 +20,7 @@ public class GetCategoryQueryHandlerTest : IClassFixture<MapsterTestFixture>
         var category = Category.Create("Antibiotics");
         category.Id = 1;
 
-        A.CallTo(() => _categoryRepo.FindAsync(A<Expression<Func<Category, bool>>>.Ignored, A<CancellationToken>.Ignored))
+        A.CallTo(() => _categoryRepo.GetAsync(A<object[]>.Ignored, A<CancellationToken>.Ignored))
             .Returns(category);
 
         var result = await _handler.Handle(new GetCategoryQuery(1), CancellationToken.None);
@@ -33,7 +33,7 @@ public class GetCategoryQueryHandlerTest : IClassFixture<MapsterTestFixture>
     [Fact]
     public async Task Handle_WhenCategoryNotFound_ReturnsNotFoundError()
     {
-        A.CallTo(() => _categoryRepo.FindAsync(A<Expression<Func<Category, bool>>>.Ignored, A<CancellationToken>.Ignored))
+        A.CallTo(() => _categoryRepo.GetAsync(A<object[]>.Ignored, A<CancellationToken>.Ignored))
             .Returns((Category?)null);
 
         var result = await _handler.Handle(new GetCategoryQuery(1), CancellationToken.None);

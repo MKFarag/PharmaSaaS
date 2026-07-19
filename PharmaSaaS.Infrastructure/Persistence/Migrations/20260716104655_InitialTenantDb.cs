@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -280,7 +280,7 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ExpiredQuantity = table.Column<int>(type: "int", nullable: false),
+                    ExpiredQuantity = table.Column<float>(type: "real", nullable: false),
                     ReportDate = table.Column<DateOnly>(type: "date", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     ProductId = table.Column<int>(type: "int", nullable: false),
@@ -309,7 +309,7 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    Quantity = table.Column<float>(type: "real", nullable: false),
                     PurchasePrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     TargetStock = table.Column<int>(type: "int", nullable: true),
                     Rare = table.Column<bool>(type: "bit", nullable: false),

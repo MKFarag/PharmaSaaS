@@ -178,8 +178,8 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ExpiredQuantity")
-                        .HasColumnType("int");
+                    b.Property<float>("ExpiredQuantity")
+                        .HasColumnType("real");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
@@ -212,17 +212,17 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("IsRare")
+                        .HasColumnType("bit");
+
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("PurchasePrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("Rare")
-                        .HasColumnType("bit");
+                    b.Property<float>("Quantity")
+                        .HasColumnType("real");
 
                     b.Property<int?>("TargetStock")
                         .HasColumnType("int");

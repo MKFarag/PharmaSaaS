@@ -32,7 +32,7 @@ public class GetAllProductsQueryHandlerTest : IClassFixture<MapsterTestFixture>
                 A<Expression<Func<Product, bool>>>.Ignored,
                 A<int>.Ignored, A<int>.Ignored,
                 A<string?>.Ignored, A<string>.Ignored,
-                A<string>.Ignored, A<string>.Ignored,
+                A<string>.Ignored!, A<string>.Ignored!,
                 A<ColumnType>.Ignored,
                 A<string[]>.Ignored,
                 A<CancellationToken>.Ignored))

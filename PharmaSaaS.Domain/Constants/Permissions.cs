@@ -1,4 +1,4 @@
-﻿namespace PharmaSaaS.Domain.Constants;
+namespace PharmaSaaS.Domain.Constants;
 
 public static class Permissions
 {
@@ -46,6 +46,23 @@ public static class Permissions
     public const string AddProduct = "product:add";
     public const string UpdateProduct = "product:modify";
     public const string DeleteProduct = "product:delete";
+
+    #endregion
+
+    #region Inventory
+
+    public const string ReadInventory = "inventory:read";
+    public const string UpdateInventory = "inventory:modify";
+    public const string ToggleRare = "inventory:toggle-rare";
+    public const string AdjustInventoryStock = "inventory:adjust-stock";
+
+    #endregion
+
+    #region ExpiryReport
+
+    public const string ReadExpiryReport = "expiry-report:read";
+    public const string LogExpiryReport = "expiry-report:log";
+    public const string RevertExpiryReport = "expiry-report:revert";
 
     #endregion
 

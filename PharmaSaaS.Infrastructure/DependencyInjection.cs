@@ -44,6 +44,7 @@ public static class DependencyInjection
             services.AddScoped<ICurrentTenantGetter, TenantService>();
             services.AddScoped<ITenantService, TenantService>();
 
+
             services.AddDbContext<ApplicationDbContext>();
 
             return services;

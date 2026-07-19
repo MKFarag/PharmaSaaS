@@ -3,15 +3,16 @@ namespace PharmaSaaS.Domain.Entities;
 public sealed class Inventory
 {
     public int Id { get; set; }
-    public int Quantity { get; private set; }
+    public float Quantity { get; private set; }
     public decimal PurchasePrice { get; private set; }
     public int? TargetStock { get; private set; }
-    public bool Rare { get; private set; }
+    public bool IsRare { get; private set; }
     public int ProductId { get; private set; }
 
     public Product Product { get; set; } = default!;
 
-    public static Inventory Create(int productId, int quantity, decimal purchasePrice, int? targetStock = null)
+
+    public static Inventory Create(int productId, float quantity, decimal purchasePrice, int? targetStock = null)
         => new()
         {
             ProductId = productId,
@@ -20,8 +21,11 @@ public sealed class Inventory
             TargetStock = targetStock
         };
 
-    public void SetQuantity(int quantity) => Quantity = quantity;
+    public void SetQuantity(float quantity) => Quantity = quantity;
     public void SetPurchasePrice(decimal purchasePrice) => PurchasePrice = purchasePrice;
     public void SetTargetStock(int? targetStock) => TargetStock = targetStock;
-    public void MarkRare(bool rare) => Rare = rare;
+    public void SetRare(bool isRare) => IsRare = isRare;
+    public void ToggleRare() => IsRare = !IsRare;
+    public void DeductStock(float quantity) => Quantity -= quantity;
+    public void AddStock(float quantity) => Quantity += quantity;
 }

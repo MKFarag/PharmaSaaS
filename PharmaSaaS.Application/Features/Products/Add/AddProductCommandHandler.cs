@@ -4,25 +4,23 @@ public sealed class AddProductCommandHandler(IUnitOfWork unitOfWork) : IRequestH
 {
     public async Task<Result<ProductResponse>> Handle(AddProductCommand command, CancellationToken cancellationToken = default)
     {
-        var request = command.Request;
-
-        if (request.Barcode is not null &&
-            await unitOfWork.Products.AnyAsync(p => p.Barcode == request.Barcode, cancellationToken))
+        if (command.Request.Barcode is not null &&
+            await unitOfWork.Products.AnyAsync(p => p.Barcode == command.Request.Barcode, cancellationToken))
             return Result.Failure<ProductResponse>(ProductErrors.DuplicatedBarcode);
 
         if (await unitOfWork.Products.AnyAsync(
-                p => p.Name == request.Name && p.Concentration == request.Concentration && p.DosageFormId == request.DosageFormId,
+                p => p.Name == command.Request.Name && p.Concentration == command.Request.Concentration && p.DosageFormId == command.Request.DosageFormId,
                 cancellationToken))
             return Result.Failure<ProductResponse>(ProductErrors.CompositeDuplicate);
 
-        if (!await unitOfWork.Categories.AnyAsync(c => c.Id == request.CategoryId, cancellationToken))
+        if (!await unitOfWork.Categories.AnyAsync(c => c.Id == command.Request.CategoryId, cancellationToken))
             return Result.Failure<ProductResponse>(ProductErrors.CategoryNotFound);
 
-        if (!await unitOfWork.DosageForms.AnyAsync(d => d.Id == request.DosageFormId, cancellationToken))
+        if (!await unitOfWork.DosageForms.AnyAsync(d => d.Id == command.Request.DosageFormId, cancellationToken))
             return Result.Failure<ProductResponse>(ProductErrors.DosageFormNotFound);
 
         var product = Product
-            .Create(request.Name, request.CategoryId, request.DosageFormId, request.Barcode, request.Concentration, request.MaxStorageTemperature);
+            .Create(command.Request.Name, command.Request.CategoryId, command.Request.DosageFormId, command.Request.Barcode, command.Request.Concentration, command.Request.MaxStorageTemperature);
 
         await unitOfWork.Products.AddAsync(product, cancellationToken);
 

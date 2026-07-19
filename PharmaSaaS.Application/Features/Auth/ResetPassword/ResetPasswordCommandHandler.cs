@@ -4,9 +4,8 @@ public class ResetPasswordCommandHandler(IUnitOfWork unitOfWork, IUrlEncoder url
 {
     public async Task<Result> Handle(ResetPasswordCommand request, CancellationToken cancellationToken = default)
     {
-        var user = await unitOfWork.Users.FindByEmailAsync(request.Email, cancellationToken);
-
-        if (user is null || !await unitOfWork.Users.IsEmailConfirmedAsync(user))
+        if (await unitOfWork.Users.FindByEmailAsync(request.Email, cancellationToken) is not { } user ||
+            !await unitOfWork.Users.IsEmailConfirmedAsync(user))
             return Result.Failure(UserErrors.InvalidToken);
 
         if (urlEncoder.Decode(request.Token) is not { } token)

@@ -3,7 +3,7 @@ namespace PharmaSaaS.Domain.Entities;
 public sealed class ExpiryReport
 {
     public int Id { get; set; }
-    public int ExpiredQuantity { get; private set; }
+    public float ExpiredQuantity { get; private set; }
     public DateOnly ReportDate { get; private set; }
     public string? Notes { get; private set; }
     public int ProductId { get; private set; }
@@ -11,7 +11,7 @@ public sealed class ExpiryReport
 
     public Product Product { get; set; } = default!;
 
-    public static ExpiryReport Create(int productId, int expiredQuantity, string reportedByEmployeeId, string? notes = null)
+    public static ExpiryReport Create(int productId, float expiredQuantity, string reportedByEmployeeId, string? notes = null)
         => new()
         {
             ProductId = productId,
@@ -21,7 +21,7 @@ public sealed class ExpiryReport
             Notes = notes
         };
 
-    public void Update(int expiredQuantity, string? notes = null)
+    public void Update(float expiredQuantity, string? notes = null)
     {
         ExpiredQuantity = expiredQuantity;
         Notes = notes;
