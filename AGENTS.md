@@ -1,12 +1,6 @@
 # PharmaSaaS — Agent Guide
 
-> **Read `PharmaSaaS_SystemAnalysis.xlsx` first** — it defines all modules, API endpoints, actors, inputs/outputs, use cases, and role requirements. This is the single source of truth for what every feature should do. The file is binary (xlsx = zipped XML); extract with PowerShell:
-> ```powershell
-> Add-Type -AssemblyName System.IO.Compression.FileSystem
-> $z = [System.IO.Compression.ZipFile]::OpenRead("PharmaSaaS_SystemAnalysis.xlsx")
-> foreach ($e in $z.Entries) { ... }
-> $z.Dispose()
-> ```
+> **Read [`PharmaSaaS_SystemAnalysis.md`](PharmaSaaS_SystemAnalysis.md) first** — it is the single source of truth for all modules, API endpoints, actors, inputs/outputs, use cases, and role requirements. Every feature you implement must match what is defined there.
 
 ## Project overview
 
@@ -334,37 +328,44 @@ Minimum level: `Warning` for most sources. `UseSerilogRequestLogging()` logs HTT
 
 ## Implemented features (only these exist)
 
-Auth (register, login, confirm email, reset password, refresh tokens), Categories, DosageForms, Pharmacies, SubscriptionRequests, Roles, Users, Profile, Products, Inventory (UpdateStock, ToggleShortage, GetShortages, LogExpiryReport, GetAllInventories).
+See the **Implementation Status** table at the bottom of [`PharmaSaaS_SystemAnalysis.md`](PharmaSaaS_SystemAnalysis.md) for the authoritative, up-to-date list.
 
-**Not yet implemented:** POS, Procurement, Customers, Reports, AI Prescription Parser.
+Summary as of last update:
+- ✅ Auth (register, login, confirm email, reset password, refresh tokens)
+- ✅ Categories, DosageForms (Lookups)
+- ✅ Pharmacies, Subscription Requests
+- ✅ Roles, Users (Employees), Profile
+- ✅ Products
+- ✅ Inventory (UpdateStock, ToggleShortage, GetShortages, LogExpiryReport, GetAllInventories, StockLevelReport, OutOfStockReport)
+- ❌ Customers, Loyalty
+- ❌ Shifts, Invoices, Expenses
+- ❌ Suppliers, Purchase Orders, Supplier Payments
+- ❌ Reports
+- ❌ AI Prescription Parser
 
 ---
 
-## xlsx Sync Protocol (agent MUST follow this)
+## Spec Sync Protocol (agent MUST follow this)
 
-The `PharmaSaaS_SystemAnalysis.xlsx` is the **source of truth** for all planned features. The agent must treat it as a living document.
+[`PharmaSaaS_SystemAnalysis.md`](PharmaSaaS_SystemAnalysis.md) is the **source of truth** for all planned features. The agent must treat it as a living document.
 
 ### When implementing a task
 
-If the user asks to implement something **that already exists in the xlsx**:
-- After completing the implementation, mark it as done in `tasks/tasks.md` under the `[x]` completed section.
-- Do NOT modify the xlsx for tasks that match the spec exactly.
+If the user asks to implement something **that already exists in the MD spec**:
+- After completing the implementation, update the **Implementation Status** table at the bottom of `PharmaSaaS_SystemAnalysis.md` to mark the module as `✅ Implemented`.
+- Also mark it as done in `tasks/tasks.md` under the `[x]` completed section.
+- Do NOT modify the spec details (endpoints, inputs, outputs) unless the implementation genuinely differs.
 
 ### When the user adds extra endpoints or modifies behavior
 
-If the implementation **differs from the xlsx** (different route, extra endpoints, different input/output, different behavior):
+If the implementation **differs from the MD spec** (different route, extra endpoints, different input/output, different behavior):
 
 1. **Immediately inform the user** with a clear note, e.g.:
-   > ⚠️ **Deviation from xlsx**: This endpoint (`POST /api/auth/register`) is not in the xlsx spec (which only defines `POST /api/auth/login`). Confirm to update the xlsx?
+   > ⚠️ **Deviation from spec**: This endpoint (`POST /api/auth/register`) is not in the spec (which only defines `POST /api/auth/login`). Confirm to update `PharmaSaaS_SystemAnalysis.md`?
 
-2. If the user **confirms**, update the xlsx using PowerShell to reflect the actual implementation:
-   ```powershell
-   # Extract, edit the relevant sheet XML, repack
-   Add-Type -AssemblyName System.IO.Compression.FileSystem
-   # ... modify xl\worksheets\sheetN.xml to add/update the row
-   ```
+2. If the user **confirms**, update `PharmaSaaS_SystemAnalysis.md` directly — add the new endpoint row to the relevant module table and update the Implementation Status table.
 
-3. If the user **does not confirm**, leave the xlsx as-is and document the deviation in `tasks/tasks.md` under a `## Deviations` section.
+3. If the user **does not confirm**, leave the MD as-is and document the deviation in `tasks/tasks.md` under a `## Deviations` section.
 
 ### tasks/tasks.md
 

@@ -187,7 +187,7 @@ Tables are ordered by implementation priority.
 
 **DosageForms:** Id - Name
 
-**Products:** Id - Name - Barcode - Concentration - MaxStorageTemperature - CategoryId - DosageFormId
+**Products:** Id - Name - Barcode - Concentration - MaxStorageTemperature - IsActive - CategoryId - DosageFormId
 
 **Inventory:** Id - Quantity - PurchasePrice - TargetStock - IsManualShortage - ProductId
 
@@ -197,11 +197,11 @@ Tables are ordered by implementation priority.
 
 #### 🛒 Point of Sale
 
-**DailyShifts:** Id - ShiftDate - OpeningBalance - ExpectedBalance - ActualBalance - Status - EmployeeId
+**DailyShifts:** Id - ShiftDate - OpeningBalance - ExpectedBalance - ActualBalance - TotalVisa - TotalCash - Status - EmployeeId
 
-**Customers:** Id - FullName - PhoneNumber - TotalSpend - CurrentTierId
+**Customers:** Id - FullName - PhoneNumber - TotalSpend - UserId - CurrentTierId
 
-**SalesInvoices:** Id - Total - DiscountAmount - FinalAmount - ShiftId - CustomerId
+**SalesInvoices:** Id - Total - DiscountAmount - FinalAmount - PaymentMethod - ShiftId - CustomerId
 
 **InvoiceItems:** Id - Quantity - UnitPrice - InvoiceId - ProductId
 
@@ -301,6 +301,7 @@ erDiagram
         string Barcode
         string Concentration
         decimal MaxStorageTemperature
+        bool IsActive
         uuid CategoryId FK
         uuid DosageFormId FK
     }
@@ -336,6 +337,7 @@ erDiagram
         string FullName
         string PhoneNumber
         decimal TotalSpend
+        uuid UserId FK
         uuid CurrentTierId FK
     }
     DailyShifts {
@@ -344,6 +346,8 @@ erDiagram
         decimal OpeningBalance
         decimal ExpectedBalance
         decimal ActualBalance
+        decimal TotalVisa
+        decimal TotalCash
         string Status
         uuid EmployeeId FK
     }
@@ -352,6 +356,7 @@ erDiagram
         decimal Total
         decimal DiscountAmount
         decimal FinalAmount
+        string PaymentMethod
         uuid ShiftId FK
         uuid CustomerId FK
     }
@@ -436,6 +441,7 @@ erDiagram
     SupplierPayments ||--o{ SupplierPaymentOrders : "covers"
     ApplicationUser ||--o{ DailyShifts : "runs"
     ApplicationUser ||--o{ ExpiryReports : "reports"
+    ApplicationUser ||--o| Customers : "has online profile"
 ```
 
 ---
