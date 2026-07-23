@@ -85,19 +85,19 @@
 ## 🔲 Not Yet Started
 
 ### Customers
-- [ ] `GET /api/customers` — List Customers (with search)
-- [ ] `GET /api/customers/{id}` — Customer Profile (with invoice history)
-- [ ] `POST /api/customers` — Add Customer
-- [ ] `PUT /api/customers/{id}` — Update Customer
+- [x] `GET /api/customers` — List Customers (with search)
+- [x] `GET /api/customers/{id}` — Customer Profile (with invoice history)
+- [x] `POST /api/customers` — Add Customer
+- [x] `PUT /api/customers/{id}` — Update Customer
 
 ### Loyalty
-- [ ] `GET /api/loyalty/tiers` — List Tiers
-- [ ] `POST /api/loyalty/tiers` — Create Tier
-- [ ] `PUT /api/loyalty/tiers/{id}` — Update Tier
-- [ ] `DELETE /api/loyalty/tiers/{id}` — Delete Tier
-- [ ] `POST /api/loyalty/tiers/{tierId}/rules` — Add Discount Rule
-- [ ] `PUT /api/loyalty/rules/{ruleId}` — Update Discount Rule
-- [ ] `DELETE /api/loyalty/rules/{ruleId}` — Delete Discount Rule
+- [x] `GET /api/loyalty/tiers` — List Tiers
+- [x] `POST /api/loyalty/tiers` — Create Tier
+- [x] `PUT /api/loyalty/tiers/{id}` — Update Tier
+- [x] `DELETE /api/loyalty/tiers/{id}` — Delete Tier
+- [x] `POST /api/loyalty/tiers/{tierId}/rules` — Add Discount Rule
+- [x] `PUT /api/loyalty/rules/{ruleId}` — Update Discount Rule
+- [x] `DELETE /api/loyalty/rules/{ruleId}` — Delete Discount Rule
 
 ### Shifts (POS prerequisite)
 - [ ] `GET /api/shifts` — List Shifts (with date filter)

@@ -1,6 +1,6 @@
 using PharmaSaaS.Application.Contracts.ExpiryReports;
-using PharmaSaaS.Application.Features.ExpiryReports.GetAll;
 using PharmaSaaS.Application.Features.ExpiryReports.Create;
+using PharmaSaaS.Application.Features.ExpiryReports.GetAll;
 using PharmaSaaS.Application.Features.ExpiryReports.Revert;
 
 namespace PharmaSaaS.Presentation.Controllers;

@@ -499,8 +499,8 @@
 | Products | ✅ Implemented |
 | Inventory | ✅ Implemented |
 | Lookups (Categories + DosageForms) | ✅ Implemented |
-| Customers | ❌ Not yet implemented |
-| Loyalty | ❌ Not yet implemented |
+| Customers | ✅ Implemented |
+| Loyalty | ✅ Implemented |
 | Shifts | ❌ Not yet implemented |
 | Invoices | ❌ Not yet implemented |
 | Expenses | ❌ Not yet implemented |

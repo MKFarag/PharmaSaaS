@@ -1,6 +1,5 @@
 ﻿using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using PharmaSaaS.Domain.Abstraction;
 using System.Security.Claims;
 
 namespace PharmaSaaS.Presentation;

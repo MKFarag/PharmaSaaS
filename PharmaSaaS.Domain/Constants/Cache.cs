@@ -8,6 +8,8 @@ public static class Cache
         public static string Users(string tenantId) => $"{tenantId}:users";
         public static string Categories(string tenantId) => $"{tenantId}:categories";
         public static string DosageForms(string tenantId) => $"{tenantId}:dosage-forms";
+        public static string Customers(string tenantId) => $"{tenantId}:customers";
+        public static string LoyaltyTiers(string tenantId) => $"{tenantId}:loyalty-tiers";
     }
 
     public partial class Keys
@@ -16,6 +18,8 @@ public static class Cache
         public static string UsersWithoutDefaultRole(string tenantId) => $"{tenantId}:users:without-default-role";
         public static string AllCategories(string tenantId) => $"{tenantId}:categories:all";
         public static string AllDosageForms(string tenantId) => $"{tenantId}:dosage-forms:all";
+        public static string AllCustomers(string tenantId) => $"{tenantId}:customers:all";
+        public static string AllLoyaltyTiers(string tenantId) => $"{tenantId}:loyalty-tiers:all";
     }
 
     public static class Expirations

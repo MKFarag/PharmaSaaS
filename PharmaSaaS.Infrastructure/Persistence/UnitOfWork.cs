@@ -23,6 +23,10 @@ public sealed class UnitOfWork : IUnitOfWork
     public IGenericRepositoryWithPagination<Inventory> Inventories { get; private set; }
     public IGenericRepositoryWithPagination<ExpiryReport> ExpiryReports { get; private set; }
 
+    public IGenericRepositoryWithPagination<Customer> Customers { get; private set; }
+    public IGenericRepository<LoyaltyTier> LoyaltyTiers { get; private set; }
+    public IGenericRepository<DiscountRule> DiscountRules { get; private set; }
+
     public UnitOfWork(
         ApplicationDbContext context,
         SharedDbContext sharedDbContext,
@@ -44,6 +48,10 @@ public sealed class UnitOfWork : IUnitOfWork
         Products = new GenericRepositoryWithPagination<Product>(_context);
         Inventories = new GenericRepositoryWithPagination<Inventory>(_context);
         ExpiryReports = new GenericRepositoryWithPagination<ExpiryReport>(_context);
+
+        Customers = new GenericRepositoryWithPagination<Customer>(_context);
+        LoyaltyTiers = new GenericRepository<LoyaltyTier>(_context);
+        DiscountRules = new GenericRepository<DiscountRule>(_context);
     }
 
     public async Task<int> CompleteAsync(CancellationToken cancellationToken = default)

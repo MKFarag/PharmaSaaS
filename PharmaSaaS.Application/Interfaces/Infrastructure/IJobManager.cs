@@ -1,6 +1,4 @@
-﻿using System.Linq.Expressions;
-
-namespace PharmaSaaS.Application.Interfaces.Infrastructure;
+﻿namespace PharmaSaaS.Application.Interfaces.Infrastructure;
 
 public interface IJobManager
 {

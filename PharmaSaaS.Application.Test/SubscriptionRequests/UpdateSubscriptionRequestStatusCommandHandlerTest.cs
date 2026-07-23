@@ -1,4 +1,3 @@
-using PharmaSaaS.Application.Contracts.SubscriptionRequests;
 using PharmaSaaS.Application.Features.SubscriptionRequests.UpdateStatus;
 
 namespace PharmaSaaS.Application.Test.SubscriptionRequests;

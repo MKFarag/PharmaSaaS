@@ -1,11 +1,4 @@
-using FakeItEasy;
-using PharmaSaaS.Application.Contracts.Inventories;
 using PharmaSaaS.Application.Features.Inventories.AdjustStock;
-using PharmaSaaS.Domain.Entities;
-using PharmaSaaS.Domain.Errors;
-using PharmaSaaS.Domain.Repositories;
-using System.Linq.Expressions;
-using Xunit;
 
 namespace PharmaSaaS.Application.Test.Inventories;
 

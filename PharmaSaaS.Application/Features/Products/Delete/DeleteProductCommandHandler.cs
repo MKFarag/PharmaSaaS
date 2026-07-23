@@ -4,7 +4,7 @@ public sealed class DeleteProductCommandHandler(IUnitOfWork unitOfWork) : IReque
 {
     public async Task<Result> Handle(DeleteProductCommand request, CancellationToken cancellationToken = default)
     {
-        if (await unitOfWork.Products.GetAsync([request.Id], cancellationToken)  is not { } product)
+        if (await unitOfWork.Products.GetAsync([request.Id], cancellationToken) is not { } product)
             return Result.Failure(ProductErrors.NotFound);
 
         unitOfWork.Products.Delete(product);

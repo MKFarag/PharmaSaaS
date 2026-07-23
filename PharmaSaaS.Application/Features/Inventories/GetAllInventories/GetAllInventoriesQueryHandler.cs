@@ -8,9 +8,9 @@ public sealed class GetAllInventoriesQueryHandler(IUnitOfWork unitOfWork) : IReq
 
         Expression<Func<Inventory, bool>> predicate = i =>
             (!f.IsRare.HasValue || i.IsRare == f.IsRare.Value) && (f.OutOfStock != true || i.Quantity == 0) &&
-            (!f.BelowTarget.HasValue || 
-                (i.TargetStock.HasValue && 
-                    ((f.BelowTarget == true  && i.Quantity < i.TargetStock.Value) || (f.BelowTarget == false && i.Quantity >= i.TargetStock.Value))));
+            (!f.BelowTarget.HasValue ||
+                (i.TargetStock.HasValue &&
+                    ((f.BelowTarget == true && i.Quantity < i.TargetStock.Value) || (f.BelowTarget == false && i.Quantity >= i.TargetStock.Value))));
 
         return await unitOfWork.Inventories.FindPaginatedListAsync<InventoryResponse>(
             predicate,

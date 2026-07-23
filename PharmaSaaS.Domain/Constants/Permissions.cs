@@ -66,6 +66,21 @@ public static class Permissions
 
     #endregion
 
+    #region Customer
+
+    public const string ReadCustomer = "customer:read";
+    public const string AddCustomer = "customer:add";
+    public const string UpdateCustomer = "customer:modify";
+
+    #endregion
+
+    #region Loyalty
+
+    public const string ReadLoyalty = "loyalty:read";
+    public const string ManageLoyalty = "loyalty:manage";
+
+    #endregion
+
     public static IList<string?> GetAll()
         => [.. typeof(Permissions).GetFields().Select(x => x.GetValue(x) as string)];
 }

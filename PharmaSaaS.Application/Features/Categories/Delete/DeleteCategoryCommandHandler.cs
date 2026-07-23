@@ -11,7 +11,7 @@ public class DeleteCategoryCommandHandler(IUnitOfWork unitOfWork, ICacheService 
             return Result.Failure(CategoryErrors.IsUsed);
 
         unitOfWork.Categories.Delete(category);
-        
+
         await unitOfWork.CompleteAsync(cancellationToken);
 
         await cacheService.RemoveByTagAsync(Cache.Tags.Categories(currentTenantGetter.GetTenantId()!), cancellationToken);

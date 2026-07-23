@@ -3,7 +3,6 @@ using PharmaSaaS.Application.Features.SubscriptionRequests.Create;
 using PharmaSaaS.Application.Features.SubscriptionRequests.Get;
 using PharmaSaaS.Application.Features.SubscriptionRequests.GetAll;
 using PharmaSaaS.Application.Features.SubscriptionRequests.UpdateStatus;
-using PharmaSaaS.Presentation.Attributes;
 
 namespace PharmaSaaS.Presentation.Controllers;
 

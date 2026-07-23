@@ -1,4 +1,3 @@
-using PharmaSaaS.Application.Contracts.Categories;
 using PharmaSaaS.Application.Features.Categories.Update;
 
 namespace PharmaSaaS.Application.Test.Categories;

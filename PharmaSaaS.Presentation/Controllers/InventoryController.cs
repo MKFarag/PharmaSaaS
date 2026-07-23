@@ -1,7 +1,6 @@
 using PharmaSaaS.Application.Contracts.Inventories;
-using PharmaSaaS.Application.Features.Inventories.GetAllInventories;
-
 using PharmaSaaS.Application.Features.Inventories.AdjustStock;
+using PharmaSaaS.Application.Features.Inventories.GetAllInventories;
 using PharmaSaaS.Application.Features.Inventories.ToggleRare;
 using PharmaSaaS.Application.Features.Inventories.UpdateStock;
 

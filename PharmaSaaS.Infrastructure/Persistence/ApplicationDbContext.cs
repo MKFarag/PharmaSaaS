@@ -10,6 +10,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Product> Products { get; set; }
     public DbSet<Inventory> Inventory { get; set; }
     public DbSet<ExpiryReport> ExpiryReports { get; set; }
+    public DbSet<Customer> Customers { get; set; }
+    public DbSet<LoyaltyTier> LoyaltyTiers { get; set; }
+    public DbSet<DiscountRule> DiscountRules { get; set; }
 
     #endregion
 

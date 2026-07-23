@@ -149,6 +149,64 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.Customer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CurrentTierId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal>("TotalSpend")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CurrentTierId");
+
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique();
+
+                    b.ToTable("Customers", (string)null);
+                });
+
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.DiscountRule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("DiscountPercent")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<int>("LoyaltyTierId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("MinInvoiceAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LoyaltyTierId");
+
+                    b.ToTable("DiscountRules", (string)null);
+                });
+
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.DosageForm", b =>
                 {
                     b.Property<int>("Id")
@@ -233,6 +291,30 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Inventory");
+                });
+
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.LoyaltyTier", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("SpendThreshold")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("LoyaltyTiers", (string)null);
                 });
 
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.Product", b =>
@@ -513,6 +595,27 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.Customer", b =>
+                {
+                    b.HasOne("PharmaSaaS.Domain.Entities.LoyaltyTier", "CurrentTier")
+                        .WithMany()
+                        .HasForeignKey("CurrentTierId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CurrentTier");
+                });
+
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.DiscountRule", b =>
+                {
+                    b.HasOne("PharmaSaaS.Domain.Entities.LoyaltyTier", "LoyaltyTier")
+                        .WithMany("DiscountRules")
+                        .HasForeignKey("LoyaltyTierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("LoyaltyTier");
+                });
+
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.ExpiryReport", b =>
                 {
                     b.HasOne("PharmaSaaS.Domain.Entities.Product", "Product")
@@ -595,6 +698,11 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                         });
 
                     b.Navigation("RefreshTokens");
+                });
+
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.LoyaltyTier", b =>
+                {
+                    b.Navigation("DiscountRules");
                 });
 #pragma warning restore 612, 618
         }

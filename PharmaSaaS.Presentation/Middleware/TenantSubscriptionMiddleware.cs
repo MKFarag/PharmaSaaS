@@ -1,5 +1,4 @@
 ﻿using PharmaSaaS.Infrastructure.Tenants;
-using PharmaSaaS.Presentation.Attributes;
 
 namespace PharmaSaaS.Presentation.Middleware;
 

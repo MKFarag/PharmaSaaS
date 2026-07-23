@@ -1,8 +1,7 @@
-using System.Reflection;
 using NSwag;
 using NSwag.Generation.Processors;
 using NSwag.Generation.Processors.Contexts;
-using PharmaSaaS.Presentation.Attributes;
+using System.Reflection;
 using OpenApiParameter = NSwag.OpenApiParameter;
 
 namespace PharmaSaaS.Presentation.SwaggerProcessors;
