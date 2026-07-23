@@ -19,6 +19,8 @@ public interface IUnitOfWork : IDisposable
     IGenericRepository<LoyaltyTier> LoyaltyTiers { get; }
     IGenericRepository<DiscountRule> DiscountRules { get; }
 
+    IGenericRepositoryWithPagination<Shift> Shifts { get; }
+
     /// <summary>Save changes to the database</summary>
     /// <returns>The number of state entries written to the database</returns>
     Task<int> CompleteAsync(CancellationToken cancellationToken = default);

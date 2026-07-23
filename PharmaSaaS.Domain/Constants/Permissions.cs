@@ -81,6 +81,14 @@ public static class Permissions
 
     #endregion
 
+    #region Shift
+
+    public const string ReadShift = "shift:read";
+    public const string OpenShift = "shift:open";
+    public const string CloseShift = "shift:close";
+
+    #endregion
+
     public static IList<string?> GetAll()
         => [.. typeof(Permissions).GetFields().Select(x => x.GetValue(x) as string)];
 }

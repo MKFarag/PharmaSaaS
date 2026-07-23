@@ -14,6 +14,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<LoyaltyTier> LoyaltyTiers { get; set; }
     public DbSet<DiscountRule> DiscountRules { get; set; }
 
+    public DbSet<Shift> Shifts { get; set; }
+
     #endregion
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

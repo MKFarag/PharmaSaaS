@@ -433,6 +433,58 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.ToTable("SubscriptionRequests", (string)null);
                 });
 
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.Shift", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal?>("ActualBalance")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<decimal?>("Discrepancy")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTimeOffset?>("EndTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal?>("ExpectedBalance")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("OpenedById")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal>("OpeningBalance")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTimeOffset>("StartTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalExpenses")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalReturns")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalSales")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OpenedById");
+
+                    b.ToTable("Shifts", (string)null);
+                });
+
             modelBuilder.Entity("PharmaSaaS.Infrastructure.Persistence.Identities.ApplicationRole", b =>
                 {
                     b.Property<string>("Id")
@@ -661,6 +713,15 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.Navigation("Category");
 
                     b.Navigation("DosageForm");
+                });
+
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.Shift", b =>
+                {
+                    b.HasOne("PharmaSaaS.Infrastructure.Persistence.Identities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("OpenedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("PharmaSaaS.Infrastructure.Persistence.Identities.ApplicationUser", b =>

@@ -277,8 +277,8 @@ Repository `IGenericRepositoryWithPagination<TEntity>` combines `IGenericReposit
 
 Beyond pagination, `IGenericRepository<TEntity>` provides:
 
-**Read (AsNoTracking):** `GetAsync`, `GetAllAsync`, `FindAsync`, `FindAllAsync` — all with optional `includes[]` overloads.  
-**Read (Tracked):** `TrackedFindAsync`, `TrackedFindAllAsync` — use these before calling entity behavior methods that EF must track.  
+**Read (AsNoTracking):** `GetAllAsync`, `FindAsync`, `FindAllAsync` — all with optional `includes[]` overloads.  
+**Read (Tracked):** `GetAsync` (PK lookup), `TrackedFindAsync`, `TrackedFindAllAsync` — use these before calling entity behavior methods that EF must track.  
 **Projection:** `GetAllProjectionAsync<TProjection>`, `FindAllProjectionAsync<TProjection>` — with optional includes and `selector`/`distinct` overloads. Projection uses Mapster's `.ProjectToType<T>()`.  
 **Write:** `AddAsync`, `AddRangeAsync`, `Update`, `UpdateRange`, `Delete`, `DeleteRange`.  
 **Bulk (no tracking):** `ExecuteDeleteAsync`, `ExecuteUpdateAsync` (1–3 property overloads via `EF.Property<T>`).  

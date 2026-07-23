@@ -80,10 +80,6 @@
 - [x] `POST /api/ExpiryReport` — Log Expiry Report ⚠️ *moved from Inventory*
 - [x] `DELETE /api/ExpiryReport/{id}` — Revert Expiry Report and add stock back ⚠️ *extra vs xlsx*
 
----
-
-## 🔲 Not Yet Started
-
 ### Customers
 - [x] `GET /api/customers` — List Customers (with search)
 - [x] `GET /api/customers/{id}` — Customer Profile (with invoice history)
@@ -100,10 +96,12 @@
 - [x] `DELETE /api/loyalty/rules/{ruleId}` — Delete Discount Rule
 
 ### Shifts (POS prerequisite)
-- [ ] `GET /api/shifts` — List Shifts (with date filter)
-- [ ] `GET /api/shifts/{id}` — Shift Detail
-- [ ] `POST /api/shifts/open` — Open Shift
-- [ ] `POST /api/shifts/{id}/close` — Close Shift
+- [x] `GET /api/shifts` — List Shifts (صندوق الكاشير / الشيفتات)
+- [x] Create Domain Entities (Shift, ShiftStatus).
+- [x] Application Layer: CloseShift, GetAllShifts, GetShiftById, OpenShift.
+- [x] Infrastructure Layer: Repositories and EF Core Migrations.
+- [x] API Layer: ShiftsController with Idempotency.
+- [x] Unit Tests for all Shift Handlers.
 
 ### Invoices (POS)
 - [ ] `GET /api/invoices` — List Invoices

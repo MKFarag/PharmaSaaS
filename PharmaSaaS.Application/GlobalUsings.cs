@@ -9,6 +9,7 @@ global using PharmaSaaS.Application.Contracts.DosageForms;
 global using PharmaSaaS.Application.Contracts.ExpiryReports;
 global using PharmaSaaS.Application.Contracts.Inventories;
 global using PharmaSaaS.Application.Contracts.Loyalty;
+global using PharmaSaaS.Application.Contracts.Shifts;
 global using PharmaSaaS.Application.Contracts.Pharmacies;
 global using PharmaSaaS.Application.Contracts.Products;
 global using PharmaSaaS.Application.Contracts.Profile;

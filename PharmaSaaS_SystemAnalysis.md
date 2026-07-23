@@ -501,7 +501,7 @@
 | Lookups (Categories + DosageForms) | ✅ Implemented |
 | Customers | ✅ Implemented |
 | Loyalty | ✅ Implemented |
-| Shifts | ❌ Not yet implemented |
+| Shifts | ✅ Implemented |
 | Invoices | ❌ Not yet implemented |
 | Expenses | ❌ Not yet implemented |
 | Suppliers | ❌ Not yet implemented |

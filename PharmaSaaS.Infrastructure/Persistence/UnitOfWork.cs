@@ -27,6 +27,8 @@ public sealed class UnitOfWork : IUnitOfWork
     public IGenericRepository<LoyaltyTier> LoyaltyTiers { get; private set; }
     public IGenericRepository<DiscountRule> DiscountRules { get; private set; }
 
+    public IGenericRepositoryWithPagination<Shift> Shifts { get; private set; }
+
     public UnitOfWork(
         ApplicationDbContext context,
         SharedDbContext sharedDbContext,
@@ -52,6 +54,8 @@ public sealed class UnitOfWork : IUnitOfWork
         Customers = new GenericRepositoryWithPagination<Customer>(_context);
         LoyaltyTiers = new GenericRepository<LoyaltyTier>(_context);
         DiscountRules = new GenericRepository<DiscountRule>(_context);
+
+        Shifts = new GenericRepositoryWithPagination<Shift>(_context);
     }
 
     public async Task<int> CompleteAsync(CancellationToken cancellationToken = default)
