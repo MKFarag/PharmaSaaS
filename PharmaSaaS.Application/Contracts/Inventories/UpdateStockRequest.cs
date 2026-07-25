@@ -2,7 +2,7 @@ namespace PharmaSaaS.Application.Contracts.Inventories;
 
 public record UpdateStockRequest(
     float Quantity,
-    decimal PurchasePrice,
+    decimal SellingPrice,
     int? TargetStock,
     bool IsRare
 );
@@ -14,7 +14,7 @@ public class UpdateStockRequestValidator : AbstractValidator<UpdateStockRequest>
         RuleFor(x => x.Quantity)
             .GreaterThanOrEqualTo(0);
 
-        RuleFor(x => x.PurchasePrice)
+        RuleFor(x => x.SellingPrice)
             .GreaterThan(0);
 
         RuleFor(x => x.TargetStock)

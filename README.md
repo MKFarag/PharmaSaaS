@@ -189,7 +189,7 @@ Tables are ordered by implementation priority.
 
 **Products:** Id - Name - Barcode - Concentration - MaxStorageTemperature - IsActive - CategoryId - DosageFormId
 
-**Inventory:** Id - Quantity - PurchasePrice - TargetStock - IsManualShortage - ProductId
+**Inventory:** Id - Quantity - SellingPrice - TargetStock - IsManualShortage - ProductId
 
 **ExpiryReports:** Id - ExpiredQuantity - ReportDate - Notes - ProductId - ReportedByEmployeeId
 
@@ -308,7 +308,7 @@ erDiagram
     Inventory {
         uuid Id PK
         int Quantity
-        decimal PurchasePrice
+        decimal SellingPrice
         int TargetStock
         bool IsManualShortage
         uuid ProductId FK

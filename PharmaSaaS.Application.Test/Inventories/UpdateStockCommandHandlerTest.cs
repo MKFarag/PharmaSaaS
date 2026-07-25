@@ -47,7 +47,7 @@ public class UpdateStockCommandHandlerTest
 
         Assert.True(result.IsSuccess);
         Assert.Equal(100f, inventory.Quantity);
-        Assert.Equal(5.50m, inventory.PurchasePrice);
+        Assert.Equal(5.50m, inventory.SellingPrice);
         Assert.Equal(50, inventory.TargetStock);
         Assert.True(inventory.IsRare);
 

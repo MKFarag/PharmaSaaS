@@ -8,7 +8,7 @@ public sealed class UpdateStockCommandHandler(IUnitOfWork unitOfWork) : IRequest
             return Result.Failure(InventoryErrors.NotFound);
 
         inventory.SetQuantity(command.Request.Quantity);
-        inventory.SetPurchasePrice(command.Request.PurchasePrice);
+        inventory.SetSellingPrice(command.Request.SellingPrice);
         inventory.SetTargetStock(command.Request.TargetStock);
         inventory.SetRare(command.Request.IsRare);
 

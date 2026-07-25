@@ -5,7 +5,7 @@ internal class InventoryConfiguration : IEntityTypeConfiguration<Inventory>
     public void Configure(EntityTypeBuilder<Inventory> builder)
     {
         builder
-            .Property(x => x.PurchasePrice)
+            .Property(x => x.SellingPrice)
             .HasColumnType("decimal(18,2)");
 
         builder

@@ -276,11 +276,11 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("PurchasePrice")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<float>("Quantity")
                         .HasColumnType("real");
+
+                    b.Property<decimal>("SellingPrice")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("TargetStock")
                         .HasColumnType("int");

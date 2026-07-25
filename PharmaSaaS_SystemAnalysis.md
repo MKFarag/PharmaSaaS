@@ -185,8 +185,8 @@
 
 | Name | Actor | Path | Input | Output | Description |
 |---|---|---|---|---|---|
-| List Inventory | Any Employee | `GET /api/inventory` | — (PharmacyId from JWT) | `[{ product, quantity, purchasePrice, targetStock, isRare }]` | Returns current stock levels per product. `isRare` flags products rare in the market. |
-| Update Stock | Pharmacist / Manager | `PUT /api/inventory/{productId}` | `{ quantity, purchasePrice, targetStock }` | `204 No Content` | Updates quantity, purchase price, and target stock for a product. |
+| List Inventory | Any Employee | `GET /api/inventory` | — (PharmacyId from JWT) | `[{ product, quantity, sellingPrice, targetStock, isRare }]` | Returns current stock levels per product. `isRare` flags products rare in the market. |
+| Update Stock | Pharmacist / Manager | `PUT /api/inventory/{productId}` | `{ quantity, sellingPrice, targetStock }` | `204 No Content` | Updates quantity, selling price, and target stock for a product. |
 | Toggle Rare Flag | Pharmacist / Manager | `PATCH /api/inventory/{productId}/shortage` | — (no body, toggles automatically) | `204 No Content` | Toggles the `isRare` flag. Marks product as rare/scarce regardless of stock quantity. |
 | Rare Products Report | Manager / Owner | `GET /api/inventory/shortages` | — | `[{ product, quantity, targetStock, isRare }]` | Returns all products currently flagged as rare (`isRare = true`). |
 | Stock Level Report | Manager / Owner | `GET /api/inventory/stock-level?belowTarget={bool}` | `belowTarget: bool` | `[{ product, quantity, targetStock, isRare }]` | Returns products filtered by stock level relative to their target. Only products with a configured `targetStock` are included. |
@@ -394,7 +394,7 @@
 **Use Cases — Receive Purchase Order:**
 1. Validate PO belongs to pharmacy
 2. Check PO status is Pending
-3. For each item: add quantity to Inventory and update purchasePrice
+3. For each item: add quantity to Inventory and update sellingPrice
 4. Set PO Status=Received
 5. Return 204
 
