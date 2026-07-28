@@ -16,6 +16,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<Shift> Shifts { get; set; }
 
+    public DbSet<Invoice> Invoices { get; set; }
+    public DbSet<InvoiceItem> InvoiceItems { get; set; }
+    public DbSet<ReturnInvoice> ReturnInvoices { get; set; }
+    public DbSet<ReturnInvoiceItem> ReturnInvoiceItems { get; set; }
+
     #endregion
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -59,6 +64,18 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasMany<ExpiryReport>()
             .WithOne(x => x.Product)
             .HasForeignKey(x => x.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Invoice>()
+            .HasMany<InvoiceItem>()
+            .WithOne(x => x.Invoice)
+            .HasForeignKey(x => x.InvoiceId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<ReturnInvoice>()
+            .HasMany<ReturnInvoiceItem>()
+            .WithOne(x => x.ReturnInvoice)
+            .HasForeignKey(x => x.ReturnInvoiceId)
             .OnDelete(DeleteBehavior.Cascade);
 
         #endregion

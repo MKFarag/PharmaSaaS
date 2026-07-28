@@ -17,7 +17,7 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.9")
+                .HasAnnotation("ProductVersion", "10.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -293,6 +293,84 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.ToTable("Inventory");
                 });
 
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.Invoice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("FinalAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("HasReturn")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ItemCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ShiftId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("ShiftId");
+
+                    b.ToTable("Invoices");
+                });
+
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.InvoiceItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("InvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("InvoiceId1")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<float>("Quantity")
+                        .HasColumnType("real");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.HasIndex("InvoiceId1");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("InvoiceItems");
+                });
+
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.LoyaltyTier", b =>
                 {
                     b.Property<int>("Id")
@@ -358,6 +436,72 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.HasIndex("DosageFormId");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.ReturnInvoice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("OriginalInvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ShiftId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalRefund")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OriginalInvoiceId");
+
+                    b.HasIndex("ShiftId");
+
+                    b.ToTable("ReturnInvoices");
+                });
+
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.ReturnInvoiceItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<float>("Quantity")
+                        .HasColumnType("real");
+
+                    b.Property<decimal>("RefundAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ReturnInvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReturnInvoiceId1")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("ReturnInvoiceId");
+
+                    b.HasIndex("ReturnInvoiceId1");
+
+                    b.ToTable("ReturnInvoiceItems");
                 });
 
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.Shared.Pharmacy", b =>
@@ -696,6 +840,47 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.Invoice", b =>
+                {
+                    b.HasOne("PharmaSaaS.Domain.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("PharmaSaaS.Domain.Entities.Shift", "Shift")
+                        .WithMany()
+                        .HasForeignKey("ShiftId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Shift");
+                });
+
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.InvoiceItem", b =>
+                {
+                    b.HasOne("PharmaSaaS.Domain.Entities.Invoice", "Invoice")
+                        .WithMany()
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PharmaSaaS.Domain.Entities.Invoice", null)
+                        .WithMany("Items")
+                        .HasForeignKey("InvoiceId1");
+
+                    b.HasOne("PharmaSaaS.Domain.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Invoice");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.Product", b =>
                 {
                     b.HasOne("PharmaSaaS.Domain.Entities.Category", "Category")
@@ -713,6 +898,48 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.Navigation("Category");
 
                     b.Navigation("DosageForm");
+                });
+
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.ReturnInvoice", b =>
+                {
+                    b.HasOne("PharmaSaaS.Domain.Entities.Invoice", "OriginalInvoice")
+                        .WithMany("ReturnInvoices")
+                        .HasForeignKey("OriginalInvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("PharmaSaaS.Domain.Entities.Shift", "Shift")
+                        .WithMany()
+                        .HasForeignKey("ShiftId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("OriginalInvoice");
+
+                    b.Navigation("Shift");
+                });
+
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.ReturnInvoiceItem", b =>
+                {
+                    b.HasOne("PharmaSaaS.Domain.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("PharmaSaaS.Domain.Entities.ReturnInvoice", "ReturnInvoice")
+                        .WithMany()
+                        .HasForeignKey("ReturnInvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PharmaSaaS.Domain.Entities.ReturnInvoice", null)
+                        .WithMany("Items")
+                        .HasForeignKey("ReturnInvoiceId1");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("ReturnInvoice");
                 });
 
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.Shift", b =>
@@ -761,9 +988,21 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.Navigation("RefreshTokens");
                 });
 
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.Invoice", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("ReturnInvoices");
+                });
+
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.LoyaltyTier", b =>
                 {
                     b.Navigation("DiscountRules");
+                });
+
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.ReturnInvoice", b =>
+                {
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

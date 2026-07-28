@@ -89,6 +89,14 @@ public static class Permissions
 
     #endregion
 
+    #region Invoice
+
+    public const string ReadInvoice = "invoice:read";
+    public const string CreateInvoice = "invoice:create";
+    public const string ProcessReturn = "invoice:return";
+
+    #endregion
+
     public static IList<string?> GetAll()
         => [.. typeof(Permissions).GetFields().Select(x => x.GetValue(x) as string)];
 }

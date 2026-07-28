@@ -4,9 +4,7 @@ public sealed class OpenShiftCommandHandler(IUnitOfWork unitOfWork) : IRequestHa
 {
     public async Task<Result<ShiftResponse>> Handle(OpenShiftCommand command, CancellationToken cancellationToken = default)
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-
-        if (await unitOfWork.Shifts.AnyAsync(s => s.Date == today && s.Status == ShiftStatus.Open, cancellationToken))
+        if (await unitOfWork.Shifts.AnyAsync(s => s.Status == ShiftStatus.Open, cancellationToken))
             return Result.Failure<ShiftResponse>(ShiftErrors.AlreadyOpen);
 
         var shift = Shift.Create(command.UserId, command.Request.OpeningBalance);

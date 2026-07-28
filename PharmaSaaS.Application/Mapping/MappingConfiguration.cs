@@ -18,5 +18,24 @@ public class MappingConfiguration : IRegister
             .Map(dest => dest.CurrentBalance, src => src.OpeningBalance + src.TotalSales - src.TotalReturns - src.TotalExpenses);
 
         #endregion
+
+        #region InvoiceMapping
+
+        config.NewConfig<Invoice, InvoiceResponse>()
+            .Map(dest => dest.CustomerName, src => src.Customer != null ? src.Customer.FullName : null);
+
+        config.NewConfig<Invoice, InvoiceDetailResponse>()
+            .Map(dest => dest.CustomerName, src => src.Customer != null ? src.Customer.FullName : null);
+
+        config.NewConfig<InvoiceItem, InvoiceItemResponse>()
+            .Map(dest => dest.ProductName, src => src.Product != null ? src.Product.Name : null)
+            .Map(dest => dest.Subtotal, src => (decimal)src.Quantity * src.UnitPrice);
+
+        config.NewConfig<ReturnInvoice, ReturnInvoiceSummaryResponse>();
+
+        config.NewConfig<ReturnInvoiceItem, ReturnInvoiceItemResponse>()
+            .Map(dest => dest.ProductName, src => src.Product != null ? src.Product.Name : null);
+
+        #endregion
     }
 }

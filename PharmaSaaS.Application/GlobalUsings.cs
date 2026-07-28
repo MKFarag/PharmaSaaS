@@ -16,6 +16,7 @@ global using PharmaSaaS.Application.Contracts.Profile;
 global using PharmaSaaS.Application.Contracts.Roles;
 global using PharmaSaaS.Application.Contracts.SubscriptionRequests;
 global using PharmaSaaS.Application.Contracts.Users;
+global using PharmaSaaS.Application.Contracts.Invoices;
 global using PharmaSaaS.Application.Interfaces.Infrastructure;
 global using PharmaSaaS.Application.Tenants;
 global using PharmaSaaS.Domain.Abstraction;

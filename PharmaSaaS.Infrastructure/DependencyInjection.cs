@@ -2,6 +2,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PharmaSaaS.Infrastructure.Factories;
 using PharmaSaaS.Infrastructure.Messaging;
+using PharmaSaaS.Application.Interfaces.Services;
+using PharmaSaaS.Application.Services;
 
 namespace PharmaSaaS.Infrastructure;
 
@@ -16,6 +18,7 @@ public static class DependencyInjection
             services.AddTenantDbConfig();
 
             services.AddSharedDbConfig(configuration);
+            services.AddScoped<ICustomerLoyaltyService, CustomerLoyaltyService>();
 
             services.AddHybridCache();
 

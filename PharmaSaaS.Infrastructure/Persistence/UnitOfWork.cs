@@ -29,6 +29,11 @@ public sealed class UnitOfWork : IUnitOfWork
 
     public IGenericRepositoryWithPagination<Shift> Shifts { get; private set; }
 
+    public IGenericRepositoryWithPagination<Invoice> Invoices { get; private set; }
+    public IGenericRepository<InvoiceItem> InvoiceItems { get; private set; }
+    public IGenericRepositoryWithPagination<ReturnInvoice> ReturnInvoices { get; private set; }
+    public IGenericRepository<ReturnInvoiceItem> ReturnInvoiceItems { get; private set; }
+
     public UnitOfWork(
         ApplicationDbContext context,
         SharedDbContext sharedDbContext,
@@ -56,6 +61,11 @@ public sealed class UnitOfWork : IUnitOfWork
         DiscountRules = new GenericRepository<DiscountRule>(_context);
 
         Shifts = new GenericRepositoryWithPagination<Shift>(_context);
+
+        Invoices = new GenericRepositoryWithPagination<Invoice>(_context);
+        InvoiceItems = new GenericRepository<InvoiceItem>(_context);
+        ReturnInvoices = new GenericRepositoryWithPagination<ReturnInvoice>(_context);
+        ReturnInvoiceItems = new GenericRepository<ReturnInvoiceItem>(_context);
     }
 
     public async Task<int> CompleteAsync(CancellationToken cancellationToken = default)

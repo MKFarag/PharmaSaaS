@@ -48,4 +48,7 @@ public sealed class Shift
         ExpectedBalance = expectedBalance;
         Discrepancy = actualBalance - expectedBalance;
     }
+
+    public void AddSale(decimal amount) => TotalSales += amount;
+    public void AddReturn(decimal amount) => TotalReturns += amount;
 }

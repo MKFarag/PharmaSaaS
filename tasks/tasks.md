@@ -104,10 +104,10 @@
 - [x] Unit Tests for all Shift Handlers.
 
 ### Invoices (POS)
-- [ ] `GET /api/invoices` — List Invoices
-- [ ] `GET /api/invoices/{id}` — Invoice Detail
-- [ ] `POST /api/invoices` — Create Invoice (with loyalty discount + inventory deduction)
-- [ ] `POST /api/invoices/{id}/returns` — Process Return
+- [x] `GET /api/invoices` — List Invoices
+- [x] `GET /api/invoices/{id}` — Invoice Detail
+- [x] `POST /api/invoices` — Create Invoice (with loyalty discount + inventory deduction)
+- [x] `POST /api/invoices/{id}/returns` — Process Return
 
 ### Expenses
 - [ ] `GET /api/expenses` — List Expenses (with shift filter)
