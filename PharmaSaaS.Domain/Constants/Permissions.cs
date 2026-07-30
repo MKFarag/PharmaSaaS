@@ -94,6 +94,7 @@ public static class Permissions
     public const string ReadInvoice = "invoice:read";
     public const string CreateInvoice = "invoice:create";
     public const string ProcessReturn = "invoice:return";
+    public const string PreviewReturn = "invoice:return-preview";
 
     #endregion
 

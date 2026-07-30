@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PharmaSaaS.Application.Contracts.Common;
 using PharmaSaaS.Application.Contracts.Invoices;
+using PharmaSaaS.Application.Features.Invoices.CheckReturnImpact;
 using PharmaSaaS.Application.Features.Invoices.Create;
 using PharmaSaaS.Application.Features.Invoices.GetAll;
 using PharmaSaaS.Application.Features.Invoices.GetById;
@@ -86,6 +87,37 @@ public sealed class InvoicesController(ISender sender) : ControllerBase
         var result = await sender.Send(query, cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
-
+    /// <summary>
+    /// Preview the financial and loyalty impact of a return without committing it
+    /// </summary>
+    /// <remarks>
+    /// Use this endpoint before processing a return to inform the customer whether:
+    /// - Their remaining purchase total will still qualify for the loyalty discount.
+    /// - They will drop below their current loyalty tier threshold.
+    ///
+    /// Sample request:
+    ///
+    ///     GET /api/invoices/42/return/preview
+    ///     {
+    ///       "items": [
+    ///         { "productId": 7, "quantity": 1 }
+    ///       ]
+    ///     }
+    /// </remarks>
+    /// <param name="id">Invoice ID to preview the return against.</param>
+    /// <param name="request">Items the customer intends to return.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Estimated refund, discount clawback, and tier-drop warning.</returns>
+    /// <response code="200">Preview calculated successfully.</response>
+    /// <response code="400">One or more return items are invalid or exceed purchased quantity.</response>
+    /// <response code="404">Invoice not found.</response>
+    [HttpGet("{id}/return/preview")]
+    [HasPermission(Permissions.PreviewReturn)]
+    public async Task<IActionResult> PreviewReturnImpact([FromRoute] int id, [FromQuery] ProcessReturnRequest request, CancellationToken cancellationToken)
+    {
+        var query = new CheckReturnImpactQuery(id, request);
+        var result = await sender.Send(query, cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+    }
 
 }

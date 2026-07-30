@@ -1,35 +1,39 @@
 using PharmaSaaS.Application.Contracts.Invoices;
 using PharmaSaaS.Application.Interfaces.Infrastructure;
+using PharmaSaaS.Application.Interfaces.Services;
 using PharmaSaaS.Domain.Abstraction;
 using PharmaSaaS.Domain.Entities;
 using PharmaSaaS.Domain.Errors;
 
-using PharmaSaaS.Application.Interfaces.Services;
-
 namespace PharmaSaaS.Application.Features.Invoices.Create;
 
-public sealed class CreateInvoiceCommandHandler(IUnitOfWork unitOfWork, ICustomerLoyaltyService customerLoyaltyService) : IRequestHandler<CreateInvoiceCommand, Result<InvoiceDetailResponse>>
+public sealed class CreateInvoiceCommandHandler(
+    IUnitOfWork unitOfWork,
+    ICustomerLoyaltyService customerLoyaltyService) : IRequestHandler<CreateInvoiceCommand, Result<InvoiceDetailResponse>>
 {
     public async Task<Result<InvoiceDetailResponse>> Handle(CreateInvoiceCommand command, CancellationToken cancellationToken)
     {
-        // 1. Load active Shift
+        // 1. Load active shift
         if (await unitOfWork.Shifts.TrackedFindAsync(s => s.Status == ShiftStatus.Open, cancellationToken) is not { } shift)
             return Result.Failure<InvoiceDetailResponse>(InvoiceErrors.ShiftNotOpen);
 
         var productIds = command.Request.Items.Select(x => x.ProductId).ToList();
 
-        // 3. Load tracked Inventories
+        // 2. Load tracked inventories (with Product for price)
         var inventories = (await unitOfWork.Inventories
-            .TrackedFindAllAsync(inv => productIds.Contains(inv.ProductId), [nameof(Inventory.Product)], cancellationToken)).ToList();
+            .TrackedFindAllAsync(inv => productIds.Contains(inv.ProductId), [nameof(Inventory.Product)], cancellationToken))
+            .ToList();
 
         if (inventories.Count != productIds.Count)
             return Result.Failure<InvoiceDetailResponse>(InvoiceErrors.ProductNotFound);
 
-        // 4. Calculate total and validate stock
+        // 3. Build a lookup and validate stock in a single pass, accumulating total
+        var inventoryByProductId = inventories.ToDictionary(inv => inv.ProductId);
         decimal total = 0;
+
         foreach (var item in command.Request.Items)
         {
-            var inventory = inventories.First(x => x.ProductId == item.ProductId);
+            var inventory = inventoryByProductId[item.ProductId];
 
             if (inventory.Quantity < item.Quantity)
                 return Result.Failure<InvoiceDetailResponse>(InvoiceErrors.InsufficientStock);
@@ -37,7 +41,7 @@ public sealed class CreateInvoiceCommandHandler(IUnitOfWork unitOfWork, ICustome
             total += (decimal)item.Quantity * inventory.SellingPrice;
         }
 
-        // 5. Calculate discount if Customer
+        // 4. Calculate loyalty discount (if invoice is for a known customer)
         decimal discountAmount = 0;
         Customer? customer = null;
 
@@ -49,34 +53,31 @@ public sealed class CreateInvoiceCommandHandler(IUnitOfWork unitOfWork, ICustome
                 discountAmount = await customerLoyaltyService.CalculateDiscountAsync(customer, total, cancellationToken);
         }
 
-        // 6. Begin transaction
+        // 5. Begin transaction — all writes below are atomic
         await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            // 7. Create Invoice
+            // 6. Persist the invoice header to get its generated ID
             var invoice = Invoice.Create(shift.Id, customer?.Id, total, discountAmount, command.Request.Items.Count);
             await unitOfWork.Invoices.AddAsync(invoice, cancellationToken);
-            await unitOfWork.CompleteAsync(cancellationToken); // Get Invoice.Id
+            await unitOfWork.CompleteAsync(cancellationToken);
 
-            // 8. Create InvoiceItems and deduct stock
-            var invoiceItems = new List<InvoiceItem>();
-            foreach (var item in command.Request.Items)
-            {
-                var inventory = inventories.First(x => x.ProductId == item.ProductId);
-                
-                var invoiceItem = InvoiceItem.Create(invoice.Id, item.ProductId, item.Quantity, inventory.SellingPrice);
-                invoiceItems.Add(invoiceItem);
-
-                inventory.DeductStock(item.Quantity);
-            }
+            // 7. Create invoice line items and deduct stock — reuse the dictionary built above
+            var invoiceItems = command.Request.Items
+                .Select(item =>
+                {
+                    var inventory = inventoryByProductId[item.ProductId];
+                    inventory.DeductStock(item.Quantity);
+                    return InvoiceItem.Create(invoice.Id, item.ProductId, item.Quantity, inventory.SellingPrice);
+                })
+                .ToList();
 
             await unitOfWork.InvoiceItems.AddRangeAsync(invoiceItems, cancellationToken);
 
-            // 9. Update Shift
+            // 8. Update shift and customer loyalty
             shift.AddSale(invoice.FinalAmount);
 
-            // 10. Update Customer Spend & Tier
             if (customer is not null)
                 await customerLoyaltyService.UpdateCustomerLoyaltyAsync(customer, invoice.FinalAmount, cancellationToken);
 

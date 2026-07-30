@@ -1,89 +1,79 @@
 using PharmaSaaS.Application.Contracts.Invoices;
 using PharmaSaaS.Application.Interfaces.Infrastructure;
+using PharmaSaaS.Application.Interfaces.Services;
 using PharmaSaaS.Domain.Abstraction;
 using PharmaSaaS.Domain.Entities;
 using PharmaSaaS.Domain.Errors;
 
-using PharmaSaaS.Application.Interfaces.Services;
-
 namespace PharmaSaaS.Application.Features.Invoices.ProcessReturn;
 
-public sealed class ProcessReturnCommandHandler(IUnitOfWork unitOfWork, ICustomerLoyaltyService customerLoyaltyService) : IRequestHandler<ProcessReturnCommand, Result<ProcessReturnResponse>>
+public sealed class ProcessReturnCommandHandler(
+    IUnitOfWork unitOfWork,
+    IReturnItemValidatorService returnItemValidator,
+    IReturnRefundCalculatorService refundCalculator,
+    ICustomerLoyaltyService customerLoyaltyService) : IRequestHandler<ProcessReturnCommand, Result<ProcessReturnResponse>>
 {
     public async Task<Result<ProcessReturnResponse>> Handle(ProcessReturnCommand command, CancellationToken cancellationToken)
     {
-        // 1. Load Invoice with Items
+        // 1. Load invoice with its items
         if (await unitOfWork.Invoices.TrackedFindAsync(i => i.Id == command.InvoiceId, [nameof(Invoice.Items)], cancellationToken) is not { } invoice)
             return Result.Failure<ProcessReturnResponse>(InvoiceErrors.NotFound);
 
-        // 2. Validate return items
-        foreach (var reqItem in command.Request.Items)
-            if (invoice.Items.FirstOrDefault(i => i.ProductId == reqItem.ProductId) is null)
-                return Result.Failure<ProcessReturnResponse>(InvoiceErrors.ProductNotInInvoice);
-
-        // Get currently returned quantities
+        // 2. Load prior returns
         var existingReturns = await unitOfWork.Returns.FindAllAsync(r => r.InvoiceId == invoice.Id, cancellationToken);
 
-        decimal totalRefund = 0;
-        decimal discountFactor = invoice.Total > 0 ? invoice.FinalAmount / invoice.Total : 1m;
-        var newReturns = new List<Return>();
+        // 3. Validate items in a single pass (products exist + quantities not exceeded)
+        if (returnItemValidator.Validate(invoice, existingReturns, command.Request.Items) is { } validationError)
+            return Result.Failure<ProcessReturnResponse>(validationError);
 
-        foreach (var reqItem in command.Request.Items)
-        {
-            var originalItem = invoice.Items.First(i => i.ProductId == reqItem.ProductId);
-            var alreadyReturned = existingReturns.Where(r => r.ProductId == reqItem.ProductId).Sum(r => r.Quantity);
-
-            if (alreadyReturned + reqItem.Quantity > originalItem.Quantity)
-                return Result.Failure<ProcessReturnResponse>(InvoiceErrors.ReturnQuantityExceeded);
-
-            var baseRefundAmount = (decimal)reqItem.Quantity * originalItem.UnitPrice;
-            var finalRefundAmount = baseRefundAmount * discountFactor;
-            totalRefund += finalRefundAmount;
-            
-            var returnEntity = Return.Create(invoice.Id, reqItem.ProductId, (int)reqItem.Quantity, finalRefundAmount);
-            newReturns.Add(returnEntity);
-        }
-
-        // 3. Load active shift to register return
+        // 4. Load active shift
         if (await unitOfWork.Shifts.TrackedFindAsync(s => s.Status == ShiftStatus.Open, cancellationToken) is not { } currentShift)
             return Result.Failure<ProcessReturnResponse>(InvoiceErrors.ShiftNotOpen);
 
-        // 4. Begin Transaction
+        // 5. Load customer for loyalty-aware refund calculation
+        Customer? customer = null;
+        if (invoice.CustomerId.HasValue)
+            customer = await unitOfWork.Customers.GetAsync([invoice.CustomerId.Value], cancellationToken);
+
+        // 6. Build return item entries from invoice prices (single lookup via dictionary)
+        var invoiceItemByProductId = invoice.Items.ToDictionary(i => i.ProductId);
+        var returnItemEntries = command.Request.Items
+            .Select(req => new ReturnItemEntry(req.ProductId, (decimal)req.Quantity, invoiceItemByProductId[req.ProductId].UnitPrice))
+            .ToList();
+
+        // 7. Calculate loyalty-aware refund (claws back discount if remaining total drops below threshold)
+        var refundResult = await refundCalculator.CalculateRefundAsync(
+            invoice, existingReturns, returnItemEntries, customer, cancellationToken);
+
+        // 8. Build Return entities using per-item amounts provided by the calculator
+        var newReturns = returnItemEntries
+            .Select(entry => Return.Create(invoice.Id, entry.ProductId, (int)entry.Quantity, refundResult.ItemRefunds[entry.ProductId]))
+            .ToList();
+
+        // 9. Begin transaction — all writes below are atomic
         await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
             await unitOfWork.Returns.AddRangeAsync(newReturns, cancellationToken);
 
-            // Restore Inventory
+            // Restore inventory
             var productIds = command.Request.Items.Select(x => x.ProductId).ToList();
             var inventories = await unitOfWork.Inventories.TrackedFindAllAsync(inv => productIds.Contains(inv.ProductId), cancellationToken);
 
-            foreach (var reqItem in command.Request.Items)
-            {
-                var inv = inventories.FirstOrDefault(i => i.ProductId == reqItem.ProductId);
-                inv?.AddStock((int)reqItem.Quantity);
-            }
+            foreach (var req in command.Request.Items)
+                inventories.FirstOrDefault(i => i.ProductId == req.ProductId)?.AddStock((int)req.Quantity);
 
-            // Update Shift
-            currentShift.AddReturn(totalRefund);
-
-            // Update Invoice
+            currentShift.AddReturn(refundResult.TotalRefund);
             invoice.MarkHasReturn();
 
-            // Update Customer Spend
-            if (invoice.CustomerId.HasValue)
-            {
-                var customer = await unitOfWork.Customers.GetAsync([invoice.CustomerId.Value], cancellationToken);
-
-                if (customer is not null)
-                    await customerLoyaltyService.UpdateCustomerLoyaltyAsync(customer, -totalRefund, cancellationToken);
-            }
+            if (customer is not null)
+                await customerLoyaltyService.UpdateCustomerLoyaltyAsync(customer, -refundResult.TotalRefund, cancellationToken);
 
             await unitOfWork.CompleteAsync(cancellationToken);
             await unitOfWork.CommitTransactionAsync(cancellationToken);
 
-            return Result.Success(new ProcessReturnResponse(totalRefund));
+            return Result.Success(new ProcessReturnResponse(refundResult.TotalRefund, refundResult.DiscountClawback));
         }
         catch
         {

@@ -19,6 +19,8 @@ public static class DependencyInjection
 
             services.AddSharedDbConfig(configuration);
             services.AddScoped<ICustomerLoyaltyService, CustomerLoyaltyService>();
+            services.AddScoped<IReturnRefundCalculatorService, ReturnRefundCalculatorService>();
+            services.AddScoped<IReturnItemValidatorService, ReturnItemValidatorService>();
 
             services.AddHybridCache();
 
