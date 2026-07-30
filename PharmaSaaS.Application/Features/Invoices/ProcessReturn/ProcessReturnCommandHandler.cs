@@ -22,26 +22,26 @@ public sealed class ProcessReturnCommandHandler(IUnitOfWork unitOfWork, ICustome
                 return Result.Failure<ProcessReturnResponse>(InvoiceErrors.ProductNotInInvoice);
 
         // Get currently returned quantities
-        var existingReturns = await unitOfWork.ReturnInvoiceItems.FindAllAsync(
-            ri => ri.ReturnInvoice.OriginalInvoiceId == invoice.Id,
-            cancellationToken);
+        var existingReturns = await unitOfWork.Returns.FindAllAsync(r => r.InvoiceId == invoice.Id, cancellationToken);
 
         decimal totalRefund = 0;
         decimal discountFactor = invoice.Total > 0 ? invoice.FinalAmount / invoice.Total : 1m;
-        var newReturnItems = new List<ReturnInvoiceItem>();
+        var newReturns = new List<Return>();
 
         foreach (var reqItem in command.Request.Items)
         {
             var originalItem = invoice.Items.First(i => i.ProductId == reqItem.ProductId);
-            var alreadyReturned = existingReturns.Where(ri => ri.ProductId == reqItem.ProductId).Sum(ri => ri.Quantity);
+            var alreadyReturned = existingReturns.Where(r => r.ProductId == reqItem.ProductId).Sum(r => r.Quantity);
 
             if (alreadyReturned + reqItem.Quantity > originalItem.Quantity)
                 return Result.Failure<ProcessReturnResponse>(InvoiceErrors.ReturnQuantityExceeded);
 
             var baseRefundAmount = (decimal)reqItem.Quantity * originalItem.UnitPrice;
-            totalRefund += baseRefundAmount * discountFactor;
+            var finalRefundAmount = baseRefundAmount * discountFactor;
+            totalRefund += finalRefundAmount;
             
-            // We will create the entity later
+            var returnEntity = Return.Create(invoice.Id, reqItem.ProductId, (int)reqItem.Quantity, finalRefundAmount);
+            newReturns.Add(returnEntity);
         }
 
         // 3. Load active shift to register return
@@ -53,20 +53,7 @@ public sealed class ProcessReturnCommandHandler(IUnitOfWork unitOfWork, ICustome
 
         try
         {
-            // Create ReturnInvoice
-            var returnInvoice = ReturnInvoice.Create(invoice.Id, currentShift.Id, totalRefund);
-            await unitOfWork.ReturnInvoices.AddAsync(returnInvoice, cancellationToken);
-            await unitOfWork.CompleteAsync(cancellationToken);
-
-            foreach (var reqItem in command.Request.Items)
-            {
-                var originalItem = invoice.Items.First(i => i.ProductId == reqItem.ProductId);  
-                var discountedUnitPrice = originalItem.UnitPrice * discountFactor;
-                var returnItem = ReturnInvoiceItem.Create(returnInvoice.Id, reqItem.ProductId, reqItem.Quantity, discountedUnitPrice);
-                newReturnItems.Add(returnItem);
-            }
-
-            await unitOfWork.ReturnInvoiceItems.AddRangeAsync(newReturnItems, cancellationToken);
+            await unitOfWork.Returns.AddRangeAsync(newReturns, cancellationToken);
 
             // Restore Inventory
             var productIds = command.Request.Items.Select(x => x.ProductId).ToList();
@@ -75,7 +62,7 @@ public sealed class ProcessReturnCommandHandler(IUnitOfWork unitOfWork, ICustome
             foreach (var reqItem in command.Request.Items)
             {
                 var inv = inventories.FirstOrDefault(i => i.ProductId == reqItem.ProductId);
-                inv?.AddStock(reqItem.Quantity);
+                inv?.AddStock((int)reqItem.Quantity);
             }
 
             // Update Shift
@@ -96,7 +83,7 @@ public sealed class ProcessReturnCommandHandler(IUnitOfWork unitOfWork, ICustome
             await unitOfWork.CompleteAsync(cancellationToken);
             await unitOfWork.CommitTransactionAsync(cancellationToken);
 
-            return Result.Success(new ProcessReturnResponse(returnInvoice.Id, totalRefund));
+            return Result.Success(new ProcessReturnResponse(totalRefund));
         }
         catch
         {

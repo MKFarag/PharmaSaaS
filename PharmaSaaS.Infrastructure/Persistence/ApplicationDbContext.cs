@@ -18,8 +18,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<Invoice> Invoices { get; set; }
     public DbSet<InvoiceItem> InvoiceItems { get; set; }
-    public DbSet<ReturnInvoice> ReturnInvoices { get; set; }
-    public DbSet<ReturnInvoiceItem> ReturnInvoiceItems { get; set; }
+    public DbSet<Return> Returns { get; set; }
 
     #endregion
 
@@ -72,10 +71,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasForeignKey(x => x.InvoiceId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.Entity<ReturnInvoice>()
-            .HasMany<ReturnInvoiceItem>()
-            .WithOne(x => x.ReturnInvoice)
-            .HasForeignKey(x => x.ReturnInvoiceId)
+        builder.Entity<Invoice>()
+            .HasMany(x => x.Returns)
+            .WithOne(x => x.Invoice)
+            .HasForeignKey(x => x.InvoiceId)
             .OnDelete(DeleteBehavior.Cascade);
 
         #endregion

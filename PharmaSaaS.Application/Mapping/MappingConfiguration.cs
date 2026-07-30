@@ -31,9 +31,7 @@ public class MappingConfiguration : IRegister
             .Map(dest => dest.ProductName, src => src.Product != null ? src.Product.Name : null)
             .Map(dest => dest.Subtotal, src => (decimal)src.Quantity * src.UnitPrice);
 
-        config.NewConfig<ReturnInvoice, ReturnInvoiceSummaryResponse>();
-
-        config.NewConfig<ReturnInvoiceItem, ReturnInvoiceItemResponse>()
+        config.NewConfig<Return, ReturnResponse>()
             .Map(dest => dest.ProductName, src => src.Product != null ? src.Product.Name : null);
 
         #endregion

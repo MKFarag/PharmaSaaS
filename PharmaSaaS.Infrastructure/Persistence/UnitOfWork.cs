@@ -31,8 +31,7 @@ public sealed class UnitOfWork : IUnitOfWork
 
     public IGenericRepositoryWithPagination<Invoice> Invoices { get; private set; }
     public IGenericRepository<InvoiceItem> InvoiceItems { get; private set; }
-    public IGenericRepositoryWithPagination<ReturnInvoice> ReturnInvoices { get; private set; }
-    public IGenericRepository<ReturnInvoiceItem> ReturnInvoiceItems { get; private set; }
+    public IGenericRepositoryWithPagination<Return> Returns { get; private set; }
 
     public UnitOfWork(
         ApplicationDbContext context,
@@ -64,8 +63,7 @@ public sealed class UnitOfWork : IUnitOfWork
 
         Invoices = new GenericRepositoryWithPagination<Invoice>(_context);
         InvoiceItems = new GenericRepository<InvoiceItem>(_context);
-        ReturnInvoices = new GenericRepositoryWithPagination<ReturnInvoice>(_context);
-        ReturnInvoiceItems = new GenericRepository<ReturnInvoiceItem>(_context);
+        Returns = new GenericRepositoryWithPagination<Return>(_context);
     }
 
     public async Task<int> CompleteAsync(CancellationToken cancellationToken = default)

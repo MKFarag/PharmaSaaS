@@ -9,7 +9,7 @@ public record InvoiceDetailResponse(
     decimal DiscountAmount,
     decimal FinalAmount,
     bool HasReturn,
-    IList<ReturnInvoiceSummaryResponse> ReturnInvoices,
+    IList<ReturnResponse> Returns,
     DateOnly Date,
     DateTimeOffset CreatedAt
 );

@@ -75,8 +75,8 @@ public class ProcessReturnCommandHandlerTests
         A.CallTo(() => _unitOfWork.Invoices.TrackedFindAsync(A<Expression<Func<Invoice, bool>>>._, A<string[]>._, A<CancellationToken>._))
             .Returns(invoice);
 
-        A.CallTo(() => _unitOfWork.ReturnInvoiceItems.FindAllAsync(A<Expression<Func<ReturnInvoiceItem, bool>>>._, A<string[]>._, A<CancellationToken>._))
-            .Returns(new List<ReturnInvoiceItem>());
+        A.CallTo(() => _unitOfWork.Returns.FindAllAsync(A<Expression<Func<Return, bool>>>._, A<string[]>._, A<CancellationToken>._))
+            .Returns(new List<Return>());
 
         // Act
         var result = await _sut.Handle(command, default);
@@ -99,8 +99,8 @@ public class ProcessReturnCommandHandlerTests
         A.CallTo(() => _unitOfWork.Invoices.TrackedFindAsync(A<Expression<Func<Invoice, bool>>>._, A<string[]>._, A<CancellationToken>._))
             .Returns(invoice);
 
-        A.CallTo(() => _unitOfWork.ReturnInvoiceItems.FindAllAsync(A<Expression<Func<ReturnInvoiceItem, bool>>>._, A<string[]>._, A<CancellationToken>._))
-            .Returns(new List<ReturnInvoiceItem>());
+        A.CallTo(() => _unitOfWork.Returns.FindAllAsync(A<Expression<Func<Return, bool>>>._, A<string[]>._, A<CancellationToken>._))
+            .Returns(new List<Return>());
 
         // Mock shift not found
         A.CallTo(() => _unitOfWork.Shifts.TrackedFindAsync(A<Expression<Func<Shift, bool>>>._, A<CancellationToken>._))
@@ -135,8 +135,8 @@ public class ProcessReturnCommandHandlerTests
         A.CallTo(() => _unitOfWork.Invoices.TrackedFindAsync(A<Expression<Func<Invoice, bool>>>._, A<string[]>._, A<CancellationToken>._))
             .Returns(invoice);
 
-        A.CallTo(() => _unitOfWork.ReturnInvoiceItems.FindAllAsync(A<Expression<Func<ReturnInvoiceItem, bool>>>._, A<string[]>._, A<CancellationToken>._))
-            .Returns(new List<ReturnInvoiceItem>());
+        A.CallTo(() => _unitOfWork.Returns.FindAllAsync(A<Expression<Func<Return, bool>>>._, A<string[]>._, A<CancellationToken>._))
+            .Returns(new List<Return>());
 
         A.CallTo(() => _unitOfWork.Shifts.TrackedFindAsync(A<Expression<Func<Shift, bool>>>._, A<CancellationToken>._))
             .Returns(shift);

@@ -3,9 +3,7 @@ using PharmaSaaS.Application.Contracts.Common;
 using PharmaSaaS.Application.Contracts.Invoices;
 using PharmaSaaS.Application.Features.Invoices.Create;
 using PharmaSaaS.Application.Features.Invoices.GetAll;
-using PharmaSaaS.Application.Features.Invoices.GetAllReturns;
 using PharmaSaaS.Application.Features.Invoices.GetById;
-using PharmaSaaS.Application.Features.Invoices.GetReturnById;
 using PharmaSaaS.Application.Features.Invoices.ProcessReturn;
 using PharmaSaaS.Domain.Constants;
 using PharmaSaaS.Presentation.Attributes;
@@ -89,36 +87,5 @@ public sealed class InvoicesController(ISender sender) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
 
-    /// <summary>
-    /// Get a paginated list of return invoices
-    /// </summary>
-    /// <param name="filters">Pagination and filtering parameters</param>
-    /// <param name="cancellationToken">Cancellation Token</param>
-    /// <returns>Paginated list of return invoices</returns>
-    /// <response code="200">Returns list of return invoices</response>
-    [HttpGet("returns")]
-    [HasPermission(Permissions.ReadInvoice)]
-    public async Task<IActionResult> GetAllReturnInvoices([FromQuery] ReturnInvoiceRequestFilters filters, CancellationToken cancellationToken)
-    {
-        var query = new GetAllReturnInvoicesQuery(filters);
-        var result = await sender.Send(query, cancellationToken);
-        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
-    }
 
-    /// <summary>
-    /// Get a return invoice by ID
-    /// </summary>
-    /// <param name="id">Return Invoice ID</param>
-    /// <param name="cancellationToken">Cancellation Token</param>
-    /// <returns>Return invoice details</returns>
-    /// <response code="200">Returns return invoice details</response>
-    /// <response code="404">Return invoice not found</response>
-    [HttpGet("returns/{id}")]
-    [HasPermission(Permissions.ReadInvoice)]
-    public async Task<IActionResult> GetReturnInvoiceById([FromRoute] int id, CancellationToken cancellationToken)
-    {
-        var query = new GetReturnInvoiceByIdQuery(id);
-        var result = await sender.Send(query, cancellationToken);
-        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
-    }
 }

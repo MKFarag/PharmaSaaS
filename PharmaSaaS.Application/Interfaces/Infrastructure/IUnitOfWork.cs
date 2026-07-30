@@ -23,8 +23,7 @@ public interface IUnitOfWork : IDisposable
     
     IGenericRepositoryWithPagination<Invoice> Invoices { get; }
     IGenericRepository<InvoiceItem> InvoiceItems { get; }
-    IGenericRepositoryWithPagination<ReturnInvoice> ReturnInvoices { get; }
-    IGenericRepository<ReturnInvoiceItem> ReturnInvoiceItems { get; }
+    IGenericRepositoryWithPagination<Return> Returns { get; }
 
     /// <summary>Save changes to the database</summary>
     /// <returns>The number of state entries written to the database</returns>

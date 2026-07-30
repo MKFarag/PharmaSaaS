@@ -20,15 +20,14 @@ public sealed class Invoice
     public Customer? Customer { get; set; }
     
     public ICollection<InvoiceItem> Items { get; set; } = [];
-    public ICollection<ReturnInvoice> ReturnInvoices { get; set; } = [];
+    public ICollection<Return> Returns { get; set; } = [];
 
     public static readonly string[] DetailIncludes = [
         nameof(Items),
         $"{nameof(Items)}.{nameof(InvoiceItem.Product)}",
         nameof(Customer),
-        nameof(ReturnInvoices),
-        $"{nameof(ReturnInvoices)}.{nameof(ReturnInvoice.Items)}",
-        $"{nameof(ReturnInvoices)}.{nameof(ReturnInvoice.Items)}.{nameof(ReturnInvoiceItem.Product)}"
+        nameof(Returns),
+        $"{nameof(Returns)}.{nameof(Return.Product)}"
     ];
 
     public static Invoice Create(int shiftId, int? customerId, decimal total, decimal discountAmount, int itemCount)
