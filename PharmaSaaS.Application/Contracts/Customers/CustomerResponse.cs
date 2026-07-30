@@ -1,3 +1,5 @@
+using PharmaSaaS.Application.Contracts.Loyalty;
+
 namespace PharmaSaaS.Application.Contracts.Customers;
 
 public record CustomerResponse(
@@ -5,6 +7,5 @@ public record CustomerResponse(
     string FullName,
     string PhoneNumber,
     decimal TotalSpend,
-    int? CurrentTierId,
-    string? CurrentTierName
+    LoyaltyTierResponse? CurrentTier
 );

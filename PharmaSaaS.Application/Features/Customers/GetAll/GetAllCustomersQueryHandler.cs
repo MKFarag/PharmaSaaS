@@ -13,7 +13,10 @@ public sealed class GetAllCustomersQueryHandler(IUnitOfWork unitOfWork) : IReque
             f.SearchValue, f.SearchColumn,
             f.SortColumn!, f.SortDirection!,
             ColumnType.String,
-            [nameof(Customer.CurrentTier)],
+            [
+                nameof(Customer.CurrentTier),
+                $"{nameof(Customer.CurrentTier)}.{nameof(LoyaltyTier.DiscountRules)}"
+            ],
             cancellationToken);
     }
 }

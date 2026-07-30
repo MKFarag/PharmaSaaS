@@ -4,7 +4,10 @@ public sealed class GetCustomerByIdQueryHandler(IUnitOfWork unitOfWork) : IReque
 {
     public async Task<Result<CustomerResponse>> Handle(GetCustomerByIdQuery request, CancellationToken cancellationToken = default)
     {
-        if (await unitOfWork.Customers.FindAsync(c => c.Id == request.Id, [nameof(Customer.CurrentTier)], cancellationToken) is not { } customer)
+        if (await unitOfWork.Customers.FindAsync(c => c.Id == request.Id, [
+            nameof(Customer.CurrentTier),
+            $"{nameof(Customer.CurrentTier)}.{nameof(LoyaltyTier.DiscountRules)}"
+        ], cancellationToken) is not { } customer)
             return Result.Failure<CustomerResponse>(CustomerErrors.NotFound);
 
         return Result.Success(customer.Adapt<CustomerResponse>());
