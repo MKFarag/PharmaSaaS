@@ -58,6 +58,15 @@ Provisioning auto-applies on startup via `TenantProvisioningService.ProvisionAll
 - Handlers instantiated with `A.Fake<T>()` deps. Tests verify call counts via `MustHaveHappenedOnceExactly()`.
 - No integration or E2E tests yet. No CI/CD. No Docker.
 
+## SOLID Principles & Architecture (CRITICAL)
+
+The agent **MUST** strictly adhere to SOLID principles at all times:
+- **SRP (Single Responsibility Principle)**: Handlers must be thin orchestrators. Do NOT write complex business logic, math calculations, or validation loops inside CQRS handlers. Extract these into dedicated services (e.g., `IReturnRefundCalculatorService`, `IReturnItemValidatorService`) and inject them.
+- **DRY (Don't Repeat Yourself)**: Never duplicate logic between commands and queries (like validation rules or pricing math). If two handlers need the same logic, it must be extracted into a shared service.
+- **DIP (Dependency Inversion)**: Always depend on abstractions (interfaces) for services, not concrete implementations.
+
+If the user asks for a feature that would make a handler complex, **proactively create a new service** instead of cramming the logic into the handler.
+
 ## Coding style (agent MUST match this)
 
 - **4-space indentation** (no tabs). File-scoped namespaces. Global usings per project in `GlobalUsings.cs`.
