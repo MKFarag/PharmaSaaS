@@ -1,38 +1,605 @@
 # PharmaSaaS — Agent Guide
 
-> **Read [`PharmaSaaS_SystemAnalysis.md`](PharmaSaaS_SystemAnalysis.md) first** — it is the single source of truth for all modules, API endpoints, actors, inputs/outputs, use cases, and role requirements. Every feature you implement must match what is defined there.
+> **Read [`PharmaSaaS_SystemAnalysis.md`](PharmaSaaS_SystemAnalysis.md) first.**
+> It is the single source of truth for all modules, API endpoints, actors, inputs/outputs, and role requirements.
+> Every feature you implement must match what is defined there.
 
-## Project overview
+---
 
-.NET 10 ASP.NET Core Web API — Clean Architecture + DDD + CQRS. Mid-development MVP.
+## 1. Solution Structure
 
 ```
-PharmaSaaS.Domain/         — Entities, repositories, Result pattern, constants (no deps)
-PharmaSaaS.Application/    — CQRS commands/queries/handlers, DTOs, FluentValidation, Mapster
-PharmaSaaS.Infrastructure/ — EF Core, Identity, JWT, MailKit, HybridCache+Redis, Hangfire
-PharmaSaaS.Presentation/   — ASP.NET Web API host (Program.cs, controllers, middleware)
+PharmaSaaS.Domain/           — Entities, repository interfaces, Result/Error, constants (zero deps)
+PharmaSaaS.Application/      — CQRS handlers, DTOs, validators, services, mappings
+PharmaSaaS.Infrastructure/   — EF Core, Identity, JWT, MailKit, HybridCache+Redis, Hangfire
+PharmaSaaS.Presentation/     — ASP.NET Web API host: controllers, middleware, Program.cs
 PharmaSaaS.Application.Test/ — xUnit + FakeItEasy unit tests
 ```
 
-Entrypoint: `PharmaSaaS.Presentation/Program.cs`. Dependency wiring in `DependencyInjection.cs` at each layer.
+Entrypoint: `Program.cs`. Every layer has its own `DependencyInjection.cs`.
 
-## Quirks an agent WILL miss
+---
 
-- **No MediatR.** Custom CQRS: `IRequest<T>` / `IRequestHandler<T, R>` / `ISender`. Handlers auto-registered via `AddCQRSConfig()` scanning assemblies.
-- **Custom Result pattern** — `Result<TValue>` / `Error(Code, Description, StatusCode)`. Controllers use `result.ToProblem()`.
-- **Custom authorization** — `[SystemOwner]` (checks `X-System-Owner-Key` header), `[HasPermission(Permissions.X)]` (custom `AuthorizationHandler` + `AuthorizationPolicyProvider`). NOT standard ASP.NET policies.
-- **Two-database architecture:** Shared DB (`SharedDbContext`: Pharmacies, SubscriptionRequests) + Per-tenant DB (`ApplicationDbContext`: all ops + Identity tables). Both SQL Server.
-- **`UnitOfWork` wraps both contexts** — call `CompleteAsync()` for ApplicationDb, `SharedCompleteAsync()` for SharedDb.
-- **Tenant resolved from `X-Tenant-Id` header** (not from subdomain/route). `PharmacyId` claim also in JWT.
-- **Tenant connection strings in `appsettings.json`** under `TenantSettings:Tenants`, NOT in shared DB.
-- **API versioning via `x-api-version` header** (not URL). Default 1.0.
-- **C# experimental extension syntax** — `extension(IServiceCollection services) { ... }`. Requires .NET 10 preview SDK.
-- **HybridCache** (Microsoft.Extensions.Caching.Hybrid) with Redis + local memory.
-- **Mapster** for mapping (not AutoMapper). Tests use `MapsterTestFixture` fixture to avoid re-init.
-- **Hangfire** for background jobs (separate connection in config, dashboard at `/jobs` — NOT `/hangfire`).
-- **NSwag** for Swagger/OpenAPI (not Swashbuckle).
+## 2. Where Every File Lives (MANDATORY — never deviate)
 
-## Commands
+This table is the law. When you create any file, look it up here first.
+
+| Concept | Folder |
+|---|---|
+| Entity | `Domain/Entities/` |
+| Error class | `Domain/Errors/` |
+| Repository interface | `Domain/Repositories/` |
+| Domain constants (Cache, Permissions, etc.) | `Domain/Constants/` |
+| Result / IPaginatedList abstractions | `Domain/Abstraction/` |
+| **Request DTO** (input to controller) | **`Application/Contracts/{Module}/`** |
+| **Response DTO** (output from handler) | **`Application/Contracts/{Module}/`** |
+| **FluentValidation validator** | **`Application/Contracts/{Module}/`** (same file as its DTO) |
+| **CQRS command record** | **`Application/Features/{Module}/{UseCase}/`** |
+| **CQRS query record** | **`Application/Features/{Module}/{UseCase}/`** |
+| **CQRS handler** (`sealed class`) | **`Application/Features/{Module}/{UseCase}/`** |
+| Service interface | `Application/Interfaces/Services/` |
+| Service implementation | `Application/Services/` |
+| Mapster mapping config | `Application/Mapping/` |
+| CQRS messaging interfaces | `Application/Abstractions/Messaging/` |
+| EF Core `DbContext`, configurations | `Infrastructure/Persistence/` |
+| Repository implementations | `Infrastructure/Persistence/Repositories/` |
+| Identity, JWT, auth infra | `Infrastructure/Authentication/` |
+| Controllers | `Presentation/Controllers/` |
+| Middleware | `Presentation/Middleware/` |
+| Action attributes (Idempotent, etc.) | `Presentation/Attributes/` |
+| Unit tests | `Application.Test/Features/{Module}/` |
+
+### Concrete example — "Add Product" use case
+
+```
+Domain/Entities/Product.cs                          ← entity
+Domain/Errors/ProductErrors.cs                      ← errors
+Application/Contracts/Products/ProductRequest.cs    ← request DTO + validator
+Application/Contracts/Products/ProductResponse.cs   ← response DTO
+Application/Features/Products/Add/AddProductCommand.cs         ← command record
+Application/Features/Products/Add/AddProductCommandHandler.cs  ← handler
+Presentation/Controllers/ProductsController.cs      ← controller action
+Application.Test/Features/Products/AddProductCommandHandlerTests.cs ← test
+```
+
+---
+
+## 3. SOLID + Clean Architecture (NON-NEGOTIABLE)
+
+These rules are enforced on every PR. No exceptions.
+
+### Handlers are thin orchestrators — nothing more
+
+A handler must only:
+1. Validate business preconditions (via repo calls).
+2. Call domain factory / behavior methods.
+3. Persist via `UnitOfWork`.
+4. Invalidate cache.
+5. Return `Result`.
+
+**Never put complex logic in a handler.** If any of the following appear, extract a service:
+- Math / financial calculations.
+- Multi-step validation loops.
+- Business algorithms spanning multiple entities.
+
+```csharp
+// ✅ Correct — handler delegates to a service
+public sealed class ProcessReturnCommandHandler(
+    IUnitOfWork unitOfWork,
+    IReturnRefundCalculatorService refundCalculator,
+    IReturnItemValidatorService itemValidator) : IRequestHandler<...>
+{
+    public async Task<Result<ReturnResponse>> Handle(ProcessReturnCommand command, CancellationToken cancellationToken = default)
+    {
+        // validate → calculate → persist → return
+    }
+}
+
+// ❌ Wrong — math directly in handler
+public async Task<Result<ReturnResponse>> Handle(...)
+{
+    var refund = items.Sum(i => i.Qty * i.Price) * discountFactor; // NO
+}
+```
+
+### Service interface lives in Application, implementation in Application.Services
+
+```
+Application/Interfaces/Services/IReturnRefundCalculatorService.cs  ← interface
+Application/Services/ReturnRefundCalculatorService.cs              ← sealed class implements it
+```
+
+### Depend on abstractions, never concretions (DIP)
+
+Always inject `IReturnRefundCalculatorService`, never `ReturnRefundCalculatorService`.
+
+### DRY — shared logic belongs in a service
+
+If two handlers need the same logic, it is a service. Period.
+
+---
+
+## 4. Coding Style (agent MUST match exactly)
+
+- **Indentation:** 4 spaces (no tabs).
+- **Namespaces:** file-scoped. One namespace per file.
+- **Global usings:** declared in `GlobalUsings.cs` per project.
+- **Private fields:** `_camelCase`.
+- **DI:** primary constructors preferred; regular constructors only when init logic is needed.
+- **Expression-bodied members** for single-expression methods: `void Update(string n) => Name = n;`
+- **Records** for: commands, queries, DTOs, errors.
+- **`sealed class`** for: entities, handlers, services.
+- **Entities:** public auto-props + static `Create(...)` factory + behavior methods. No public constructors.
+- **Handlers:** `public sealed class`, primary constructor for DI, single `Handle` method.
+- **Null checks:** `is not { }` / `is null` — never `!= null` or `== null`.
+- **Nav props:** initialize with `= default!;`.
+- **No local variables for request unpacking:** Access directly via `command.Request.PropertyName`.
+- **Pattern matching repository checks:** inline the null check with the repo call:
+  ```csharp
+  // ✅ Correct
+  if (await unitOfWork.Products.GetAsync([id]) is not { } product)
+      return Result.Failure<ProductResponse>(ProductErrors.NotFound);
+
+  // ❌ Wrong
+  var product = await unitOfWork.Products.GetAsync([id]);
+  if (product is null)
+      return Result.Failure<ProductResponse>(ProductErrors.NotFound);
+  ```
+- **Primary key lookups:** always `GetAsync([id])`, never `FindAsync(x => x.Id == id)`.
+- **Folder names:** never name a folder `Log` — conflicts with `.gitignore`. Use `Create` instead.
+- **Controller actions:**
+  ```csharp
+  return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+  ```
+
+---
+
+## 5. No Magic Strings — Ever
+
+Every property name written as a string is a bug waiting to happen on rename. Use `nameof()` everywhere.
+
+### Includes
+
+```csharp
+// ✅ Correct
+await unitOfWork.Products.FindAsync(p => p.Id == id,
+    [nameof(Product.Category), nameof(Product.DosageForm)]);
+
+// ❌ Wrong
+await unitOfWork.Products.FindAsync(p => p.Id == id, ["Category", "DosageForm"]);
+```
+
+### Nested includes
+
+```csharp
+// ✅ Correct
+string[] includes = [
+    nameof(Order.Customer),
+    $"{nameof(Order.Items)}.{nameof(OrderItem.Product)}"
+];
+```
+
+### ExecuteUpdateAsync
+
+```csharp
+// ✅ Correct
+await unitOfWork.Inventory.ExecuteUpdateAsync(
+    i => i.ProductId == productId,
+    nameof(Inventory.Quantity), newQty,
+    nameof(Inventory.IsManualShortage), false);
+```
+
+### RequestFilters.Check()
+
+```csharp
+// ✅ Correct
+filters.Check([nameof(Product.Name), nameof(Product.Barcode), nameof(Product.CreatedAt)]);
+```
+
+> **Rule:** If you are writing a property name as a raw string literal anywhere in handler or repository code, stop and use `nameof()` instead.
+
+---
+
+## 6. Critical Framework Quirks
+
+These are the things agents most commonly get wrong.
+
+| Topic | What you MUST know |
+|---|---|
+| **No MediatR** | Custom CQRS: `IRequest<T>` / `IRequestHandler<T,R>` / `ISender`. Handlers auto-registered via `AddCQRSConfig()`. |
+| **Result pattern** | `Result<TValue>` / `Error`. Controllers call `result.ToProblem()`. Lives in `Domain/Abstraction/`. |
+| **Authorization** | `[HasPermission(Permissions.X)]` — custom handler + policy provider. `[SystemOwner]` — reads `X-System-Owner-Key` header, implements `IAuthorizationFilter` directly. NOT standard ASP.NET policies. |
+| **Two databases** | `SharedDbContext` (Pharmacies, SubscriptionRequests) + `ApplicationDbContext` (per-tenant, all ops + Identity). Both SQL Server. |
+| **UnitOfWork** | `CompleteAsync()` → ApplicationDb. `SharedCompleteAsync()` → SharedDb. |
+| **Tenant** | Resolved from `X-Tenant-Id` header. `PharmacyId` also in JWT. Connection strings in `appsettings.json` under `TenantSettings:Tenants`. |
+| **API versioning** | `x-api-version` header (not URL). Default `1.0`. |
+| **Mapping** | Mapster (not AutoMapper). Tests use `MapsterTestFixture` to avoid re-init. |
+| **Validation** | `SharpGrip.FluentValidation.AutoValidation.Mvc` — runs automatically. Controllers do NOT call validators manually. Call `RequestFilters.Check()` manually inside the handler for sort/search column sanitization. |
+| **Cache** | `HybridCache` (Redis + local memory). All keys/tags are tenant-scoped. Use `ICacheService`, not `HybridCache` directly (except `[Idempotent]`). |
+| **Background jobs** | Hangfire. Dashboard at `/jobs`, NOT `/hangfire`. |
+| **Swagger** | NSwag (not Swashbuckle). |
+| **C# extension syntax** | Experimental `extension(IServiceCollection services) { ... }` — requires .NET 10 preview SDK. |
+| **StatusCodes in errors** | Use `PharmaSaaS.Domain.Constants.StatusCodes` (int constants), NOT `Microsoft.AspNetCore.Http.StatusCodes`. |
+
+---
+
+## 7. Result & Error Pattern
+
+```csharp
+// Domain/Errors/ProductErrors.cs
+public record ProductErrors
+{
+    public static readonly Error NotFound =
+        new("Product.NotFound", "No product found.", StatusCodes.NotFound);
+
+    public static readonly Error DuplicatedBarcode =
+        new("Product.DuplicatedBarcode", "Barcode already exists.", StatusCodes.Conflict);
+}
+
+// Handler
+if (await unitOfWork.Products.GetAsync([id]) is not { } product)
+    return Result.Failure<ProductResponse>(ProductErrors.NotFound);
+
+return Result.Success(product.Adapt<ProductResponse>());
+
+// Controller
+return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+```
+
+---
+
+## 8. CQRS — File Structure & Code Templates
+
+### Command record (Application/Features/{Module}/{UseCase}/)
+
+```csharp
+namespace PharmaSaaS.Application.Features.Products.Add;
+
+public record AddProductCommand(ProductRequest Request) : IRequest<Result<ProductResponse>>;
+```
+
+### Handler (same folder as command)
+
+```csharp
+namespace PharmaSaaS.Application.Features.Products.Add;
+
+public sealed class AddProductCommandHandler(IUnitOfWork unitOfWork)
+    : IRequestHandler<AddProductCommand, Result<ProductResponse>>
+{
+    public async Task<Result<ProductResponse>> Handle(AddProductCommand command, CancellationToken cancellationToken = default)
+    {
+        if (await unitOfWork.Products.AnyAsync(p => p.Barcode == command.Request.Barcode, cancellationToken))
+            return Result.Failure<ProductResponse>(ProductErrors.DuplicatedBarcode);
+
+        var product = Product.Create(command.Request.Name, command.Request.CategoryId, command.Request.DosageFormId);
+
+        await unitOfWork.Products.AddAsync(product, cancellationToken);
+        await unitOfWork.CompleteAsync(cancellationToken);
+
+        return Result.Success(product.Adapt<ProductResponse>());
+    }
+}
+```
+
+### Query record + handler
+
+```csharp
+namespace PharmaSaaS.Application.Features.Products.Get;
+
+public record GetProductQuery(int Id) : IRequest<Result<ProductResponse>>;
+
+public sealed class GetProductQueryHandler(IUnitOfWork unitOfWork)
+    : IRequestHandler<GetProductQuery, Result<ProductResponse>>
+{
+    public async Task<Result<ProductResponse>> Handle(GetProductQuery query, CancellationToken cancellationToken = default)
+    {
+        if (await unitOfWork.Products.GetAsync([query.Id]) is not { } product)
+            return Result.Failure<ProductResponse>(ProductErrors.NotFound);
+
+        return Result.Success(product.Adapt<ProductResponse>());
+    }
+}
+```
+
+---
+
+## 9. DTOs & Validators (Application/Contracts/{Module}/)
+
+Request DTO and its validator live in the same file.
+
+```csharp
+// Application/Contracts/Products/ProductRequest.cs
+namespace PharmaSaaS.Application.Contracts.Products;
+
+public record ProductRequest(
+    string Name,
+    string? Barcode,
+    int CategoryId,
+    int DosageFormId
+);
+
+public class ProductRequestValidator : AbstractValidator<ProductRequest>
+{
+    public ProductRequestValidator()
+    {
+        RuleFor(x => x.Name).NotEmpty().Length(2, 200);
+        RuleFor(x => x.CategoryId).GreaterThan(0);
+        RuleFor(x => x.DosageFormId).GreaterThan(0);
+    }
+}
+```
+
+Response DTO:
+
+```csharp
+// Application/Contracts/Products/ProductResponse.cs
+namespace PharmaSaaS.Application.Contracts.Products;
+
+public record ProductResponse(int Id, string Name, string? Barcode, int CategoryId, int DosageFormId);
+```
+
+---
+
+## 10. Entity Pattern (Domain/Entities/)
+
+```csharp
+namespace PharmaSaaS.Domain.Entities;
+
+public sealed class Product
+{
+    public int Id { get; set; }
+    public string Name { get; private set; } = string.Empty;
+    public int CategoryId { get; private set; }
+    public int DosageFormId { get; private set; }
+
+    public Category Category { get; set; } = default!;
+    public DosageForm DosageForm { get; set; } = default!;
+
+    public static Product Create(string name, int categoryId, int dosageFormId)
+        => new() { Name = name, CategoryId = categoryId, DosageFormId = dosageFormId };
+
+    public void Update(string name, int categoryId, int dosageFormId)
+    {
+        Name = name;
+        CategoryId = categoryId;
+        DosageFormId = dosageFormId;
+    }
+}
+```
+
+---
+
+## 11. Service Pattern (for complex business logic)
+
+When a handler needs logic beyond simple orchestration, extract a service.
+
+### Interface — `Application/Interfaces/Services/IMyService.cs`
+
+```csharp
+namespace PharmaSaaS.Application.Interfaces.Services;
+
+public interface IMyService
+{
+    Task<decimal> CalculateAsync(Invoice invoice, CancellationToken cancellationToken = default);
+}
+```
+
+### Implementation — `Application/Services/MyService.cs`
+
+```csharp
+namespace PharmaSaaS.Application.Services;
+
+public sealed class MyService(IDependency dependency) : IMyService
+{
+    public async Task<decimal> CalculateAsync(Invoice invoice, CancellationToken cancellationToken = default)
+    {
+        // focused, testable logic
+    }
+}
+```
+
+Register both in `Application/DependencyInjection.cs`.
+
+---
+
+## 12. Cache Pattern
+
+All cache keys and tags are **tenant-scoped**.
+
+```csharp
+// Read handler — wrap result in cache
+return await cacheService.GetOrCreateAsync(
+    Cache.Keys.AllCategories(tenantId),
+    () => /* repo call */,
+    Cache.Expirations.Long,
+    tags: [Cache.Tags.Categories(tenantId)],
+    cancellationToken);
+
+// Write handler — invalidate after CompleteAsync()
+await unitOfWork.CompleteAsync(cancellationToken);
+await cacheService.RemoveByTagAsync(Cache.Tags.Categories(tenantId));
+```
+
+`tenantId` comes from `ICurrentTenantGetter.GetTenantId()`.
+
+```
+Cache.Expirations.Short    = 5 min
+Cache.Expirations.Medium   = 30 min
+Cache.Expirations.Long     = 1 hour
+Cache.Expirations.VeryLong = 24 hours
+```
+
+---
+
+## 13. Pagination Pattern
+
+End-to-end flow:
+
+```
+Controller creates RequestFilters
+  → Handler calls filters.Check([nameof(Entity.Col), ...])
+  → Repo method (FindPaginatedListAsync / GetPaginatedListAsync)
+  → PaginatedList<T>.CreateAsync() builds IPaginatedList<T>
+  → Returns to controller
+```
+
+`RequestFilters` lives in `Application/Contracts/Common/RequestFilters.cs`.
+
+Call `filters.Check()` manually inside the handler (not the controller) to sanitize columns.
+
+Use `EmptyPaginatedList.Create<T>()` when no records match — avoids null returns.
+
+---
+
+## 14. GenericRepository — Full API Surface
+
+### Read (untracked — use for queries)
+- `GetAllAsync`, `FindAsync`, `FindAllAsync` — with optional `includes[]`.
+- `GetAllProjectionAsync<T>`, `FindAllProjectionAsync<T>` — Mapster `.ProjectToType<T>()`.
+
+### Read (tracked — use before calling entity behavior methods)
+- `GetAsync([id])` — PK lookup.
+- `TrackedFindAsync`, `TrackedFindAllAsync`.
+
+### Write
+- `AddAsync`, `AddRangeAsync`, `Update`, `UpdateRange`, `Delete`, `DeleteRange`.
+
+### Bulk (no tracking)
+- `ExecuteDeleteAsync`, `ExecuteUpdateAsync` (1–3 property overloads).
+
+### Helpers
+- `AnyAsync`, `AnyWithWhereAsync`, `CountAsync`, `Attach`, `AttachRange`, `MarkPropertyAsModified`.
+
+---
+
+## 15. UnitOfWork — Transactions
+
+```csharp
+await unitOfWork.BeginTransactionAsync(cancellationToken);
+try
+{
+    // multi-step writes
+    await unitOfWork.CommitTransactionAsync(cancellationToken);
+}
+catch
+{
+    await unitOfWork.RollbackTransactionAsync();
+    throw;
+}
+```
+
+Use only when multiple writes must be atomic.
+
+---
+
+## 16. Authorization
+
+### `[HasPermission(Permissions.X)]`
+- Extends `AuthorizeAttribute`. Custom `PermissionAuthorizationHandler` checks a `"permissions"` claim.
+- Permissions are `RoleClaims` with `ClaimType = "permissions"`.
+- Constants in `Domain/Constants/Permissions.cs`. Format: `"domain:action"` (e.g. `"product:read"`).
+
+### `[SystemOwner]`
+- Implements `IAuthorizationFilter` directly — NOT `AuthorizeAttribute`.
+- Reads `configuration["SystemOwnerApiKey"]`, compares with `CryptographicOperations.FixedTimeEquals`.
+- Returns `401` if wrong, `500` if key not configured.
+
+---
+
+## 17. Identity — Dual Layer
+
+- Domain `User` / `Role` are thin wrappers around `ApplicationUser` / `ApplicationRole`.
+- **Never access `ApplicationUser` directly from handlers.** Use `IUserRepository` / `IRoleRepository`.
+- `user.CreateIdentity()` → creates `ApplicationUser`.
+- `IdentityResult.ToDomain()` → converts to domain `Result`.
+
+---
+
+## 18. Middleware & Request Pipeline Order
+
+```
+UseExceptionHandler
+→ UseOpenApi (dev only)
+→ UseSerilogRequestLogging
+→ UseHttpsRedirection
+→ MapHangfireDashboard
+→ UseCors
+→ UseAuthentication
+→ UseAuthorization
+→ TenantSubscriptionMiddleware
+→ UseRateLimiter
+→ MapControllers
+→ MapHealthChecks
+```
+
+`TenantSubscriptionMiddleware` skips `/swagger`, `/redoc`, `/health`, `/jobs`. All other requests require `X-Tenant-Id` header and a non-expired tenant subscription.
+
+---
+
+## 19. Rate Limiting
+
+| Policy | Type | Where |
+|---|---|---|
+| `IpLimit` | Fixed window (20 req/60s per IP) | `AuthController` |
+| `UserLimit` | Fixed window (60 req/60s per user) | Available |
+| `Concurrency` | Concurrency (80 concurrent) | Most API controllers |
+| `Sliding` | Sliding window | Available |
+
+Apply via `[EnableRateLimiting(RateLimitingOptions.PolicyNames.X)]`.
+
+---
+
+## 20. XML Doc Comments
+
+- **Controllers:** Every action → `<summary>`, `<remarks>` (sample request), `<param>` (each), `<returns>`, `<response code="">`. Class → `<summary>Manage {domain area}.</summary>`.
+- **Repository interfaces:** `<summary>` on every method.
+- **Handlers, commands, queries, DTOs, entities:** no XML docs.
+- All English, multi-line `///`, period at end.
+
+---
+
+## 21. Idempotency
+
+Add `[Idempotent]` to any write action that must be idempotent. Requires `X-Idempotency-Key` header.
+
+- Sets `"in-progress"` for 30 s → returns `409` on duplicate concurrent request.
+- Caches successful (2xx) `ObjectResult` for 5 min → replays on repeat.
+- Non-2xx responses are not cached.
+
+---
+
+## 22. Testing Pattern
+
+```csharp
+// Naming: Handle_WhenCondition_ReturnsResult
+public class AddProductCommandHandlerTests : IClassFixture<MapsterTestFixture>
+{
+    private readonly IUnitOfWork _unitOfWork = A.Fake<IUnitOfWork>();
+
+    [Fact]
+    public async Task Handle_WhenBarcodeIsDuplicated_ReturnsFailure()
+    {
+        // Arrange
+        var command = new AddProductCommand(new ProductRequest("Test", "BARCODE", 1, 1));
+        A.CallTo(() => _unitOfWork.Products.AnyAsync(A<Expression<Func<Product, bool>>>._, A<CancellationToken>._))
+            .Returns(true);
+
+        var handler = new AddProductCommandHandler(_unitOfWork);
+
+        // Act
+        var result = await handler.Handle(command);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        A.CallTo(() => _unitOfWork.Products.AnyAsync(A<Expression<Func<Product, bool>>>._, A<CancellationToken>._))
+            .MustHaveHappenedOnceExactly();
+    }
+}
+```
+
+---
+
+## 23. Commands
 
 ```powershell
 dotnet build PharmaSaaS.slnx
@@ -41,307 +608,41 @@ dotnet test .\PharmaSaaS.Application.Test\PharmaSaaS.Application.Test.csproj --v
 dotnet run --project .\PharmaSaaS.Presentation\PharmaSaaS.Presentation.csproj
 ```
 
-Dev URLs: `http://localhost:5290`, Swagger at `/swagger`, ReDoc at `/redoc`, Hangfire at `/jobs`.
+Dev URLs: `http://localhost:5290` · Swagger: `/swagger` · ReDoc: `/redoc` · Hangfire: `/jobs`
 
-## Migrations
+### Migrations
 
 ```powershell
 dotnet ef migrations add Name --context SharedDbContext --project .\PharmaSaaS.Infrastructure\
 dotnet ef migrations add Name --context ApplicationDbContext --project .\PharmaSaaS.Infrastructure\
 ```
 
-Provisioning auto-applies on startup via `TenantProvisioningService.ProvisionAllTenantsAsync()`.
+---
 
-## Testing
+## 24. Spec Sync Protocol (MUST follow)
 
-- xUnit + FakeItEasy + coverlet.
-- Handlers instantiated with `A.Fake<T>()` deps. Tests verify call counts via `MustHaveHappenedOnceExactly()`.
-- No integration or E2E tests yet. No CI/CD. No Docker.
+[`PharmaSaaS_SystemAnalysis.md`](PharmaSaaS_SystemAnalysis.md) is the living source of truth.
 
-## SOLID Principles & Architecture (CRITICAL)
+### When implementing a feature that exists in the spec
+1. Implement it exactly as specified.
+2. After completing, mark `✅ Implemented` in the **Implementation Status** table in `PharmaSaaS_SystemAnalysis.md`.
+3. Mark done in `tasks/tasks.md`.
 
-The agent **MUST** strictly adhere to SOLID principles at all times:
-- **SRP (Single Responsibility Principle)**: Handlers must be thin orchestrators. Do NOT write complex business logic, math calculations, or validation loops inside CQRS handlers. Extract these into dedicated services (e.g., `IReturnRefundCalculatorService`, `IReturnItemValidatorService`) and inject them.
-- **DRY (Don't Repeat Yourself)**: Never duplicate logic between commands and queries (like validation rules or pricing math). If two handlers need the same logic, it must be extracted into a shared service.
-- **DIP (Dependency Inversion)**: Always depend on abstractions (interfaces) for services, not concrete implementations.
+### When implementation differs from the spec
+1. **Immediately notify the user:**
+   > ⚠️ **Deviation from spec**: `POST /api/products/import` is not in the spec. Confirm to update `PharmaSaaS_SystemAnalysis.md`?
+2. If confirmed — update the spec.
+3. If not confirmed — document the deviation in `tasks/tasks.md` under `## Deviations`.
 
-If the user asks for a feature that would make a handler complex, **proactively create a new service** instead of cramming the logic into the handler.
+---
 
-## Coding style (agent MUST match this)
+## 25. Implementation Status
 
-- **4-space indentation** (no tabs). File-scoped namespaces. Global usings per project in `GlobalUsings.cs`.
-- **Private fields:** `_camelCase`. Primary constructors preferred for simple DI; regular ctors only for init logic.
-- **Expression-bodied members** for simple methods/properties (`void Update(string n) => Name = n;`).
-- **Records** for commands, queries, DTOs, errors. **`sealed class`** for entities, services, handlers.
-- **Entities:** public auto-props + static `Create(...)` factory + behavior methods (no constructors).
-- **Handlers:** single `Handle` method, `public sealed class`, primary ctor for DI.
-- **Null checks:** `is not { }` / `is null` pattern matching. `default!` for required nav props.
-- **No local variables for requests:** Never assign `var request = command.Request;`. Access properties directly via `command.Request.X`.
-- **Pattern matching for repository checks:** Combine null checks with the repository call using `is not { }` or `is { }` directly in the `if` statement instead of assigning to a variable first. Example: `if (await repo.GetAsync([id]) is not { } entity) return ...;`.
-- **Primary key lookup:** Always use `GetAsync([id])` instead of `FindAsync(x => x.Id == id)` when searching strictly by primary key.
-- **Folder names:** Never name a folder `Log` (e.g. `LogExpiryReport`), as it conflicts with `.gitignore` rules. Use alternatives like `Create` instead.
-- **No magic strings — ever.** `nameof()` is mandatory for every string that references an entity property: includes, `ExecuteUpdateAsync` property names, sort/search columns, and any other place a property name is written as a string. Hardcoded strings are a bug waiting to happen on rename.
-- **Controller actions:** `result.IsSuccess ? Ok(result.Value) : result.ToProblem()` ternary.
-- **Test naming:** `Handle_WhenCondition_ReturnsResult`. Three-part: `// Arrange` / `// Act` / `// Assert`.
-- **Test mocking:** `A.Fake<T>()` + `A.CallTo(...).Returns(...)` + `.MustHaveHappenedOnceExactly()`.
+See the **Implementation Status** table in [`PharmaSaaS_SystemAnalysis.md`](PharmaSaaS_SystemAnalysis.md) for the authoritative list.
 
-## No magic strings — full rules
-
-This project forbids hardcoded property/navigation names as strings. **Always use `nameof()`.**
-
-### Includes
-
-```csharp
-// ✅ Correct
-var product = await _unitOfWork.Products.FindAsync(
-    p => p.Id == id,
-    [nameof(Product.Category), nameof(Product.DosageForm)]);
-
-// ❌ Wrong
-var product = await _unitOfWork.Products.FindAsync(
-    p => p.Id == id,
-    ["Category", "DosageForm"]);
-```
-
-### Nested includes (dot-notation)
-
-```csharp
-// ✅ Correct
-string[] includes = [
-    nameof(Order.Customer),
-    $"{nameof(Order.Items)}.{nameof(OrderItem.Product)}"
-];
-
-// ❌ Wrong
-string[] includes = ["Customer", "Items.Product"];
-```
-
-### ExecuteUpdateAsync property names
-
-```csharp
-// ✅ Correct
-await _unitOfWork.Inventory.ExecuteUpdateAsync(
-    i => i.ProductId == productId,
-    nameof(Inventory.Quantity), newQty,
-    nameof(Inventory.IsManualShortage), false);
-
-// ❌ Wrong
-await _unitOfWork.Inventory.ExecuteUpdateAsync(
-    i => i.ProductId == productId,
-    "Quantity", newQty,
-    "IsManualShortage", false);
-```
-
-### Sort / search columns in `RequestFilters.Check()`
-
-```csharp
-// ✅ Correct
-filters.Check([
-    nameof(Product.Name),
-    nameof(Product.Barcode),
-    nameof(Product.CreatedAt)
-]);
-
-// ❌ Wrong
-filters.Check(["Name", "Barcode", "CreatedAt"]);
-```
-
-> **Rule:** If you are writing a property name as a raw string literal anywhere in handler or repository code, stop and use `nameof()` instead.
-
-## Result & Error pattern
-
-`Result` / `Result<TValue>` live in `Domain/Abstraction/`. Errors are static `readonly` fields on `record` classes in `Domain/Errors/`.
-
-```csharp
-// Error definition (Domain/Errors/XErrors.cs)
-public record ProductErrors
-{
-    public static readonly Error NotFound =
-        new("Product.NotFound", "No product found", StatusCodes.NotFound);
-    public static readonly Error DuplicatedBarcode =
-        new("Product.DuplicatedBarcode", "...", StatusCodes.Conflict);
-}
-
-// Handler usage
-if (entity is null)
-    return Result.Failure<ProductResponse>(ProductErrors.NotFound);
-
-return Result.Success(entity.Adapt<ProductResponse>());
-
-// Controller usage
-return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
-```
-
-`StatusCodes` used in errors is the **domain** `PharmaSaaS.Domain.Constants.StatusCodes` (int constants), NOT `Microsoft.AspNetCore.Http.StatusCodes`.
-
-`result.ToProblem()` (in `Presentation/GlobalExtensions.cs`) builds a `ProblemDetails` with an `error` extension containing `{ code, description }`.
-
-## FluentValidation
-
-`SharpGrip.FluentValidation.AutoValidation.Mvc` is registered — validation runs **automatically** before the action executes. Controllers do **not** manually call validators for request body/query models. However, `RequestFilters.Check()` must still be called manually inside the handler to sanitize sort/search columns.
-
-Validators are discovered from both `Presentation` and `Application` assemblies via `AddValidatorsFromAssembly()`.
-
-## Authorization
-
-### `[HasPermission(Permissions.X)]`
-- `HasPermissionAttribute` extends `AuthorizeAttribute(permission)`.
-- `PermissionAuthorizationPolicyProvider` creates a policy on demand wrapping a `PermissionRequirement`.
-- `PermissionAuthorizationHandler` checks that `context.User.Claims` contains a claim with `Type == "permissions"` and `Value == requirement.Permission`.
-- Permissions are stored as `RoleClaims` with `ClaimType = Permissions.Type` (`"permissions"`).
-
-### `[SystemOwner]`
-- `SystemOwnerAttribute` implements `IAuthorizationFilter` directly (NOT `AuthorizeAttribute`).
-- Reads `configuration["SystemOwnerApiKey"]` and compares using `CryptographicOperations.FixedTimeEquals` (timing-safe).
-- Returns `401` if key missing or wrong, `500` if `SystemOwnerApiKey` not configured.
-- `TenantSubscriptionMiddleware` skips tenant resolution for endpoints decorated with `[SystemOwner]`.
-
-### `Permissions` constants (`Domain/Constants/Permissions.cs`)
-Groups: `Role`, `User`, `Category`, `DosageForm`, `Product`, `Inventory`. Format: `"domain:action"`, e.g. `"product:read"`, `"inventory:toggle-shortage"`. `Permissions.GetAll()` returns all via reflection.
-
-### Default Roles (`Domain/Constants/DefaultRoles.cs`)
-`DefaultRoles.Admin` and `DefaultRoles.User` — have fixed `Id` and `ConcurrencyStamp` constants for seeding. `Role.IsDefault = true` marks the seeded default role.
-
-## Identity — dual layer
-
-Domain `User` / `Role` entities are **thin wrappers** around ASP.NET `ApplicationUser` / `ApplicationRole`. Never interact with `ApplicationUser` directly from handlers — always go through `IUserRepository` / `IRoleRepository`.
-
-- `user.CreateIdentity()` → creates `ApplicationUser` (Infrastructure extension).
-- `role.CreateIdentity()` → creates `ApplicationRole`.
-- `IdentityResult.ToDomain()` → converts to domain `Result`.
-- `UserRepository` / `RoleRepository` use `UserManager<ApplicationUser>` / `RoleManager<ApplicationRole>` internally.
-
-## Cache pattern
-
-All cache keys and tags are **tenant-scoped** using `tenantId` as prefix.
-
-```csharp
-// Keys (Domain/Constants/Cache.cs)
-Cache.Keys.AllCategories(tenantId)      // "{tenantId}:categories:all"
-Cache.Keys.RolesWithoutDefault(tenantId)
-Cache.Keys.AllInventory(tenantId)
-Cache.Keys.AllShortages(tenantId)
-
-// Tags (invalidate a group)
-Cache.Tags.Categories(tenantId)         // "{tenantId}:categories"
-Cache.Tags.Roles(tenantId)
-Cache.Tags.Inventory(tenantId)
-Cache.Tags.Shortages(tenantId)
-
-// Expirations
-Cache.Expirations.Short   // 5 min
-Cache.Expirations.Medium  // 30 min
-Cache.Expirations.Long    // 1 hour
-Cache.Expirations.VeryLong // 24 hours
-```
-
-**Read handler** — wrap with `GetOrCreateAsync(key, factory, expiration, tags: [tag])`.  
-**Write handler** — after `CompleteAsync()`, call `cacheService.RemoveByTagAsync(Cache.Tags.X(tenantId))`. The `tenantId` comes from `ICurrentTenantGetter.GetTenantId()`.
-
-`CacheService` wraps `HybridCache`. Local cache expiration is automatically set to `expiration * 0.2`.
-
-## Rate limiting
-
-Four policies registered in `DependencyInjection.cs`:
-
-| Policy | Type | Usage |
-|---|---|---|
-| `IpLimit` | Fixed window | `AuthController` (20 req/60s per IP) |
-| `UserLimit` | Fixed window | Available (60 req/60s per user) |
-| `Concurrency` | Concurrency | Most API controllers (80 concurrent) |
-| `Sliding` | Sliding window | Available |
-
-Apply via `[EnableRateLimiting(RateLimitingOptions.PolicyNames.X)]` on the controller class.
-
-## Pagination pattern
-
-End-to-end flow for paginated, searchable, sortable lists:
-
-```
-RequestFilters (from controller)
-  → Handler receives RequestFilters, calls repo method
-  → GenericRepositoryWithPagination.ApplySearchFilter() / .OrderBy() via System.Linq.Dynamic.Core
-  → PaginatedList<T>.CreateAsync() builds the result
-  → Returns IPaginatedList<T> to controller
-```
-
-**`RequestFilters`** (`Application/Contracts/Common/RequestFilters.cs`) — input record with `PageNumber` (default 1), `PageSize` (default 10, max 250), `SearchValue`, `SearchColumn`, `SortColumn`, `SortDirection` (default `"ASC"`). Validated by `RequestFiltersValidator` (alphanumeric_underscore for column names, ASC/DESC only).
-
-**`RequestFilters.Check()`** (`Application/GlobalExtensions.cs`) — extension on `RequestFilters`. Call in the handler **after** FluentValidation. Pass `HashSet<string>` of allowed sort/search column names; it sanitizes against them (case-insensitive) and falls back to the first allowed column if invalid. Also validates `SortDirection` via `OrderBy.IsValid()`.
-
-**`IPaginatedRepository<TEntity>`** (`Domain/Repositories/IPaginatedRepository.cs`) — 8 overloads split into `GetPaginatedListAsync` (no predicate) and `FindPaginatedListAsync` (with `Expression<Func<TEntity, bool>>`). Each comes with combinations of: search, includes, or basic (page+primaryKey only).
-
-**`GenericRepositoryWithPagination<TEntity>`** (`Infrastructure/Persistence/Repositories/`) — the implementation. Uses `QueryableExtensions`:
-- `.ApplySearchFilter(searchValue, searchColumn, ColumnType)` — dynamic filter via `System.Linq.Dynamic.Core` (supports `String`, `Int`, `Bool`).
-- `.OrderBy(sortColumn, sortDirection)` — dynamic sorting via `string OrderBy`.
-- `.ApplyIncludesSafely(includes)` — applies `.Include()` with auto `AsSplitQuery()` when include depth ≥ 2 or count ≥ 3. Pass `QueryHint.SplitQuery` anywhere in the includes array to force split query regardless.
-
-**`PaginatedList<T>`** (`Infrastructure/Persistence/Common/PaginatedList.cs`) — static `CreateAsync(IQueryable, pageNumber, pageSize)` builds `IPaginatedList<T>` with `Items`, `TotalPages`, `HasPreviousPage`, `HasNextPage`.
-
-**`EmptyPaginatedList.Create<T>()`** (`Domain/Abstraction/IPaginatedList.cs`) — returns a zero-page `IPaginatedList<T>` with empty `Items` list. Use when no records match, avoids null checks.
-
-Repository `IGenericRepositoryWithPagination<TEntity>` combines `IGenericRepository<TEntity> + IPaginatedRepository<TEntity>`.
-
-## GenericRepository — full API surface
-
-Beyond pagination, `IGenericRepository<TEntity>` provides:
-
-**Read (AsNoTracking):** `GetAllAsync`, `FindAsync`, `FindAllAsync` — all with optional `includes[]` overloads.  
-**Read (Tracked):** `GetAsync` (PK lookup), `TrackedFindAsync`, `TrackedFindAllAsync` — use these before calling entity behavior methods that EF must track.  
-**Projection:** `GetAllProjectionAsync<TProjection>`, `FindAllProjectionAsync<TProjection>` — with optional includes and `selector`/`distinct` overloads. Projection uses Mapster's `.ProjectToType<T>()`.  
-**Write:** `AddAsync`, `AddRangeAsync`, `Update`, `UpdateRange`, `Delete`, `DeleteRange`.  
-**Bulk (no tracking):** `ExecuteDeleteAsync`, `ExecuteUpdateAsync` (1–3 property overloads via `EF.Property<T>`).  
-**Helpers:** `AnyAsync`, `AnyWithWhereAsync`, `CountAsync`, `Attach`, `AttachRange`, `MarkPropertyAsModified`.
-
-## UnitOfWork — transaction support
-
-`IUnitOfWork` also exposes:
-```csharp
-Task BeginTransactionAsync(CancellationToken cancellationToken = default);
-Task CommitTransactionAsync(CancellationToken cancellationToken = default);
-Task RollbackTransactionAsync();
-```
-Use for multi-step operations that must be atomic. Begin → do work → Commit (or Rollback on failure).
-
-## Middleware & request pipeline order
-
-```
-UseExceptionHandler → UseOpenApi (dev) → UseSerilogRequestLogging
-→ UseHttpsRedirection → MapHangfireDashboard → UseCors
-→ UseAuthentication → UseAuthorization → TenantSubscriptionMiddleware
-→ UseRateLimiter → MapControllers → MapHealthChecks
-```
-
-**`TenantSubscriptionMiddleware`** — after auth. Skips `/swagger`, `/redoc`, `/health`, `/jobs`. For all other requests: requires `X-Tenant-Id` header → looks up tenant in `TenantSettings` → rejects with `403` if `tenant.EndDate < today`.
-
-## Idempotency
-
-`[Idempotent]` action filter (`Presentation/Attributes/IdempotentAttribute.cs`) — add to any write action that must be idempotent. Requires `X-Idempotency-Key` header. Uses `HybridCache` directly (not `ICacheService`):
-- Sets `"in-progress"` for 30s while processing → returns `409` on duplicate concurrent request.
-- Caches successful (2xx) `ObjectResult` for 5 min (local 1 min) → replays on repeat.
-- Non-2xx responses are not cached (key removed).
-
-## Logging
-
-Serilog configured via `appsettings.json`. Logs written to:
-- Console (human-readable template)
-- `logs/log-{date}.txt` (JSON format, daily rolling)
-
-Minimum level: `Warning` for most sources. `UseSerilogRequestLogging()` logs HTTP requests.
-
-## XML doc comments
-
-- **Controllers:** Every action method gets full XML: `<summary>`, `<remarks>` (with sample request), `<param>` (each), `<returns>`, `<response code="">`. Class-level `<summary>` matching the pattern `Manage {domain area}.`.
-- **Repository interfaces:** `<summary>` on every method. Application handlers, commands, queries, DTOs, entities: **no XML docs**.
-- All English, multi-line `///` format, period at end.
-
-## Implemented features (only these exist)
-
-See the **Implementation Status** table at the bottom of [`PharmaSaaS_SystemAnalysis.md`](PharmaSaaS_SystemAnalysis.md) for the authoritative, up-to-date list.
-
-Summary as of last update:
+Current summary:
 - ✅ Auth (register, login, confirm email, reset password, refresh tokens)
-- ✅ Categories, DosageForms (Lookups)
+- ✅ Categories, DosageForms
 - ✅ Pharmacies, Subscription Requests
 - ✅ Roles, Users (Employees), Profile
 - ✅ Products
@@ -351,31 +652,3 @@ Summary as of last update:
 - ❌ Suppliers, Purchase Orders, Supplier Payments
 - ❌ Reports
 - ❌ AI Prescription Parser
-
----
-
-## Spec Sync Protocol (agent MUST follow this)
-
-[`PharmaSaaS_SystemAnalysis.md`](PharmaSaaS_SystemAnalysis.md) is the **source of truth** for all planned features. The agent must treat it as a living document.
-
-### When implementing a task
-
-If the user asks to implement something **that already exists in the MD spec**:
-- After completing the implementation, update the **Implementation Status** table at the bottom of `PharmaSaaS_SystemAnalysis.md` to mark the module as `✅ Implemented`.
-- Also mark it as done in `tasks/tasks.md` under the `[x]` completed section.
-- Do NOT modify the spec details (endpoints, inputs, outputs) unless the implementation genuinely differs.
-
-### When the user adds extra endpoints or modifies behavior
-
-If the implementation **differs from the MD spec** (different route, extra endpoints, different input/output, different behavior):
-
-1. **Immediately inform the user** with a clear note, e.g.:
-   > ⚠️ **Deviation from spec**: This endpoint (`POST /api/auth/register`) is not in the spec (which only defines `POST /api/auth/login`). Confirm to update `PharmaSaaS_SystemAnalysis.md`?
-
-2. If the user **confirms**, update `PharmaSaaS_SystemAnalysis.md` directly — add the new endpoint row to the relevant module table and update the Implementation Status table.
-
-3. If the user **does not confirm**, leave the MD as-is and document the deviation in `tasks/tasks.md` under a `## Deviations` section.
-
-### tasks/tasks.md
-
-Always keep `tasks/tasks.md` up to date. The file lives at `g:/ASP.NET/PharmaSaaS/tasks/tasks.md` and is the single source of progress tracking. See the file itself for the current state.

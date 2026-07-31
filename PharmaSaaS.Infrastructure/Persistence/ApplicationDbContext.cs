@@ -13,9 +13,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Customer> Customers { get; set; }
     public DbSet<LoyaltyTier> LoyaltyTiers { get; set; }
     public DbSet<DiscountRule> DiscountRules { get; set; }
-
     public DbSet<Shift> Shifts { get; set; }
-
     public DbSet<Invoice> Invoices { get; set; }
     public DbSet<InvoiceItem> InvoiceItems { get; set; }
     public DbSet<Return> Returns { get; set; }
