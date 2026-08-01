@@ -503,7 +503,7 @@
 | Loyalty | ✅ Implemented |
 | Shifts | ✅ Implemented |
 | Invoices | ❌ Not yet implemented |
-| Expenses | ❌ Not yet implemented |
+| Expenses | ✅ Implemented |
 | Suppliers | ❌ Not yet implemented |
 | Purchase Orders | ❌ Not yet implemented |
 | Supplier Payments | ❌ Not yet implemented |

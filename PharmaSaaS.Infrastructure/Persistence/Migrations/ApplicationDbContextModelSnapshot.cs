@@ -228,6 +228,36 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.ToTable("DosageForms");
                 });
 
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.Expense", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTimeOffset>("Date")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("ShiftId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShiftId");
+
+                    b.ToTable("Expenses");
+                });
+
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.ExpiryReport", b =>
                 {
                     b.Property<int>("Id")
@@ -776,6 +806,17 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("LoyaltyTier");
+                });
+
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.Expense", b =>
+                {
+                    b.HasOne("PharmaSaaS.Domain.Entities.Shift", "Shift")
+                        .WithMany()
+                        .HasForeignKey("ShiftId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Shift");
                 });
 
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.ExpiryReport", b =>

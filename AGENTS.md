@@ -551,7 +551,15 @@ Apply via `[EnableRateLimiting(RateLimitingOptions.PolicyNames.X)]`.
 
 ## 20. XML Doc Comments
 
-- **Controllers:** Every action → `<summary>`, `<remarks>` (sample request), `<param>` (each), `<returns>`, `<response code="">`. Class → `<summary>Manage {domain area}.</summary>`.
+- **Controllers:** Every action MUST strictly include:
+  - `<summary>`
+  - `<remarks>` (with a sample request block)
+  - `<param>` for every method parameter (including `cancellationToken`)
+  - `<returns>`
+  - `<response code="X">` for all possible status codes
+  - `[ProducesResponseType(...)]` attributes matching every `<response code>`
+  - `CancellationToken cancellationToken` as a parameter in the method signature, passed down to `sender.Send()`
+  - Class MUST include `<summary>Manage {domain area}.</summary>`.
 - **Repository interfaces:** `<summary>` on every method.
 - **Handlers, commands, queries, DTOs, entities:** no XML docs.
 - All English, multi-line `///`, period at end.

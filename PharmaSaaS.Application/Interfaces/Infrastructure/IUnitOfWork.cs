@@ -24,6 +24,7 @@ public interface IUnitOfWork : IDisposable
     IGenericRepositoryWithPagination<Invoice> Invoices { get; }
     IGenericRepository<InvoiceItem> InvoiceItems { get; }
     IGenericRepositoryWithPagination<Return> Returns { get; }
+    IGenericRepositoryWithPagination<Expense> Expenses { get; }
 
     /// <summary>Save changes to the database</summary>
     /// <returns>The number of state entries written to the database</returns>

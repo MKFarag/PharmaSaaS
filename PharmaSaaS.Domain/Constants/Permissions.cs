@@ -98,6 +98,14 @@ public static class Permissions
 
     #endregion
 
+    #region Expense
+
+    public const string ReadExpense = "expense:read";
+    public const string LogExpense = "expense:log";
+    public const string DeleteExpense = "expense:delete";
+
+    #endregion
+
     public static IList<string?> GetAll()
         => [.. typeof(Permissions).GetFields().Select(x => x.GetValue(x) as string)];
 }
