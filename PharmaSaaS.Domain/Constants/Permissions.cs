@@ -106,6 +106,16 @@ public static class Permissions
 
     #endregion
 
+    #region Supplier
+
+    public const string ReadSupplier = "supplier:read";
+    public const string AddSupplier = "supplier:add";
+    public const string UpdateSupplier = "supplier:modify";
+    public const string DeleteSupplier = "supplier:delete";
+    public const string ResetSupplierBalance = "supplier:reset-balance";
+
+    #endregion
+
     public static IList<string?> GetAll()
         => [.. typeof(Permissions).GetFields().Select(x => x.GetValue(x) as string)];
 }

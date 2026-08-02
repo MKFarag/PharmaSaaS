@@ -10,6 +10,7 @@ public static class Cache
         public static string DosageForms(string tenantId) => $"{tenantId}:dosage-forms";
         public static string Customers(string tenantId) => $"{tenantId}:customers";
         public static string LoyaltyTiers(string tenantId) => $"{tenantId}:loyalty-tiers";
+        public static string Suppliers(string tenantId) => $"{tenantId}:suppliers";
     }
 
     public partial class Keys
@@ -20,6 +21,7 @@ public static class Cache
         public static string AllDosageForms(string tenantId) => $"{tenantId}:dosage-forms:all";
         public static string AllCustomers(string tenantId) => $"{tenantId}:customers:all";
         public static string AllLoyaltyTiers(string tenantId) => $"{tenantId}:loyalty-tiers:all";
+        public static string AllSuppliers(string tenantId) => $"{tenantId}:suppliers:all";
     }
 
     public static class Expirations

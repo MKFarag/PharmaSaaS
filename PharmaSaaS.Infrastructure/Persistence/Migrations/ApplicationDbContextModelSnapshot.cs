@@ -468,6 +468,36 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.PurchaseOrder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("OrderDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("SupplierId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SupplierId");
+
+                    b.ToTable("PurchaseOrders", (string)null);
+                });
+
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.Return", b =>
                 {
                     b.Property<int>("Id")
@@ -623,6 +653,40 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.HasIndex("OpenedById");
 
                     b.ToTable("Shifts", (string)null);
+                });
+
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.Supplier", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Balance")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasDefaultValue(0m);
+
+                    b.Property<string>("ContactInfo")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateOnly?>("LastOrderDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Suppliers", (string)null);
                 });
 
             modelBuilder.Entity("PharmaSaaS.Infrastructure.Persistence.Identities.ApplicationRole", b =>
@@ -907,6 +971,17 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.Navigation("DosageForm");
                 });
 
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.PurchaseOrder", b =>
+                {
+                    b.HasOne("PharmaSaaS.Domain.Entities.Supplier", "Supplier")
+                        .WithMany("PurchaseOrders")
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Supplier");
+                });
+
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.Return", b =>
                 {
                     b.HasOne("PharmaSaaS.Domain.Entities.Invoice", "Invoice")
@@ -982,6 +1057,11 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.LoyaltyTier", b =>
                 {
                     b.Navigation("DiscountRules");
+                });
+
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.Supplier", b =>
+                {
+                    b.Navigation("PurchaseOrders");
                 });
 #pragma warning restore 612, 618
         }

@@ -358,15 +358,24 @@
 
 | Name | Actor | Path | Input | Output | Description |
 |---|---|---|---|---|---|
-| List Suppliers | Manager / Owner | `GET /api/suppliers` | — | `[{ id, name, contactInfo }]` | Returns all suppliers registered under the pharmacy. |
-| Add Supplier | Manager | `POST /api/suppliers` | `{ name, contactInfo }` | `{ id }` | Registers a new supplier. Checks for name duplicates. |
-| Update Supplier | Manager | `PUT /api/suppliers/{id}` | `{ name, contactInfo }` | `204 No Content` | Updates supplier info. |
+| List Suppliers | Manager / Owner | `GET /api/suppliers` | — | `[{ id, name, contactInfo, balance, lastOrderDate }]` | Returns a cached list of all suppliers registered under the pharmacy. Includes the outstanding balance and date of the last order. |
+| Get Supplier | Manager / Owner | `GET /api/suppliers/{id}` | — | `{ id, name, contactInfo, balance, lastOrderDate }` | Returns full supplier details. Returns 404 if not found. |
+| Add Supplier | Manager | `POST /api/suppliers` | `{ name, contactInfo? }` | `{ id, name, contactInfo, balance, lastOrderDate }` | Registers a new supplier. Checks for duplicate name. |
+| Update Supplier | Manager | `PUT /api/suppliers/{id}` | `{ name, contactInfo? }` | `204 No Content` | Updates supplier info. Checks for duplicate name excluding self. |
 | Delete Supplier | Manager | `DELETE /api/suppliers/{id}` | — | `204 No Content` | Deletes a supplier. Only if no purchase orders are linked. |
+| Reset Balance | Manager | `PATCH /api/suppliers/{id}/reset-balance` | — | `204 No Content` | Resets the supplier's outstanding balance to zero, indicating all debts have been settled. |
+
+**Balance semantics:** A negative balance indicates the pharmacy owes the supplier money. The balance automatically decrements by the total amount each time a purchase order is created for that supplier. Reset Balance sets it back to 0.
 
 **Use Cases — Delete Supplier:**
 1. Validate supplier belongs to pharmacy
 2. Check no purchase orders linked
 3. Delete
+
+**Use Cases — Reset Balance:**
+1. Validate supplier belongs to pharmacy
+2. Set Balance = 0
+3. Return 204
 
 **Roles:** Owner, Manager | **Receiver:** Management / Procurement
 
@@ -504,7 +513,7 @@
 | Shifts | ✅ Implemented |
 | Invoices | ❌ Not yet implemented |
 | Expenses | ✅ Implemented |
-| Suppliers | ❌ Not yet implemented |
+| Suppliers | ✅ Implemented |
 | Purchase Orders | ❌ Not yet implemented |
 | Supplier Payments | ❌ Not yet implemented |
 | Reports | ❌ Not yet implemented |

@@ -35,5 +35,7 @@ public class MappingConfiguration : IRegister
             .Map(dest => dest.ProductName, src => src.Product != null ? src.Product.Name : null);
 
         #endregion
+
+
     }
 }

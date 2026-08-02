@@ -26,6 +26,9 @@ public interface IUnitOfWork : IDisposable
     IGenericRepositoryWithPagination<Return> Returns { get; }
     IGenericRepositoryWithPagination<Expense> Expenses { get; }
 
+    IGenericRepositoryWithPagination<Supplier> Suppliers { get; }
+    IGenericRepository<PurchaseOrder> PurchaseOrders { get; }
+
     /// <summary>Save changes to the database</summary>
     /// <returns>The number of state entries written to the database</returns>
     Task<int> CompleteAsync(CancellationToken cancellationToken = default);

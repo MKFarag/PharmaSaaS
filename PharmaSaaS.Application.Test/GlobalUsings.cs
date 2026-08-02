@@ -3,6 +3,7 @@ global using Mapster;
 global using PharmaSaaS.Application.Contracts.Categories;
 global using PharmaSaaS.Application.Contracts.Common;
 global using PharmaSaaS.Application.Contracts.DosageForms;
+global using PharmaSaaS.Application.Contracts.Suppliers;
 global using PharmaSaaS.Application.Contracts.ExpiryReports;
 global using PharmaSaaS.Application.Contracts.Inventories;
 global using PharmaSaaS.Application.Contracts.Products;
