@@ -31,5 +31,10 @@ public sealed class Supplier
         LastOrderDate = DateOnly.FromDateTime(DateTime.UtcNow);
     }
 
+    public void RemoveOrder(decimal totalAmount)
+    {
+        Balance += totalAmount;
+    }
+
     public void ResetBalance() => Balance = 0;
 }

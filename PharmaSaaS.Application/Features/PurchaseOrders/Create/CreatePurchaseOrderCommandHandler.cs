@@ -1,0 +1,38 @@
+using Mapster;
+using PharmaSaaS.Application.Contracts.PurchaseOrders;
+using PharmaSaaS.Domain.Errors;
+
+namespace PharmaSaaS.Application.Features.PurchaseOrders.Create;
+
+public sealed class CreatePurchaseOrderCommandHandler(IUnitOfWork unitOfWork)
+    : IRequestHandler<CreatePurchaseOrderCommand, Result<PurchaseOrderResponse>>
+{
+    public async Task<Result<PurchaseOrderResponse>> Handle(CreatePurchaseOrderCommand command, CancellationToken cancellationToken = default)
+    {
+        if (await unitOfWork.Suppliers.GetAsync([command.Request.SupplierId], cancellationToken) is not { } supplier)
+            return Result.Failure<PurchaseOrderResponse>(SupplierErrors.NotFound);
+
+        var productIds = command.Request.Items.Select(x => x.ProductId).Distinct().ToList();
+        var productsCount = await unitOfWork.Products.CountAsync(p => productIds.Contains(p.Id), cancellationToken);
+
+        if (productsCount != productIds.Count)
+            return Result.Failure<PurchaseOrderResponse>(ProductErrors.NotFound);
+
+        decimal totalAmount = command.Request.Items.Sum(x => (decimal)x.Quantity * x.UnitCost);
+
+        var purchaseOrder = PurchaseOrder.Create(command.Request.SupplierId, totalAmount);
+        await unitOfWork.PurchaseOrders.AddAsync(purchaseOrder, cancellationToken);
+        
+        purchaseOrder.Items = [.. command.Request.Items.Select(item => 
+            PurchaseOrderItem.Create(item.ProductId, item.Quantity, item.UnitCost)
+        )];
+
+        supplier.AddOrder(totalAmount);
+        
+        await unitOfWork.CompleteAsync(cancellationToken);
+
+        purchaseOrder.Supplier = supplier;
+
+        return Result.Success(purchaseOrder.Adapt<PurchaseOrderResponse>());
+    }
+}

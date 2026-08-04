@@ -27,7 +27,8 @@ public interface IUnitOfWork : IDisposable
     IGenericRepositoryWithPagination<Expense> Expenses { get; }
 
     IGenericRepositoryWithPagination<Supplier> Suppliers { get; }
-    IGenericRepository<PurchaseOrder> PurchaseOrders { get; }
+    IGenericRepositoryWithPagination<PurchaseOrder> PurchaseOrders { get; }
+    IGenericRepository<PurchaseOrderItem> PurchaseOrderItems { get; }
 
     /// <summary>Save changes to the database</summary>
     /// <returns>The number of state entries written to the database</returns>

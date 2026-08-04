@@ -20,6 +20,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Expense> Expenses { get; set; }
     public DbSet<Supplier> Suppliers { get; set; }
     public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
+    public DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }
 
     #endregion
 
@@ -82,6 +83,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasMany(x => x.PurchaseOrders)
             .WithOne(x => x.Supplier)
             .HasForeignKey(x => x.SupplierId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<PurchaseOrder>()
+            .HasMany(x => x.Items)
+            .WithOne(x => x.PurchaseOrder)
+            .HasForeignKey(x => x.PurchaseOrderId)
             .OnDelete(DeleteBehavior.Cascade);
 
         #endregion

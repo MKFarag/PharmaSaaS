@@ -498,6 +498,35 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.ToTable("PurchaseOrders", (string)null);
                 });
 
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.PurchaseOrderItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PurchaseOrderId")
+                        .HasColumnType("int");
+
+                    b.Property<float>("Quantity")
+                        .HasColumnType("real");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("PurchaseOrderId");
+
+                    b.ToTable("PurchaseOrderItems");
+                });
+
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.Return", b =>
                 {
                     b.Property<int>("Id")
@@ -982,6 +1011,25 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.Navigation("Supplier");
                 });
 
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.PurchaseOrderItem", b =>
+                {
+                    b.HasOne("PharmaSaaS.Domain.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("PharmaSaaS.Domain.Entities.PurchaseOrder", "PurchaseOrder")
+                        .WithMany("Items")
+                        .HasForeignKey("PurchaseOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("PurchaseOrder");
+                });
+
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.Return", b =>
                 {
                     b.HasOne("PharmaSaaS.Domain.Entities.Invoice", "Invoice")
@@ -1057,6 +1105,11 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.LoyaltyTier", b =>
                 {
                     b.Navigation("DiscountRules");
+                });
+
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.PurchaseOrder", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.Supplier", b =>

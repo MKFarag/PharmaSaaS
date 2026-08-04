@@ -116,6 +116,13 @@ public static class Permissions
 
     #endregion
 
+    #region PurchaseOrder
+
+    public const string ReadPurchaseOrder = "purchase-order:read";
+    public const string ManagePurchaseOrder = "purchase-order:manage";
+
+    #endregion
+
     public static IList<string?> GetAll()
         => [.. typeof(Permissions).GetFields().Select(x => x.GetValue(x) as string)];
 }

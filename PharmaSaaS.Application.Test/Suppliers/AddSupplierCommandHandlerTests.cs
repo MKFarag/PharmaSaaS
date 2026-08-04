@@ -8,7 +8,7 @@ public class AddSupplierCommandHandlerTests : IClassFixture<MapsterTestFixture>
 {
     private readonly IUnitOfWork _unitOfWork = A.Fake<IUnitOfWork>();
     private readonly IGenericRepositoryWithPagination<Supplier> _supplierRepo = A.Fake<IGenericRepositoryWithPagination<Supplier>>();
-    private readonly IGenericRepository<PurchaseOrder> _purchaseOrderRepo = A.Fake<IGenericRepository<PurchaseOrder>>();
+    private readonly IGenericRepositoryWithPagination<PurchaseOrder> _purchaseOrderRepo = A.Fake<IGenericRepositoryWithPagination<PurchaseOrder>>();
     private readonly ICacheService _cacheService = A.Fake<ICacheService>();
     private readonly ICurrentTenantGetter _tenantGetter = A.Fake<ICurrentTenantGetter>();
     private readonly AddSupplierCommandHandler _handler;

@@ -10,12 +10,19 @@ public sealed class PurchaseOrder
     public int SupplierId { get; private set; }
     public Supplier Supplier { get; set; } = default!;
 
-    public static PurchaseOrder Create(int supplierId, decimal totalAmount, string status)
+    public ICollection<PurchaseOrderItem> Items { get; set; } = default!;
+
+    public static PurchaseOrder Create(int supplierId, decimal totalAmount)
         => new()
         {
             SupplierId = supplierId,
             TotalAmount = totalAmount,
-            Status = status,
+            Status = Constants.PurchaseOrderStatus.Pending,
             OrderDate = DateOnly.FromDateTime(DateTime.UtcNow)
         };
+
+    public void Receive()
+    {
+        Status = Constants.PurchaseOrderStatus.Received;
+    }
 }
