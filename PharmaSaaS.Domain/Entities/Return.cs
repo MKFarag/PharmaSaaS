@@ -13,8 +13,6 @@ public sealed class Return
     public Invoice Invoice { get; private set; } = default!;
     public Product Product { get; private set; } = default!;
 
-    private Return() { }
-
     public static Return Create(int invoiceId, int productId, int quantity, decimal refundAmount)
         => new()
         {
@@ -25,3 +23,4 @@ public sealed class Return
             ReturnDate = DateTime.UtcNow
         };
 }
+

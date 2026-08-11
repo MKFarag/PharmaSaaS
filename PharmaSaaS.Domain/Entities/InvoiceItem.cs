@@ -11,8 +11,8 @@ public sealed class InvoiceItem
     
     public decimal Subtotal => (decimal)Quantity * UnitPrice;
 
-    public Invoice Invoice { get; set; } = default!;
-    public Product Product { get; set; } = default!;
+    public Invoice Invoice { get; private set; } = default!;
+    public Product Product { get; private set; } = default!;
 
     public static InvoiceItem Create(int invoiceId, int productId, float quantity, decimal unitPrice)
     {
@@ -25,3 +25,4 @@ public sealed class InvoiceItem
         };
     }
 }
+

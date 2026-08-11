@@ -1,5 +1,7 @@
 using PharmaSaaS.Application.Features.SubscriptionRequests.UpdateStatus;
 
+using PharmaSaaS.Domain.Enums;
+
 namespace PharmaSaaS.Application.Test.SubscriptionRequests;
 
 public class UpdateSubscriptionRequestStatusCommandHandlerTest
@@ -43,7 +45,7 @@ public class UpdateSubscriptionRequestStatusCommandHandlerTest
         A.CallTo(() => _subRepo.GetAsync("req-1", A<CancellationToken>.Ignored))
             .Returns(subscriptionRequest);
 
-        var command = new UpdateSubscriptionRequestStatusCommand("req-1", new UpdateSubscriptionRequestStatusRequest(SubscriptionRequestStatus.Approved));
+        var command = new UpdateSubscriptionRequestStatusCommand("req-1", new UpdateSubscriptionRequestStatusRequest(SubscriptionRequestStatus.Approved, 6));
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -51,7 +53,7 @@ public class UpdateSubscriptionRequestStatusCommandHandlerTest
         Assert.Equal(SubscriptionRequestStatus.Approved, subscriptionRequest.Status);
 
         A.CallTo(() => _pharmacyRepo.AddAsync(A<Pharmacy>.That.Matches(
-            p => p.Name == "New Pharmacy"), A<CancellationToken>.Ignored))
+            p => p.Name == "New Pharmacy" && p.SubscriptionEnd == DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(6))), A<CancellationToken>.Ignored))
             .MustHaveHappenedOnceExactly();
 
         A.CallTo(() => _unitOfWork.SharedCompleteAsync(A<CancellationToken>.Ignored))

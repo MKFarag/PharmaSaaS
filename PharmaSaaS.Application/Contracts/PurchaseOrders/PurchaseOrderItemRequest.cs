@@ -3,9 +3,8 @@ using FluentValidation;
 namespace PharmaSaaS.Application.Contracts.PurchaseOrders;
 
 public record PurchaseOrderItemRequest(
-    int ProductId,
-    float Quantity,
-    decimal UnitCost
+    int ProductId, 
+    float Quantity
 );
 
 public class PurchaseOrderItemRequestValidator : AbstractValidator<PurchaseOrderItemRequest>
@@ -14,6 +13,5 @@ public class PurchaseOrderItemRequestValidator : AbstractValidator<PurchaseOrder
     {
         RuleFor(x => x.ProductId).GreaterThan(0);
         RuleFor(x => x.Quantity).GreaterThan(0);
-        RuleFor(x => x.UnitCost).GreaterThanOrEqualTo(0);
     }
 }

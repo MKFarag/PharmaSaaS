@@ -1,4 +1,4 @@
-namespace PharmaSaaS.Domain.Constants;
+namespace PharmaSaaS.Domain.Enums;
 
 public enum ShiftStatus
 {

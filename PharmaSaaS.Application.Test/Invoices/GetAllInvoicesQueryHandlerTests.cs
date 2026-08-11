@@ -41,7 +41,6 @@ public class GetAllInvoicesQueryHandlerTests
         var result = await _sut.Handle(query, default);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(paginatedList, result.Value);
+        Assert.Equal(paginatedList, result);
     }
 }

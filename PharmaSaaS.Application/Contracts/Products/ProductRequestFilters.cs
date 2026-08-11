@@ -1,4 +1,4 @@
-﻿namespace PharmaSaaS.Application.Contracts.Products;
+namespace PharmaSaaS.Application.Contracts.Products;
 
 public record ProductRequestFilters
 {
@@ -7,6 +7,12 @@ public record ProductRequestFilters
     public string? SearchValue { get; init; }
     public int? CategoryId { get; init; }
     public int? DosageFormId { get; init; }
+    public bool? OutOfStock { get; init; }
+    public bool? BelowTarget { get; init; }
+    public bool? NotReordered { get; init; }
+    public DateOnly? SoldSince { get; init; }
+    public DateOnly? LastOrderedBefore { get; init; }
+    public bool? SortByMostSold { get; init; }
 }
 
 #region Validation
@@ -24,4 +30,3 @@ public class ProductRequestFiltersValidator : AbstractValidator<ProductRequestFi
 }
 
 #endregion
-

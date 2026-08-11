@@ -1,6 +1,8 @@
 using PharmaSaaS.Domain.Constants;
 using PharmaSaaS.Domain.Errors;
 
+using PharmaSaaS.Domain.Enums;
+
 namespace PharmaSaaS.Application.Features.PurchaseOrders.Delete;
 
 public sealed class DeletePurchaseOrderCommandHandler(IUnitOfWork unitOfWork)

@@ -5,5 +5,9 @@ public record PurchaseOrderItemResponse(
     int ProductId,
     string ProductName,
     float Quantity,
-    decimal UnitCost
+    decimal UnitCost,
+    float ReceivedQuantity,
+    float ReturnedQuantity,
+    string? ReturnReason,
+    string Status
 );

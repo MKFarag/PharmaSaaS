@@ -29,3 +29,4 @@ global using System.Reflection;
 global using System.Security.Claims;
 global using System.Text;
 global using StatusCodes = Microsoft.AspNetCore.Http.StatusCodes;
+global using PharmaSaaS.Domain.Enums;

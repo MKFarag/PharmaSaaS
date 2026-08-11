@@ -8,3 +8,4 @@ public sealed class DosageForm
     public static DosageForm Create(string name) => new() { Name = name };
     public void Update(string name) => Name = name;
 }
+

@@ -1,4 +1,4 @@
-﻿namespace PharmaSaaS.Domain.Entities;
+namespace PharmaSaaS.Domain.Entities;
 
 public sealed class User
 {
@@ -28,3 +28,4 @@ public sealed class User
 
     public void ToggleStatus() => IsDisabled = !IsDisabled;
 }
+

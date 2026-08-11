@@ -1,8 +1,12 @@
+
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PharmaSaaS.Application.Contracts.SubscriptionRequests;
 using PharmaSaaS.Application.Features.SubscriptionRequests.Create;
 using PharmaSaaS.Application.Features.SubscriptionRequests.Get;
 using PharmaSaaS.Application.Features.SubscriptionRequests.GetAll;
 using PharmaSaaS.Application.Features.SubscriptionRequests.UpdateStatus;
+using PharmaSaaS.Domain.Enums;
 
 namespace PharmaSaaS.Presentation.Controllers;
 
@@ -62,8 +66,8 @@ public class SubscriptionRequestsController(ISender sender) : ControllerBase
     [HttpGet]
     [SystemOwner]
     [EnableRateLimiting(RateLimitingOptions.PolicyNames.Sliding)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll([FromQuery] string? status, CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(IEnumerable<SubscriptionRequestResponse>), 200)]
+    public async Task<IActionResult> GetAll([FromQuery] SubscriptionRequestStatus? status, CancellationToken cancellationToken)
         => Ok(await sender.Send(new GetAllSubscriptionRequestsQuery(status), cancellationToken));
 
     /// <summary>

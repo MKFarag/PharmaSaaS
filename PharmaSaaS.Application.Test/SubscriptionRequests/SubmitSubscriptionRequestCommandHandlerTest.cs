@@ -1,5 +1,7 @@
 using PharmaSaaS.Application.Features.SubscriptionRequests.Create;
 
+using PharmaSaaS.Domain.Enums;
+
 namespace PharmaSaaS.Application.Test.SubscriptionRequests;
 
 public class SubmitSubscriptionRequestCommandHandlerTest

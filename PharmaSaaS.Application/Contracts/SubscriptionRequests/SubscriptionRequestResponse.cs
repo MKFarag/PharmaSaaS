@@ -1,3 +1,5 @@
+using PharmaSaaS.Domain.Enums;
+
 namespace PharmaSaaS.Application.Contracts.SubscriptionRequests;
 
 public record SubscriptionRequestResponse(
@@ -7,5 +9,5 @@ public record SubscriptionRequestResponse(
     string PhoneNumber,
     string Email,
     DateTime CreatedAt,
-    string Status
+    SubscriptionRequestStatus Status
 );

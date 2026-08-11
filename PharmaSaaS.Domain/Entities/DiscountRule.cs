@@ -7,7 +7,7 @@ public sealed class DiscountRule
     public decimal MinInvoiceAmount { get; private set; }
     public decimal DiscountPercent { get; private set; }
 
-    public LoyaltyTier LoyaltyTier { get; set; } = default!;
+    public LoyaltyTier LoyaltyTier { get; private set; } = default!;
 
     public static DiscountRule Create(int loyaltyTierId, decimal minInvoiceAmount, decimal discountPercent)
         => new()
@@ -23,3 +23,4 @@ public sealed class DiscountRule
         DiscountPercent = discountPercent;
     }
 }
+

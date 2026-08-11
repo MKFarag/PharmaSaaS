@@ -34,7 +34,7 @@ public class DeletePurchaseOrderCommandHandlerTests
     {
         // Arrange
         var command = new DeletePurchaseOrderCommand(1);
-        var po = PurchaseOrder.Create(1, 100);
+        var po = PurchaseOrder.Create(1, 100, 0);
         po.Receive(); // Sets status to Received
         
         A.CallTo(() => _unitOfWork.PurchaseOrders.TrackedFindAsync(A<Expression<Func<PurchaseOrder, bool>>>._, A<string[]>._, A<CancellationToken>._)).Returns(po);

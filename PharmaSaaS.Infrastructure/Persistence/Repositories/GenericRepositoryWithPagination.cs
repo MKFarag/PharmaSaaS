@@ -1,4 +1,4 @@
-﻿namespace PharmaSaaS.Infrastructure.Persistence.Repositories;
+namespace PharmaSaaS.Infrastructure.Persistence.Repositories;
 
 public class GenericRepositoryWithPagination<TEntity>(ApplicationDbContext context)
     : GenericRepository<TEntity>(context), IGenericRepositoryWithPagination<TEntity> where TEntity : class

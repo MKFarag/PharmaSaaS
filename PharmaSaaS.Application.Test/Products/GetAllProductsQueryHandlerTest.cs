@@ -5,7 +5,7 @@ namespace PharmaSaaS.Application.Test.Products;
 public class GetAllProductsQueryHandlerTest : IClassFixture<MapsterTestFixture>
 {
     private readonly IUnitOfWork _unitOfWork = A.Fake<IUnitOfWork>();
-    private readonly IGenericRepositoryWithPagination<Product> _productRepo = A.Fake<IGenericRepositoryWithPagination<Product>>();
+    private readonly IProductRepository _productRepo = A.Fake<IProductRepository>();
     private readonly GetAllProductsQueryHandler _handler;
 
     public GetAllProductsQueryHandlerTest(MapsterTestFixture _)
@@ -28,13 +28,8 @@ public class GetAllProductsQueryHandlerTest : IClassFixture<MapsterTestFixture>
         A.CallTo(() => paginatedList.TotalPages).Returns(1);
         A.CallTo(() => paginatedList.PageNumber).Returns(1);
 
-        A.CallTo(() => _productRepo.FindPaginatedListAsync<ProductResponse>(
-                A<Expression<Func<Product, bool>>>.Ignored,
-                A<int>.Ignored, A<int>.Ignored,
-                A<string?>.Ignored, A<string>.Ignored,
-                A<string>.Ignored!, A<string>.Ignored!,
-                A<ColumnType>.Ignored,
-                A<string[]>.Ignored,
+        A.CallTo(() => _productRepo.GetFilteredAsync(
+                A<ProductRequestFilters>.Ignored,
                 A<CancellationToken>.Ignored))
             .Returns(paginatedList);
 

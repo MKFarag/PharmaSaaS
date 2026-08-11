@@ -8,3 +8,4 @@ public sealed class Category
     public static Category Create(string name) => new() { Name = name };
     public void Update(string name) => Name = name;
 }
+

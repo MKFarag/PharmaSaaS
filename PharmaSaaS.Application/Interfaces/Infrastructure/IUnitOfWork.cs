@@ -11,7 +11,7 @@ public interface IUnitOfWork : IDisposable
 
     IGenericRepository<Category> Categories { get; }
     IGenericRepository<DosageForm> DosageForms { get; }
-    IGenericRepositoryWithPagination<Product> Products { get; }
+    IProductRepository Products { get; }
     IGenericRepositoryWithPagination<Inventory> Inventories { get; }
     IGenericRepositoryWithPagination<ExpiryReport> ExpiryReports { get; }
 
@@ -29,6 +29,7 @@ public interface IUnitOfWork : IDisposable
     IGenericRepositoryWithPagination<Supplier> Suppliers { get; }
     IGenericRepositoryWithPagination<PurchaseOrder> PurchaseOrders { get; }
     IGenericRepository<PurchaseOrderItem> PurchaseOrderItems { get; }
+    IGenericRepositoryWithPagination<SupplierPayment> SupplierPayments { get; }
 
     /// <summary>Save changes to the database</summary>
     /// <returns>The number of state entries written to the database</returns>

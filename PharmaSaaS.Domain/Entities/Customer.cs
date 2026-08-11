@@ -8,7 +8,7 @@ public sealed class Customer
     public decimal TotalSpend { get; private set; }
 
     public int? CurrentTierId { get; private set; }
-    public LoyaltyTier? CurrentTier { get; set; }
+    public LoyaltyTier? CurrentTier { get; private set; }
 
     public static Customer Create(string fullName, string phoneNumber)
         => new()
@@ -31,3 +31,4 @@ public sealed class Customer
         CurrentTierId = currentTierId;
     }
 }
+

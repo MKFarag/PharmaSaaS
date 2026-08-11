@@ -1,6 +1,9 @@
+using FluentValidation;
+using PharmaSaaS.Domain.Enums;
+
 namespace PharmaSaaS.Application.Contracts.SubscriptionRequests;
 
-public record UpdateSubscriptionRequestStatusRequest(string Status);
+public record UpdateSubscriptionRequestStatusRequest(SubscriptionRequestStatus Status, int? DurationInMonths = null);
 
 #region Validation
 
@@ -8,10 +11,16 @@ public class UpdateSubscriptionRequestStatusRequestValidator : AbstractValidator
 {
     public UpdateSubscriptionRequestStatusRequestValidator()
     {
-        RuleFor(x => x.Status)
-            .NotEmpty()
-            .Must(s => s is SubscriptionRequestStatus.Approved or SubscriptionRequestStatus.Rejected or SubscriptionRequestStatus.Contacted)
-            .WithMessage($"Status must be one of: {SubscriptionRequestStatus.Approved}, {SubscriptionRequestStatus.Rejected}, {SubscriptionRequestStatus.Contacted}");
+        RuleFor(s => s.Status)
+            .IsInEnum()
+            .WithMessage("Invalid status provided.");
+
+        RuleFor(s => s.DurationInMonths)
+            .Cascade(CascadeMode.Stop)
+            .NotNull()
+            .GreaterThan(0)
+            .When(s => s.Status == SubscriptionRequestStatus.Approved)
+            .WithMessage("Duration in months is required and must be greater than zero when approving.");
     }
 }
 

@@ -19,7 +19,7 @@ public sealed class UnitOfWork : IUnitOfWork
 
     public IGenericRepository<Category> Categories { get; private set; }
     public IGenericRepository<DosageForm> DosageForms { get; private set; }
-    public IGenericRepositoryWithPagination<Product> Products { get; private set; }
+    public IProductRepository Products { get; private set; }
     public IGenericRepositoryWithPagination<Inventory> Inventories { get; private set; }
     public IGenericRepositoryWithPagination<ExpiryReport> ExpiryReports { get; private set; }
 
@@ -37,6 +37,7 @@ public sealed class UnitOfWork : IUnitOfWork
     public IGenericRepositoryWithPagination<Supplier> Suppliers { get; private set; }
     public IGenericRepositoryWithPagination<PurchaseOrder> PurchaseOrders { get; private set; }
     public IGenericRepository<PurchaseOrderItem> PurchaseOrderItems { get; private set; }
+    public IGenericRepositoryWithPagination<SupplierPayment> SupplierPayments { get; private set; }
     public UnitOfWork(
         ApplicationDbContext context,
         SharedDbContext sharedDbContext,
@@ -55,7 +56,7 @@ public sealed class UnitOfWork : IUnitOfWork
 
         Categories = new GenericRepository<Category>(_context);
         DosageForms = new GenericRepository<DosageForm>(_context);
-        Products = new GenericRepositoryWithPagination<Product>(_context);
+        Products = new ProductRepository(_context);
         Inventories = new GenericRepositoryWithPagination<Inventory>(_context);
         ExpiryReports = new GenericRepositoryWithPagination<ExpiryReport>(_context);
 
@@ -73,6 +74,7 @@ public sealed class UnitOfWork : IUnitOfWork
         Suppliers = new GenericRepositoryWithPagination<Supplier>(_context);
         PurchaseOrders = new GenericRepositoryWithPagination<PurchaseOrder>(_context);
         PurchaseOrderItems = new GenericRepository<PurchaseOrderItem>(_context);
+        SupplierPayments = new GenericRepositoryWithPagination<SupplierPayment>(_context);
     }
 
     public async Task<int> CompleteAsync(CancellationToken cancellationToken = default)

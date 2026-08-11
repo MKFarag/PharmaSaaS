@@ -1,4 +1,4 @@
-﻿namespace PharmaSaaS.Domain.Repositories;
+namespace PharmaSaaS.Domain.Repositories;
 
 /// <summary>Generic repository interface for CRUD operations</summary>
 /// <typeparam name="TEntity">The entity type</typeparam>

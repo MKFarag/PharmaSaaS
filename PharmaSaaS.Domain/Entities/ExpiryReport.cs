@@ -9,7 +9,7 @@ public sealed class ExpiryReport
     public int ProductId { get; private set; }
     public string ReportedByEmployeeId { get; private set; } = string.Empty;
 
-    public Product Product { get; set; } = default!;
+    public Product Product { get; private set; } = default!;
 
     public static ExpiryReport Create(int productId, float expiredQuantity, string reportedByEmployeeId, string? notes = null)
         => new()
@@ -27,3 +27,4 @@ public sealed class ExpiryReport
         Notes = notes;
     }
 }
+

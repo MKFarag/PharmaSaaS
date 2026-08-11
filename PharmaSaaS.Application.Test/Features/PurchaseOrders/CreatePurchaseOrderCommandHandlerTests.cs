@@ -12,11 +12,14 @@ public class CreatePurchaseOrderCommandHandlerTests
 {
     private readonly IUnitOfWork _unitOfWork = A.Fake<IUnitOfWork>();
 
+    private static CreatePurchaseOrderCommand BuildCommand()
+        => new(new PurchaseOrderRequest(1, [new PurchaseOrderItemRequest(1, 10)], 1500));
+
     [Fact]
     public async Task Handle_WhenSupplierNotFound_ReturnsFailure()
     {
         // Arrange
-        var command = new CreatePurchaseOrderCommand(new PurchaseOrderRequest(1, [new PurchaseOrderItemRequest(1, 10, 150)]));
+        var command = BuildCommand();
         A.CallTo(() => _unitOfWork.Suppliers.GetAsync(A<object[]>._, A<CancellationToken>._)).Returns((Supplier?)null);
 
         var handler = new CreatePurchaseOrderCommandHandler(_unitOfWork);
@@ -33,7 +36,7 @@ public class CreatePurchaseOrderCommandHandlerTests
     public async Task Handle_WhenProductsNotFound_ReturnsFailure()
     {
         // Arrange
-        var command = new CreatePurchaseOrderCommand(new PurchaseOrderRequest(1, [new PurchaseOrderItemRequest(1, 10, 150)]));
+        var command = BuildCommand();
         var supplier = Supplier.Create("Test", null);
         A.CallTo(() => _unitOfWork.Suppliers.GetAsync(A<object[]>._, A<CancellationToken>._)).Returns(supplier);
         A.CallTo(() => _unitOfWork.Products.CountAsync(A<Expression<Func<Product, bool>>>._, A<CancellationToken>._)).Returns(0);
@@ -47,4 +50,5 @@ public class CreatePurchaseOrderCommandHandlerTests
         Assert.False(result.IsSuccess);
         Assert.Equal("Product.NotFound", result.Error.Code);
     }
+
 }

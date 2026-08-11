@@ -1,4 +1,5 @@
 using PharmaSaaS.Application.Features.SubscriptionRequests.GetAll;
+using PharmaSaaS.Domain.Enums;
 
 namespace PharmaSaaS.Application.Test.SubscriptionRequests;
 
@@ -20,11 +21,11 @@ public class GetAllSubscriptionRequestsQueryHandlerTest : IClassFixture<MapsterT
     {
         var expected = new List<SubscriptionRequestResponse>
         {
-            new("1", "Pharmacy A", "Owner A", "111", "a@test.com", DateTime.UtcNow, "Pending"),
-            new("2", "Pharmacy B", "Owner B", "222", "b@test.com", DateTime.UtcNow, "Approved"),
+            new("1", "Pharmacy A", "Owner A", "111", "a@test.com", DateTime.UtcNow, SubscriptionRequestStatus.Pending),
+            new("2", "Pharmacy B", "Owner B", "222", "b@test.com", DateTime.UtcNow, SubscriptionRequestStatus.Approved),
         };
 
-        A.CallTo(() => _subRepo.GetAllAsync<SubscriptionRequestResponse>(A<string?>.Ignored, A<CancellationToken>.Ignored))
+        A.CallTo(() => _subRepo.GetAllAsync<SubscriptionRequestResponse>(A<SubscriptionRequestStatus?>.Ignored, A<CancellationToken>.Ignored))
             .Returns(expected);
 
         var result = await _handler.Handle(new GetAllSubscriptionRequestsQuery(), CancellationToken.None);
@@ -39,17 +40,17 @@ public class GetAllSubscriptionRequestsQueryHandlerTest : IClassFixture<MapsterT
     {
         var all = new List<SubscriptionRequestResponse>
         {
-            new("1", "Pharmacy A", "Owner A", "111", "a@test.com", DateTime.UtcNow, "Pending"),
-            new("2", "Pharmacy B", "Owner B", "222", "b@test.com", DateTime.UtcNow, "Approved"),
-            new("3", "Pharmacy C", "Owner C", "333", "c@test.com", DateTime.UtcNow, "Pending"),
+            new("1", "Pharmacy A", "Owner A", "111", "a@test.com", DateTime.UtcNow, SubscriptionRequestStatus.Pending),
+            new("2", "Pharmacy B", "Owner B", "222", "b@test.com", DateTime.UtcNow, SubscriptionRequestStatus.Approved),
+            new("3", "Pharmacy C", "Owner C", "333", "c@test.com", DateTime.UtcNow, SubscriptionRequestStatus.Pending),
         };
 
-        A.CallTo(() => _subRepo.GetAllAsync<SubscriptionRequestResponse>("Pending", A<CancellationToken>.Ignored))
-            .Returns(all.Where(r => r.Status == "Pending").ToList());
+        A.CallTo(() => _subRepo.GetAllAsync<SubscriptionRequestResponse>(SubscriptionRequestStatus.Pending, A<CancellationToken>.Ignored))
+            .Returns(all.Where(r => r.Status == SubscriptionRequestStatus.Pending).ToList());
 
-        var result = await _handler.Handle(new GetAllSubscriptionRequestsQuery("Pending"), CancellationToken.None);
+        var result = await _handler.Handle(new GetAllSubscriptionRequestsQuery(SubscriptionRequestStatus.Pending), CancellationToken.None);
 
         Assert.Equal(2, result.Count());
-        Assert.All(result, r => Assert.Equal("Pending", r.Status));
+        Assert.All(result, r => Assert.Equal(SubscriptionRequestStatus.Pending, r.Status));
     }
 }

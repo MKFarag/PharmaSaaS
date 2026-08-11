@@ -4,6 +4,8 @@ public record CategoryRequest(
     string Name
 );
 
+#region Validation
+
 public class CategoryRequestValidator : AbstractValidator<CategoryRequest>
 {
     public CategoryRequestValidator()
@@ -12,4 +14,6 @@ public class CategoryRequestValidator : AbstractValidator<CategoryRequest>
             .NotEmpty()
             .Length(2, 100);
     }
-}
+} 
+
+#endregion

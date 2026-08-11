@@ -1,3 +1,6 @@
+using PharmaSaaS.Application.Contracts.PurchaseOrders;
+using PharmaSaaS.Application.Contracts.SupplierPayments;
+
 namespace PharmaSaaS.Application.Mapping;
 
 public class MappingConfiguration : IRegister
@@ -33,6 +36,28 @@ public class MappingConfiguration : IRegister
 
         config.NewConfig<Return, ReturnResponse>()
             .Map(dest => dest.ProductName, src => src.Product != null ? src.Product.Name : null);
+
+        #endregion
+
+        #region PurchaseOrderMapping
+
+        config.NewConfig<PurchaseOrderItem, PurchaseOrderItemResponse>()
+            .Map(dest => dest.ProductName, src => src.Product != null ? src.Product.Name : string.Empty)
+            .Map(dest => dest.ReturnedQuantity, src => src.ReturnedQuantity);
+
+        config.NewConfig<PurchaseOrder, PurchaseOrderResponse>()
+            .Map(dest => dest.RemainingAmount, src => src.RemainingAmount);
+
+        config.NewConfig<PurchaseOrder, PurchaseOrderDetailResponse>()
+            .Map(dest => dest.RemainingAmount, src => src.RemainingAmount);
+
+        #endregion
+
+        #region SupplierPaymentMapping
+
+        config.NewConfig<SupplierPayment, SupplierPaymentResponse>()
+            .Map(dest => dest.SupplierName, src => src.Supplier != null ? src.Supplier.Name : string.Empty)
+            .Map(dest => dest.OrderIds, src => src.Orders != null ? src.Orders.Select(o => o.Id).ToList() : new List<int>());
 
         #endregion
 

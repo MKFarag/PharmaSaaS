@@ -303,7 +303,16 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsRare")
                         .HasColumnType("bit");
 
+                    b.Property<DateOnly?>("LastOrderedAt")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("LastSoldAt")
+                        .HasColumnType("date");
+
                     b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductId2")
                         .HasColumnType("int");
 
                     b.Property<float>("Quantity")
@@ -315,10 +324,17 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.Property<int?>("TargetStock")
                         .HasColumnType("int");
 
+                    b.Property<float>("TotalUnitsSold")
+                        .HasColumnType("real");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId")
                         .IsUnique();
+
+                    b.HasIndex("ProductId2")
+                        .IsUnique()
+                        .HasFilter("[ProductId2] IS NOT NULL");
 
                     b.ToTable("Inventory");
                 });
@@ -479,6 +495,9 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.Property<DateOnly>("OrderDate")
                         .HasColumnType("date");
 
+                    b.Property<decimal>("PaidAmount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -514,6 +533,19 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
 
                     b.Property<float>("Quantity")
                         .HasColumnType("real");
+
+                    b.Property<float>("ReceivedQuantity")
+                        .HasColumnType("real");
+
+                    b.Property<string>("ReturnReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<float>("ReturnedQuantity")
+                        .HasColumnType("real");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("UnitCost")
                         .HasColumnType("decimal(18,2)");
@@ -718,6 +750,35 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.ToTable("Suppliers", (string)null);
                 });
 
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.SupplierPayment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("PaidAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("SupplierId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SupplierId");
+
+                    b.ToTable("SupplierPayments", (string)null);
+                });
+
             modelBuilder.Entity("PharmaSaaS.Infrastructure.Persistence.Identities.ApplicationRole", b =>
                 {
                     b.Property<string>("Id")
@@ -829,6 +890,21 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("PurchaseOrderSupplierPayment", b =>
+                {
+                    b.Property<int>("OrdersId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SupplierPaymentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("OrdersId", "SupplierPaymentId");
+
+                    b.HasIndex("SupplierPaymentId");
+
+                    b.ToTable("PurchaseOrderSupplierPayment");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("PharmaSaaS.Infrastructure.Persistence.Identities.ApplicationRole", null)
@@ -936,6 +1012,10 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("PharmaSaaS.Domain.Entities.Product", null)
+                        .WithOne("Inventory")
+                        .HasForeignKey("PharmaSaaS.Domain.Entities.Inventory", "ProductId2");
 
                     b.Navigation("Product");
                 });
@@ -1058,6 +1138,17 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.SupplierPayment", b =>
+                {
+                    b.HasOne("PharmaSaaS.Domain.Entities.Supplier", "Supplier")
+                        .WithMany("Payments")
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Supplier");
+                });
+
             modelBuilder.Entity("PharmaSaaS.Infrastructure.Persistence.Identities.ApplicationUser", b =>
                 {
                     b.OwnsMany("PharmaSaaS.Domain.Entities.RefreshToken", "RefreshTokens", b1 =>
@@ -1095,6 +1186,21 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.Navigation("RefreshTokens");
                 });
 
+            modelBuilder.Entity("PurchaseOrderSupplierPayment", b =>
+                {
+                    b.HasOne("PharmaSaaS.Domain.Entities.PurchaseOrder", null)
+                        .WithMany()
+                        .HasForeignKey("OrdersId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("PharmaSaaS.Domain.Entities.SupplierPayment", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierPaymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.Invoice", b =>
                 {
                     b.Navigation("Items");
@@ -1107,6 +1213,11 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.Navigation("DiscountRules");
                 });
 
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.Product", b =>
+                {
+                    b.Navigation("Inventory");
+                });
+
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.PurchaseOrder", b =>
                 {
                     b.Navigation("Items");
@@ -1114,6 +1225,8 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.Supplier", b =>
                 {
+                    b.Navigation("Payments");
+
                     b.Navigation("PurchaseOrders");
                 });
 #pragma warning restore 612, 618

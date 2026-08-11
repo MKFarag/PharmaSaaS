@@ -54,3 +54,4 @@ public sealed class Shift
     public void AddExpense(decimal amount) => TotalExpenses += amount;
     public void RemoveExpense(decimal amount) => TotalExpenses -= amount;
 }
+

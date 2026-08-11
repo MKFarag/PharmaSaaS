@@ -8,7 +8,7 @@ public sealed class Expense
     public DateTimeOffset Date { get; private set; }
 
     public int ShiftId { get; private set; }
-    public Shift Shift { get; set; } = default!;
+    public Shift Shift { get; private set; } = default!;
 
     public static Expense Create(int shiftId, decimal amount, string description)
     {
@@ -21,3 +21,4 @@ public sealed class Expense
         };
     }
 }
+

@@ -8,7 +8,8 @@ public sealed class Supplier
     public decimal Balance { get; private set; }
     public DateOnly? LastOrderDate { get; private set; }
 
-    public ICollection<PurchaseOrder> PurchaseOrders { get; set; } = default!;
+    public ICollection<PurchaseOrder> PurchaseOrders { get; private set; } = default!;
+    public ICollection<SupplierPayment> Payments { get; private set; } = default!;
 
     public static Supplier Create(string name, string? contactInfo)
         => new()
@@ -36,5 +37,8 @@ public sealed class Supplier
         Balance += totalAmount;
     }
 
+    public void RecordPayment(decimal amount) => Balance += amount;
+
     public void ResetBalance() => Balance = 0;
 }
+

@@ -23,3 +23,4 @@ global using PharmaSaaS.Domain.Entities.Shared;
 global using PharmaSaaS.Domain.Errors;
 global using PharmaSaaS.Domain.Repositories;
 global using System.Linq.Expressions;
+global using PharmaSaaS.Domain.Enums;

@@ -5,7 +5,7 @@ namespace PharmaSaaS.Application.Test.Products;
 public class GetProductQueryHandlerTest : IClassFixture<MapsterTestFixture>
 {
     private readonly IUnitOfWork _unitOfWork = A.Fake<IUnitOfWork>();
-    private readonly IGenericRepositoryWithPagination<Product> _productRepo = A.Fake<IGenericRepositoryWithPagination<Product>>();
+    private readonly IProductRepository _productRepo = A.Fake<IProductRepository>();
     private readonly GetProductQueryHandler _handler;
 
     public GetProductQueryHandlerTest(MapsterTestFixture _)
@@ -23,8 +23,8 @@ public class GetProductQueryHandlerTest : IClassFixture<MapsterTestFixture>
         dosageForm.Id = 1;
         var product = Product.Create("Amoxicillin", 1, 1, "6291040100216");
         product.Id = 1;
-        product.Category = category;
-        product.DosageForm = dosageForm;
+        product.SetCategory(category);
+        product.SetDosageForm(dosageForm);
 
         A.CallTo(() => _productRepo.FindAsync(
                 A<Expression<Func<Product, bool>>>.Ignored,
@@ -54,3 +54,4 @@ public class GetProductQueryHandlerTest : IClassFixture<MapsterTestFixture>
         Assert.Equal(ProductErrors.NotFound, result.Error);
     }
 }
+

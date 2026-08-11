@@ -7,24 +7,24 @@ using System.Linq.Expressions;
 namespace PharmaSaaS.Application.Features.PurchaseOrders.List;
 
 public sealed class ListPurchaseOrdersQueryHandler(IUnitOfWork unitOfWork)
-    : IRequestHandler<ListPurchaseOrdersQuery, Result<IPaginatedList<PurchaseOrderResponse>>>
+    : IRequestHandler<ListPurchaseOrdersQuery, IPaginatedList<PurchaseOrderResponse>>
 {
-    public async Task<Result<IPaginatedList<PurchaseOrderResponse>>> Handle(ListPurchaseOrdersQuery query, CancellationToken cancellationToken = default)
+    public async Task<IPaginatedList<PurchaseOrderResponse>> Handle(ListPurchaseOrdersQuery query, CancellationToken cancellationToken = default)
     {
         Expression<Func<PurchaseOrder, bool>> predicate = po =>
-            (!query.SupplierId.HasValue || po.SupplierId == query.SupplierId.Value) &&
-            (!query.Date.HasValue || po.OrderDate == query.Date.Value);
+            (!query.Filters.SupplierId.HasValue || po.SupplierId == query.Filters.SupplierId.Value) &&
+            (!query.Filters.Date.HasValue || po.OrderDate == query.Filters.Date.Value);
 
-        string[] includes = [nameof(PurchaseOrder.Supplier)];
+        string[] includes = [nameof(PurchaseOrder.Supplier), nameof(PurchaseOrder.Items)];
 
         var purchaseOrders = await unitOfWork.PurchaseOrders.FindPaginatedListAsync<PurchaseOrderResponse>(
             predicate,
-            query.PageNumber,
-            query.PageSize,
-            nameof(PurchaseOrder.Id),
+            query.Filters.PageNumber,
+            query.Filters.PageSize,
+            nameof(PurchaseOrder.OrderDate),
             includes,
             cancellationToken);
 
-        return Result.Success(purchaseOrders);
+        return purchaseOrders;
     }
 }

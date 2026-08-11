@@ -16,11 +16,11 @@ public sealed class Invoice
     public DateOnly Date { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
 
-    public Shift Shift { get; set; } = default!;
-    public Customer? Customer { get; set; }
+    public Shift Shift { get; private set; } = default!;
+    public Customer? Customer { get; private set; }
     
-    public ICollection<InvoiceItem> Items { get; set; } = [];
-    public ICollection<Return> Returns { get; set; } = [];
+    public ICollection<InvoiceItem> Items { get; private set; } = [];
+    public ICollection<Return> Returns { get; private set; } = [];
 
     public static readonly string[] DetailIncludes = [
         nameof(Items),
@@ -49,3 +49,4 @@ public sealed class Invoice
 
     public void MarkHasReturn() => HasReturn = true;
 }
+

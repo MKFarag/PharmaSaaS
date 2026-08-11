@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 
 namespace PharmaSaaS.Domain.Entities;
 
@@ -24,3 +24,4 @@ public class RefreshToken
 
     public void Revoke() => RevokedOn = DateTime.UtcNow;
 }
+

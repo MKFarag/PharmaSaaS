@@ -10,8 +10,9 @@ public sealed class Product
     public int CategoryId { get; private set; }
     public int DosageFormId { get; private set; }
 
-    public Category Category { get; set; } = default!;
-    public DosageForm DosageForm { get; set; } = default!;
+    public Category Category { get; private set; } = default!;
+    public DosageForm DosageForm { get; private set; } = default!;
+    public Inventory? Inventory { get; private set; }
 
     public static Product Create(string name, int categoryId, int dosageFormId, string? barcode = null, string? concentration = null, decimal? maxStorageTemperature = null)
         => new()
@@ -33,4 +34,7 @@ public sealed class Product
         Concentration = concentration;
         MaxStorageTemperature = maxStorageTemperature;
     }
+    public void SetCategory(Category category) => Category = category;
+    public void SetDosageForm(DosageForm dosageForm) => DosageForm = dosageForm;
 }
+

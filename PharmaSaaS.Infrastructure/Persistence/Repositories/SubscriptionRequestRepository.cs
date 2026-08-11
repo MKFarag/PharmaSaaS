@@ -1,13 +1,19 @@
+using Microsoft.EntityFrameworkCore;
+using Mapster;
+using PharmaSaaS.Domain.Entities.Shared;
+using PharmaSaaS.Domain.Enums;
+using PharmaSaaS.Domain.Repositories;
+
 namespace PharmaSaaS.Infrastructure.Persistence.Repositories;
 
-public class SubscriptionRequestRepository(SharedDbContext context) : ISubscriptionRequestRepository
+internal sealed class SubscriptionRequestRepository(SharedDbContext context) : ISubscriptionRequestRepository
 {
-    public async Task<IEnumerable<TProjection>> GetAllAsync<TProjection>(string? status = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<TProjection>> GetAllAsync<TProjection>(SubscriptionRequestStatus? status = null, CancellationToken cancellationToken = default)
     {
         var query = context.SubscriptionRequests.AsNoTracking();
 
-        if (!string.IsNullOrWhiteSpace(status))
-            query = query.Where(s => s.Status == status);
+        if (status.HasValue)
+            query = query.Where(s => s.Status == status.Value);
 
         return await query.ProjectToType<TProjection>().ToListAsync(cancellationToken);
     }

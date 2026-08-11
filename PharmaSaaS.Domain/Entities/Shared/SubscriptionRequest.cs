@@ -1,3 +1,5 @@
+using PharmaSaaS.Domain.Enums;
+
 namespace PharmaSaaS.Domain.Entities.Shared;
 
 public sealed class SubscriptionRequest
@@ -8,7 +10,7 @@ public sealed class SubscriptionRequest
     public string PhoneNumber { get; private set; } = string.Empty;
     public string Email { get; private set; } = string.Empty;
     public DateTime CreatedAt { get; private set; }
-    public string Status { get; private set; } = string.Empty;
+    public SubscriptionRequestStatus Status { get; private set; }
 
     public static SubscriptionRequest Create(string pharmacyName, string ownerName, string phoneNumber, string email)
         => new()
@@ -27,3 +29,4 @@ public sealed class SubscriptionRequest
 
     public void Contact() => Status = SubscriptionRequestStatus.Contacted;
 }
+

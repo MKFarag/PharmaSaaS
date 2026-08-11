@@ -7,9 +7,12 @@ public sealed class Inventory
     public decimal SellingPrice { get; private set; }
     public int? TargetStock { get; private set; }
     public bool IsRare { get; private set; }
+    public DateOnly? LastSoldAt { get; private set; }
+    public DateOnly? LastOrderedAt { get; private set; }
+    public float TotalUnitsSold { get; private set; }
     public int ProductId { get; private set; }
 
-    public Product Product { get; set; } = default!;
+    public Product Product { get; private set; } = default!;
 
 
     public static Inventory Create(int productId, float quantity, decimal sellingPrice, int? targetStock = null)
@@ -28,4 +31,8 @@ public sealed class Inventory
     public void ToggleRare() => IsRare = !IsRare;
     public void DeductStock(float quantity) => Quantity -= quantity;
     public void AddStock(float quantity) => Quantity += quantity;
+    public void SetLastSold() => LastSoldAt = DateOnly.FromDateTime(DateTime.UtcNow);
+    public void SetLastOrdered() => LastOrderedAt = DateOnly.FromDateTime(DateTime.UtcNow);
+    public void AddToSoldUnits(float quantity) => TotalUnitsSold += quantity;
 }
+

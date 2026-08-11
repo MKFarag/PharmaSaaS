@@ -10,7 +10,8 @@ internal sealed class PurchaseOrderConfiguration : IEntityTypeConfiguration<Purc
 
         builder.Property(o => o.Status)
             .IsRequired()
-            .HasMaxLength(50);
+            .HasMaxLength(50)
+            .HasConversion<string>();
 
         builder.Property(o => o.TotalAmount)
             .HasPrecision(18, 2);

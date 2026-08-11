@@ -69,6 +69,8 @@ public sealed class CreateInvoiceCommandHandler(
                 {
                     var inventory = inventoryByProductId[item.ProductId];
                     inventory.DeductStock(item.Quantity);
+                    inventory.SetLastSold();
+                    inventory.AddToSoldUnits(item.Quantity);
                     return InvoiceItem.Create(invoice.Id, item.ProductId, item.Quantity, inventory.SellingPrice);
                 })
                 .ToList();

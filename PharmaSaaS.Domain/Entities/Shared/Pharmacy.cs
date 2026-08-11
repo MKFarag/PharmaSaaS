@@ -21,3 +21,4 @@ public sealed class Pharmacy
     public void ToggleStatus()
         => IsActive = !IsActive;
 }
+

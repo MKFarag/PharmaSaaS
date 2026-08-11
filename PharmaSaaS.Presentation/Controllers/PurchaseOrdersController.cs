@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
+using PharmaSaaS.Domain.Enums;
 using PharmaSaaS.Application.Contracts.PurchaseOrders;
 using PharmaSaaS.Application.Features.PurchaseOrders.Create;
 using PharmaSaaS.Application.Features.PurchaseOrders.Delete;
 using PharmaSaaS.Application.Features.PurchaseOrders.Get;
 using PharmaSaaS.Application.Features.PurchaseOrders.List;
-using PharmaSaaS.Application.Features.PurchaseOrders.Receive;
+using PharmaSaaS.Application.Features.PurchaseOrders.Approve;
+using PharmaSaaS.Application.Features.PurchaseOrders.Return;
+using PharmaSaaS.Application.Features.PurchaseOrders.Update;
 using PharmaSaaS.Domain.Abstraction;
 using PharmaSaaS.Domain.Constants;
 using PharmaSaaS.Presentation.Attributes;
@@ -23,10 +26,7 @@ public class PurchaseOrdersController(ISender sender) : ControllerBase
     ///     GET /api/purchase-orders?supplierId=1
     /// 
     /// </remarks>
-    /// <param name="supplierId">Optional supplier filter</param>
-    /// <param name="date">Optional date filter</param>
-    /// <param name="pageNumber">Page number</param>
-    /// <param name="pageSize">Page size</param>
+    /// <param name="filters">Filters for listing purchase orders</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A paginated list of purchase orders.</returns>
     /// <response code="200">Returns the paginated list of purchase orders</response>
@@ -34,14 +34,11 @@ public class PurchaseOrdersController(ISender sender) : ControllerBase
     [HasPermission(Permissions.ReadPurchaseOrder)]
     [ProducesResponseType(typeof(IPaginatedList<PurchaseOrderResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> List(
-        [FromQuery] int? supplierId,
-        [FromQuery] DateOnly? date,
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 10,
+        [FromQuery] PurchaseOrderRequestFilters filters,
         CancellationToken cancellationToken = default)
     {
-        var result = await sender.Send(new ListPurchaseOrdersQuery(supplierId, date, pageNumber, pageSize), cancellationToken);
-        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+        var result = await sender.Send(new ListPurchaseOrdersQuery(filters), cancellationToken);
+        return Ok(result);
     }
 
     /// <summary>Purchase Order Detail</summary>
@@ -63,6 +60,31 @@ public class PurchaseOrdersController(ISender sender) : ControllerBase
     public async Task<IActionResult> Get(int id, CancellationToken cancellationToken = default)
     {
         var result = await sender.Send(new GetPurchaseOrderQuery(id), cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+    }
+
+    /// <summary>
+    /// Get purchase order items by state.
+    /// </summary>
+    /// <remarks>
+    /// Sample request:
+    ///
+    ///     GET /api/purchase-orders/1/items?status=Missing
+    /// 
+    /// </remarks>
+    /// <param name="id">The purchase order ID</param>
+    /// <param name="status">The status to filter by</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of purchase order items matching the status.</returns>
+    /// <response code="200">Returns the matching items</response>
+    /// <response code="404">If the purchase order is not found</response>
+    [HttpGet("{id}/items")]
+    [HasPermission(Permissions.ReadPurchaseOrder)]
+    [ProducesResponseType(typeof(List<PurchaseOrderItemResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetItemsByState(int id, [FromQuery] PurchaseOrderItemStatus status, CancellationToken cancellationToken = default)
+    {
+        var result = await sender.Send(new GetPurchaseOrderItemsByStateQuery(id, status), cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
 
@@ -96,27 +118,98 @@ public class PurchaseOrdersController(ISender sender) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
 
-    /// <summary>Receive Purchase Order</summary>
+    /// <summary>Update Purchase Order</summary>
     /// <remarks>
     /// Sample request:
     /// 
-    ///     PUT /api/purchase-orders/1/receive
+    ///     PUT /api/purchase-orders/1
+    ///     {
+    ///        "expectedTotalAmount": 2000.0,
+    ///        "addedItems": [
+    ///           { "productId": 2, "quantity": 5 }
+    ///        ]
+    ///     }
     /// 
     /// </remarks>
-    /// <param name="id">The purchase order ID to mark as received</param>
+    /// <param name="id">The purchase order ID to update</param>
+    /// <param name="request">The update payload</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>No content</returns>
-    /// <response code="204">If the purchase order was successfully received</response>
+    /// <returns>The updated purchase order summary</returns>
+    /// <response code="200">Returns the updated purchase order summary</response>
+    /// <response code="400">If the request is invalid</response>
     /// <response code="404">If the purchase order is not found</response>
-    /// <response code="409">If the purchase order is already received</response>
-    [HttpPut("{id}/receive")]
+    /// <response code="409">If the purchase order is not pending</response>
+    [HttpPut("{id}")]
     [HasPermission(Permissions.ManagePurchaseOrder)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(PurchaseOrderResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Receive(int id, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdatePurchaseOrderRequest request, CancellationToken cancellationToken = default)
     {
-        var result = await sender.Send(new ReceivePurchaseOrderCommand(id), cancellationToken);
+        var result = await sender.Send(new UpdatePurchaseOrderCommand(id, request), cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+    }
+
+    /// <summary>Approve / Receive Purchase Order</summary>
+    /// <remarks>
+    /// Sample request:
+    /// 
+    ///     PUT /api/purchase-orders/1/approve
+    ///     {
+    ///        "items": [
+    ///           { "productId": 1, "receivedQuantity": 8, "unitCost": 150.0, "isMissing": false }
+    ///        ]
+    ///     }
+    /// 
+    /// </remarks>
+    /// <param name="id">The purchase order ID to approve</param>
+    /// <param name="request">Final quantities, costs, and missing status</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>No content</returns>
+    /// <response code="204">If the purchase order was successfully approved</response>
+    /// <response code="400">If a received quantity exceeds the ordered quantity</response>
+    /// <response code="404">If the purchase order or an item is not found</response>
+    /// <response code="409">If the purchase order is already received</response>
+    [HttpPut("{id}/approve")]
+    [HasPermission(Permissions.ManagePurchaseOrder)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Approve(int id, [FromBody] ApprovePurchaseOrderRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await sender.Send(new ApprovePurchaseOrderCommand(id, request), cancellationToken);
+        return result.IsSuccess ? NoContent() : result.ToProblem();
+    }
+
+    /// <summary>Return Purchase Order Items</summary>
+    /// <remarks>
+    /// Sample request:
+    /// 
+    ///     PUT /api/purchase-orders/1/return
+    ///     {
+    ///        "items": [
+    ///           { "productId": 1, "quantityToReturn": 2, "returnReason": "Expired" }
+    ///        ]
+    ///     }
+    /// 
+    /// </remarks>
+    /// <param name="id">The purchase order ID</param>
+    /// <param name="request">Items to return</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>No content</returns>
+    /// <response code="204">If the items were successfully returned</response>
+    /// <response code="400">If the return quantity is invalid</response>
+    /// <response code="404">If the purchase order or item is not found</response>
+    [HttpPut("{id}/return")]
+    [HasPermission(Permissions.ManagePurchaseOrder)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ReturnItems(int id, [FromBody] ReturnPurchaseOrderItemsRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await sender.Send(new ReturnPurchaseOrderItemsCommand(id, request), cancellationToken);
         return result.IsSuccess ? NoContent() : result.ToProblem();
     }
 

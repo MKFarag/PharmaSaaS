@@ -68,7 +68,7 @@ public sealed class InvoicesController(ISender sender) : ControllerBase
     {
         var query = new GetAllInvoicesQuery(filters);
         var result = await sender.Send(query, cancellationToken);
-        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+        return Ok(result);
     }
 
     /// <summary>

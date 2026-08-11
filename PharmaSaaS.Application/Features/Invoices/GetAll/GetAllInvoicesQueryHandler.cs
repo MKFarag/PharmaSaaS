@@ -3,9 +3,9 @@ using PharmaSaaS.Application.Interfaces.Infrastructure;
 
 namespace PharmaSaaS.Application.Features.Invoices.GetAll;
 
-public sealed class GetAllInvoicesQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetAllInvoicesQuery, Result<IPaginatedList<InvoiceResponse>>>
+public sealed class GetAllInvoicesQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetAllInvoicesQuery, IPaginatedList<InvoiceResponse>>
 {
-    public async Task<Result<IPaginatedList<InvoiceResponse>>> Handle(GetAllInvoicesQuery query, CancellationToken cancellationToken)
+    public async Task<IPaginatedList<InvoiceResponse>> Handle(GetAllInvoicesQuery query, CancellationToken cancellationToken)
     {
         Expression<Func<Invoice, bool>> predicate = i =>
             (!query.Filters.ShiftId.HasValue || i.ShiftId == query.Filters.ShiftId) &&
@@ -21,6 +21,6 @@ public sealed class GetAllInvoicesQueryHandler(IUnitOfWork unitOfWork) : IReques
             [nameof(Invoice.Customer)],
             cancellationToken);
 
-        return Result.Success(invoices);
+        return invoices;
     }
 }

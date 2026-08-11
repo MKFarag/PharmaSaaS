@@ -18,20 +18,19 @@ public sealed class CreatePurchaseOrderCommandHandler(IUnitOfWork unitOfWork)
         if (productsCount != productIds.Count)
             return Result.Failure<PurchaseOrderResponse>(ProductErrors.NotFound);
 
-        decimal totalAmount = command.Request.Items.Sum(x => (decimal)x.Quantity * x.UnitCost);
+        decimal totalAmount = command.Request.ExpectedTotalAmount ?? 0;
 
-        var purchaseOrder = PurchaseOrder.Create(command.Request.SupplierId, totalAmount);
+        var purchaseOrder = PurchaseOrder.Create(command.Request.SupplierId, totalAmount, 0);
+
         await unitOfWork.PurchaseOrders.AddAsync(purchaseOrder, cancellationToken);
-        
-        purchaseOrder.Items = [.. command.Request.Items.Select(item => 
-            PurchaseOrderItem.Create(item.ProductId, item.Quantity, item.UnitCost)
-        )];
 
-        supplier.AddOrder(totalAmount);
-        
+        purchaseOrder.SetItems([.. command.Request.Items.Select(item =>
+            PurchaseOrderItem.Create(item.ProductId, item.Quantity, 0)
+        )]);
+
         await unitOfWork.CompleteAsync(cancellationToken);
 
-        purchaseOrder.Supplier = supplier;
+        purchaseOrder.SetSupplier(supplier);
 
         return Result.Success(purchaseOrder.Adapt<PurchaseOrderResponse>());
     }

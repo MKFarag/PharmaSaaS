@@ -6,5 +6,8 @@ public record InventoryResponse(
     decimal SellingPrice,
     int? TargetStock,
     bool IsRare,
+    float TotalUnitsSold,
+    DateOnly? LastSoldAt,
+    DateOnly? LastOrderedAt,
     ProductResponse Product
 );
