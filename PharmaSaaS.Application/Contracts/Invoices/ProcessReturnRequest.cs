@@ -15,13 +15,16 @@ public class ProcessReturnRequestValidator : AbstractValidator<ProcessReturnRequ
 {
     public ProcessReturnRequestValidator()
     {
-        RuleFor(x => x.Items).NotEmpty();
-        
+        RuleFor(x => x.Items)
+            .NotEmpty();
+
         RuleForEach(x => x.Items).ChildRules(item =>
         {
-            item.RuleFor(i => i.ProductId).GreaterThan(0);
+            item.RuleFor(i => i.ProductId)
+                    .GreaterThan(0);
 
-            item.RuleFor(i => i.Quantity).GreaterThan(0);
+            item.RuleFor(i => i.Quantity)
+                    .GreaterThan(0);
         });
     }
 }

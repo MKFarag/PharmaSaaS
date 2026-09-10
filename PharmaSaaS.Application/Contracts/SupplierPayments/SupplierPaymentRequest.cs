@@ -1,5 +1,3 @@
-using FluentValidation;
-
 namespace PharmaSaaS.Application.Contracts.SupplierPayments;
 
 public record SupplierPaymentRequest(
@@ -27,6 +25,6 @@ public class SupplierPaymentRequestValidator : AbstractValidator<SupplierPayment
             .When(x => x.OrderIds != null && x.OrderIds.Count > 0)
             .WithMessage("Order IDs must be unique.");
     }
-} 
+}
 
 #endregion

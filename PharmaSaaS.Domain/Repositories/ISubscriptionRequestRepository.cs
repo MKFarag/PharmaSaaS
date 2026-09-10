@@ -1,6 +1,3 @@
-using PharmaSaaS.Domain.Entities.Shared;
-using PharmaSaaS.Domain.Enums;
-
 namespace PharmaSaaS.Domain.Repositories;
 
 public interface ISubscriptionRequestRepository

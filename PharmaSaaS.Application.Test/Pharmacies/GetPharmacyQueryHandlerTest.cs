@@ -19,7 +19,6 @@ public class GetPharmacyQueryHandlerTest : IClassFixture<MapsterTestFixture>
     {
         var pharmacy = Pharmacy.Create("My Pharmacy");
         pharmacy.Id = 1;
-        pharmacy.TenantId = "tenant-1";
         pharmacy.ToggleStatus();
 
         A.CallTo(() => _pharmacyRepo.GetAsync(A<int>.Ignored, A<CancellationToken>.Ignored))
@@ -29,7 +28,7 @@ public class GetPharmacyQueryHandlerTest : IClassFixture<MapsterTestFixture>
 
         Assert.True(result.IsSuccess);
         Assert.Equal(1, result.Value.Id);
-        Assert.Equal("tenant-1", result.Value.TenantId);
+        Assert.Equal(pharmacy.TenantId, result.Value.TenantId);
         Assert.Equal("My Pharmacy", result.Value.Name);
         Assert.True(result.Value.IsActive);
     }

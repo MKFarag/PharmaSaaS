@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Auth.GetToken;
 
-public class GetTokenCommandHandler(IUnitOfWork unitOfWork, IJwtProvider jwtProvider, ISignInService signInService) : IRequestHandler<GetTokenCommand, Result<AuthResponse>>
+public sealed class GetTokenCommandHandler(IUnitOfWork unitOfWork, IJwtProvider jwtProvider, ISignInService signInService) : IRequestHandler<GetTokenCommand, Result<AuthResponse>>
 {
     public async Task<Result<AuthResponse>> Handle(GetTokenCommand request, CancellationToken cancellationToken = default)
     {

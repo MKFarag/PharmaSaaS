@@ -5,7 +5,7 @@ namespace PharmaSaaS.Application.Test.Products;
 public class DeleteProductCommandHandlerTest
 {
     private readonly IUnitOfWork _unitOfWork = A.Fake<IUnitOfWork>();
-    private readonly IProductRepository _productRepo = A.Fake<IProductRepository>();
+    private readonly IGenericRepositoryWithPagination<Product> _productRepo = A.Fake<IGenericRepositoryWithPagination<Product>>();
     private readonly DeleteProductCommandHandler _handler;
 
     public DeleteProductCommandHandlerTest()

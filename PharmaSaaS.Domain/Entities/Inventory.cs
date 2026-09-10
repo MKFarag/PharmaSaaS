@@ -31,6 +31,21 @@ public sealed class Inventory
     public void ToggleRare() => IsRare = !IsRare;
     public void DeductStock(float quantity) => Quantity -= quantity;
     public void AddStock(float quantity) => Quantity += quantity;
+    public bool TryAdjustStock(float amount, out float newQuantity)
+    {
+        newQuantity = Quantity + amount;
+        if (newQuantity < 0)
+            return false;
+        Quantity = newQuantity;
+        return true;
+    }
+    public bool TryDeductStock(float quantity)
+    {
+        if (quantity > Quantity)
+            return false;
+        Quantity -= quantity;
+        return true;
+    }
     public void SetLastSold() => LastSoldAt = DateOnly.FromDateTime(DateTime.UtcNow);
     public void SetLastOrdered() => LastOrderedAt = DateOnly.FromDateTime(DateTime.UtcNow);
     public void AddToSoldUnits(float quantity) => TotalUnitsSold += quantity;

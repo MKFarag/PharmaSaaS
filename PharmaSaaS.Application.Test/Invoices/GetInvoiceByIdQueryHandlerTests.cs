@@ -1,11 +1,4 @@
-using FakeItEasy;
-using PharmaSaaS.Application.Contracts.Invoices;
 using PharmaSaaS.Application.Features.Invoices.GetById;
-using PharmaSaaS.Application.Interfaces.Infrastructure;
-using PharmaSaaS.Domain.Entities;
-using PharmaSaaS.Domain.Errors;
-using System.Linq.Expressions;
-using Xunit;
 
 namespace PharmaSaaS.Application.Test.Invoices;
 

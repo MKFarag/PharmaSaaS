@@ -1,12 +1,6 @@
-using Mapster;
-using PharmaSaaS.Application.Contracts.PurchaseOrders;
-using PharmaSaaS.Domain.Entities;
-using PharmaSaaS.Domain.Errors;
-
 namespace PharmaSaaS.Application.Features.PurchaseOrders.Get;
 
-public sealed class GetPurchaseOrderQueryHandler(IUnitOfWork unitOfWork)
-    : IRequestHandler<GetPurchaseOrderQuery, Result<PurchaseOrderDetailResponse>>
+public sealed class GetPurchaseOrderQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetPurchaseOrderQuery, Result<PurchaseOrderDetailResponse>>
 {
     public async Task<Result<PurchaseOrderDetailResponse>> Handle(GetPurchaseOrderQuery query, CancellationToken cancellationToken = default)
     {

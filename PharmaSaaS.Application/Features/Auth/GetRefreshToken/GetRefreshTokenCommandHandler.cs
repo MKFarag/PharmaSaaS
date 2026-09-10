@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Auth.GetRefreshToken;
 
-public class GetRefreshTokenCommandHandler(IUnitOfWork unitOfWork, IJwtProvider jwtProvider) : IRequestHandler<GetRefreshTokenCommand, Result<AuthResponse>>
+public sealed class GetRefreshTokenCommandHandler(IUnitOfWork unitOfWork, IJwtProvider jwtProvider) : IRequestHandler<GetRefreshTokenCommand, Result<AuthResponse>>
 {
     public async Task<Result<AuthResponse>> Handle(GetRefreshTokenCommand request, CancellationToken cancellationToken = default)
     {

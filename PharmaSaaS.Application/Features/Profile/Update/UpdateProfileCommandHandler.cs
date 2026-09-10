@@ -1,6 +1,6 @@
-﻿namespace PharmaSaaS.Application.Features.Profile.Update;
+namespace PharmaSaaS.Application.Features.Profile.Update;
 
-public class UpdateProfileCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<UpdateProfileCommand, Result>
+public sealed class UpdateProfileCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<UpdateProfileCommand, Result>
 {
     public async Task<Result> Handle(UpdateProfileCommand command, CancellationToken cancellationToken = default)
     {
@@ -9,8 +9,6 @@ public class UpdateProfileCommandHandler(IUnitOfWork unitOfWork) : IRequestHandl
 
         user.ChangeName(command.Request.FirstName, command.Request.LastName);
 
-        await unitOfWork.Users.UpdateAsync(user);
-
-        return Result.Success();
+        return await unitOfWork.Users.UpdateAsync(user);
     }
 }

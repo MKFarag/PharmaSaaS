@@ -38,7 +38,6 @@ public class UpdatePharmacyCommandHandlerTest
         // Arrange
         var pharmacy = Pharmacy.Create("Old Name");
         pharmacy.Id = 1;
-        pharmacy.TenantId = "tenant-1";
 
         A.CallTo(() => _pharmacyRepo.GetAsync(A<int>.Ignored, A<CancellationToken>.Ignored))
             .Returns(pharmacy);
@@ -62,7 +61,6 @@ public class UpdatePharmacyCommandHandlerTest
         // Arrange
         var pharmacy = Pharmacy.Create("Old Name");
         pharmacy.Id = 1;
-        pharmacy.TenantId = "tenant-1";
 
         A.CallTo(() => _pharmacyRepo.GetAsync(A<int>.Ignored, A<CancellationToken>.Ignored))
             .Returns(pharmacy);

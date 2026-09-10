@@ -47,6 +47,10 @@ public static class DependencyInjection
             services.AddScoped<IUrlEncoder, UrlEncoder>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+            services.AddScoped<PharmaSaaS.Application.Interfaces.Services.IInvoiceService, PharmaSaaS.Application.Services.InvoiceService>();
+            services.AddScoped<PharmaSaaS.Application.Interfaces.Services.IPurchaseOrderService, PharmaSaaS.Application.Services.PurchaseOrderService>();
+            services.AddScoped<PharmaSaaS.Application.Interfaces.Services.ISupplierPaymentService, PharmaSaaS.Application.Services.SupplierPaymentService>();
+
             services.AddHealthChecks()
                 .AddSqlServer(connectionString: configuration.GetConnectionString("SharedDb")!, name: "Database")
                 .AddHangfire(options => { options.MinimumAvailableServers = 1; }, name: "Hangfire")

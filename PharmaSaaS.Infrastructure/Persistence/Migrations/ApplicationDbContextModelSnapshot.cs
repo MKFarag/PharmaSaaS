@@ -107,6 +107,13 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = "019ea884-cfe2-74be-873f-2907ba32c338",
+                            RoleId = "019ea876-57f9-78e8-a72a-e0bb31c3b6a4"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -347,14 +354,11 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("CustomerId")
                         .HasColumnType("int");
-
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date");
 
                     b.Property<decimal>("DiscountAmount")
                         .HasColumnType("decimal(18,2)");
@@ -481,6 +485,16 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("DosageFormId");
 
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Products_Name_NoConcentration")
+                        .HasFilter("[Concentration] IS NULL");
+
+                    b.HasIndex("Name", "Concentration")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Products_Name_Concentration")
+                        .HasFilter("[Concentration] IS NOT NULL");
+
                     b.ToTable("Products");
                 });
 
@@ -545,7 +559,8 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<decimal>("UnitCost")
                         .HasColumnType("decimal(18,2)");
@@ -556,7 +571,7 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("PurchaseOrderId");
 
-                    b.ToTable("PurchaseOrderItems");
+                    b.ToTable("PurchaseOrderItems", (string)null);
                 });
 
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.Return", b =>

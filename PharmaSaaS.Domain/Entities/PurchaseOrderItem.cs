@@ -1,5 +1,3 @@
-using PharmaSaaS.Domain.Enums;
-
 namespace PharmaSaaS.Domain.Entities;
 
 public sealed class PurchaseOrderItem
@@ -33,7 +31,7 @@ public sealed class PurchaseOrderItem
     {
         UnitCost = finalUnitCost;
         ReceivedQuantity = receivedQuantity;
-        
+
         if (isMissing || receivedQuantity == 0)
             Status = PurchaseOrderItemStatus.Missing;
         else

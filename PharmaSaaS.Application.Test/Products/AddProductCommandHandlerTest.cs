@@ -5,7 +5,7 @@ namespace PharmaSaaS.Application.Test.Products;
 public class AddProductCommandHandlerTest : IClassFixture<MapsterTestFixture>
 {
     private readonly IUnitOfWork _unitOfWork = A.Fake<IUnitOfWork>();
-    private readonly IProductRepository _productRepo = A.Fake<IProductRepository>();
+    private readonly IGenericRepositoryWithPagination<Product> _productRepo = A.Fake<IGenericRepositoryWithPagination<Product>>();
     private readonly IGenericRepository<Category> _categoryRepo = A.Fake<IGenericRepository<Category>>();
     private readonly IGenericRepository<DosageForm> _dosageFormRepo = A.Fake<IGenericRepository<DosageForm>>();
     private readonly AddProductCommandHandler _handler;

@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Auth.Register;
 
-public class RegisterCommandHandler(IUnitOfWork unitOfWork, IUrlEncoder urlEncoder, INotificationService notificationService) : IRequestHandler<RegisterCommand, Result>
+public sealed class RegisterCommandHandler(IUnitOfWork unitOfWork, IUrlEncoder urlEncoder, INotificationService notificationService) : IRequestHandler<RegisterCommand, Result>
 {
     public async Task<Result> Handle(RegisterCommand command, CancellationToken cancellationToken = default)
     {

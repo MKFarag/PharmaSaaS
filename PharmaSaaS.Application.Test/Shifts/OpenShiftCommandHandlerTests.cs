@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using PharmaSaaS.Application.Contracts.Shifts;
 using PharmaSaaS.Application.Features.Shifts.Open;
 
@@ -32,7 +31,7 @@ public class OpenShiftCommandHandlerTests : IClassFixture<MapsterTestFixture>
         // Assert
         Assert.True(result.IsFailure);
         Assert.Equal(ShiftErrors.AlreadyOpen, result.Error);
-        
+
         A.CallTo(() => _unitOfWork.CompleteAsync(A<CancellationToken>.Ignored))
             .MustNotHaveHappened();
     }
@@ -54,10 +53,10 @@ public class OpenShiftCommandHandlerTests : IClassFixture<MapsterTestFixture>
         Assert.True(result.IsSuccess);
         Assert.Equal(100, result.Value.CurrentBalance);
         Assert.Equal(ShiftStatus.Open, result.Value.Status);
-        
+
         A.CallTo(() => _shiftRepo.AddAsync(A<Shift>.That.Matches(s => s.OpenedById == "user1" && s.OpeningBalance == 100), A<CancellationToken>.Ignored))
             .MustHaveHappenedOnceExactly();
-            
+
         A.CallTo(() => _unitOfWork.CompleteAsync(A<CancellationToken>.Ignored))
             .MustHaveHappenedOnceExactly();
     }

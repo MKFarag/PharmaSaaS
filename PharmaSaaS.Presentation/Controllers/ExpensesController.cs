@@ -1,13 +1,7 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 using PharmaSaaS.Application.Contracts.Expenses;
 using PharmaSaaS.Application.Features.Expenses.Add;
 using PharmaSaaS.Application.Features.Expenses.Delete;
 using PharmaSaaS.Application.Features.Expenses.GetAllByShift;
-using PharmaSaaS.Domain.Constants;
-using PharmaSaaS.Presentation.Attributes;
 
 namespace PharmaSaaS.Presentation.Controllers;
 
@@ -37,19 +31,19 @@ public class ExpensesController(ISender sender) : ControllerBase
     /// </remarks>
     /// <param name="request">The expense creation request.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The ID of the newly logged expense.</returns>
-    /// <response code="200">Returns the ID of the new expense.</response>
+    /// <returns>The newly logged expense.</returns>
+    /// <response code="201">Returns the newly logged expense.</response>
     /// <response code="400">If the request data is invalid or shift is not open.</response>
     /// <response code="401">If the user is unauthorized.</response>
     [HttpPost]
     [HasPermission(Permissions.LogExpense)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ExpenseResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Log([FromBody] ExpenseRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new LogExpenseCommand(request), cancellationToken);
-        return result.IsSuccess ? Ok(new { Id = result.Value }) : result.ToProblem();
+        return result.IsSuccess ? CreatedAtAction(nameof(GetAllExpensesByShift), new { shiftId = result.Value.ShiftId }, result.Value) : result.ToProblem();
     }
 
     /// <summary>
@@ -68,10 +62,7 @@ public class ExpensesController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAllExpensesByShift([FromRoute] int shiftId, CancellationToken cancellationToken)
-    {
-        var result = await sender.Send(new GetAllExpensesByShiftQuery(shiftId), cancellationToken);
-        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
-    }
+        => Ok(await sender.Send(new GetAllExpensesByShiftQuery(shiftId), cancellationToken));
 
     /// <summary>
     /// Deletes an expense.

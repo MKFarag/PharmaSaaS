@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Categories.Delete;
 
-public class DeleteCategoryCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<DeleteCategoryCommand, Result>
+public sealed class DeleteCategoryCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<DeleteCategoryCommand, Result>
 {
     public async Task<Result> Handle(DeleteCategoryCommand command, CancellationToken cancellationToken = default)
     {
@@ -12,9 +12,9 @@ public class DeleteCategoryCommandHandler(IUnitOfWork unitOfWork, ICacheService 
 
         unitOfWork.Categories.Delete(category);
 
-        await unitOfWork.CompleteAsync(cancellationToken);
-
         await cacheService.RemoveByTagAsync(Cache.Tags.Categories(currentTenantGetter.GetTenantId()!), cancellationToken);
+
+        await unitOfWork.CompleteAsync(cancellationToken);
 
         return Result.Success();
     }

@@ -1,5 +1,3 @@
-using PharmaSaaS.Domain.Enums;
-
 namespace PharmaSaaS.Application.Contracts.SubscriptionRequests;
 
 public record SubscriptionRequestResponse(

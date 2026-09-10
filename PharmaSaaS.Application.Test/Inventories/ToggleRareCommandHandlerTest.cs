@@ -15,7 +15,7 @@ public class ToggleRareCommandHandlerTest
     [Fact]
     public async Task Handle_WhenInventoryNotFound_ReturnsNotFoundError()
     {
-        A.CallTo(() => _inventoryRepo.FindAsync(
+        A.CallTo(() => _inventoryRepo.TrackedFindAsync(
                 A<Expression<Func<Inventory, bool>>>.Ignored,
                 A<CancellationToken>.Ignored))
             .Returns(Task.FromResult<Inventory?>(null));
@@ -32,7 +32,7 @@ public class ToggleRareCommandHandlerTest
         var inventory = Inventory.Create(1, 100, 5.50m, 50);
         Assert.False(inventory.IsRare);
 
-        A.CallTo(() => _inventoryRepo.FindAsync(
+        A.CallTo(() => _inventoryRepo.TrackedFindAsync(
                 A<Expression<Func<Inventory, bool>>>.Ignored,
                 A<CancellationToken>.Ignored))
             .Returns(Task.FromResult<Inventory?>(inventory));

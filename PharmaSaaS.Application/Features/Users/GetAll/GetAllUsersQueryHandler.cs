@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Users.GetAll;
 
-public class GetAllUsersQueryHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<GetAllUsersQuery, IEnumerable<UserResponse>>
+public sealed class GetAllUsersQueryHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<GetAllUsersQuery, IEnumerable<UserResponse>>
 {
     public async Task<IEnumerable<UserResponse>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken = default)
     {

@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Auth.ResendConfirmationEmail;
 
-public class ResendConfirmationEmailCommandHandler(IUnitOfWork unitOfWork, IUrlEncoder urlEncoder, INotificationService notificationService) : IRequestHandler<ResendConfirmationEmailCommand, Result>
+public sealed class ResendConfirmationEmailCommandHandler(IUnitOfWork unitOfWork, IUrlEncoder urlEncoder, INotificationService notificationService) : IRequestHandler<ResendConfirmationEmailCommand, Result>
 {
     public async Task<Result> Handle(ResendConfirmationEmailCommand request, CancellationToken cancellationToken = default)
     {

@@ -1,5 +1,3 @@
-using PharmaSaaS.Domain.Entities;
-
 namespace PharmaSaaS.Application.Interfaces.Services;
 
 /// <summary>

@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Auth.ResetPassword;
 
-public class ResetPasswordCommandHandler(IUnitOfWork unitOfWork, IUrlEncoder urlEncoder) : IRequestHandler<ResetPasswordCommand, Result>
+public sealed class ResetPasswordCommandHandler(IUnitOfWork unitOfWork, IUrlEncoder urlEncoder) : IRequestHandler<ResetPasswordCommand, Result>
 {
     public async Task<Result> Handle(ResetPasswordCommand request, CancellationToken cancellationToken = default)
     {

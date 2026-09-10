@@ -1,6 +1,6 @@
-﻿namespace PharmaSaaS.Application.Features.Pharmacies.Get;
+namespace PharmaSaaS.Application.Features.Pharmacies.Get;
 
-public class GetPharmacyQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetPharmacyQuery, Result<PharmacyResponse>>
+public sealed class GetPharmacyQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetPharmacyQuery, Result<PharmacyResponse>>
 {
     public async Task<Result<PharmacyResponse>> Handle(GetPharmacyQuery request, CancellationToken cancellationToken = default)
     {

@@ -1,4 +1,3 @@
-using PharmaSaaS.Application.Contracts.Pharmacies;
 using PharmaSaaS.Application.Features.Pharmacies.SetSubscription;
 
 namespace PharmaSaaS.Application.Test.Pharmacies;

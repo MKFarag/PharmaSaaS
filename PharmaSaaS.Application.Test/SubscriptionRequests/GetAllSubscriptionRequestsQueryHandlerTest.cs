@@ -1,5 +1,4 @@
 using PharmaSaaS.Application.Features.SubscriptionRequests.GetAll;
-using PharmaSaaS.Domain.Enums;
 
 namespace PharmaSaaS.Application.Test.SubscriptionRequests;
 

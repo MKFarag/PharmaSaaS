@@ -41,7 +41,7 @@ public class RevertExpiryReportCommandHandlerTest
                 A<CancellationToken>.Ignored))
             .Returns(Task.FromResult<ExpiryReport?>(expiryReport));
 
-        A.CallTo(() => _inventoryRepo.FindAsync(
+        A.CallTo(() => _inventoryRepo.TrackedFindAsync(
                 A<Expression<Func<Inventory, bool>>>.Ignored,
                 A<CancellationToken>.Ignored))
             .Returns(Task.FromResult<Inventory?>(inventory));

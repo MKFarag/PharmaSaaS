@@ -4,7 +4,7 @@ public sealed class UpdateLoyaltyTierCommandHandler(IUnitOfWork unitOfWork, ICac
 {
     public async Task<Result> Handle(UpdateLoyaltyTierCommand command, CancellationToken cancellationToken = default)
     {
-        if (await unitOfWork.LoyaltyTiers.GetAsync([command.Id], cancellationToken: cancellationToken) is not { } tier)
+        if (await unitOfWork.LoyaltyTiers.GetAsync([command.Id], cancellationToken) is not { } tier)
             return Result.Failure(LoyaltyErrors.TierNotFound);
 
         if (tier.Name != command.Request.Name &&
@@ -14,9 +14,10 @@ public sealed class UpdateLoyaltyTierCommandHandler(IUnitOfWork unitOfWork, ICac
         tier.Update(command.Request.Name, command.Request.SpendThreshold);
 
         unitOfWork.LoyaltyTiers.Update(tier);
-        await unitOfWork.CompleteAsync(cancellationToken);
 
         await cacheService.RemoveByTagAsync(Cache.Tags.LoyaltyTiers(tenantGetter.GetTenantId()!), cancellationToken);
+
+        await unitOfWork.CompleteAsync(cancellationToken);
 
         return Result.Success();
     }

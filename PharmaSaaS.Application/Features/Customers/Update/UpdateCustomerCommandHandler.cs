@@ -4,7 +4,7 @@ public sealed class UpdateCustomerCommandHandler(IUnitOfWork unitOfWork) : IRequ
 {
     public async Task<Result> Handle(UpdateCustomerCommand command, CancellationToken cancellationToken = default)
     {
-        if (await unitOfWork.Customers.GetAsync([command.Id], cancellationToken: cancellationToken) is not { } customer)
+        if (await unitOfWork.Customers.GetAsync([command.Id], cancellationToken) is not { } customer)
             return Result.Failure(CustomerErrors.NotFound);
 
         if (customer.PhoneNumber != command.Request.PhoneNumber &&

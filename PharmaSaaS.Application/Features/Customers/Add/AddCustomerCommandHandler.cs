@@ -10,6 +10,7 @@ public sealed class AddCustomerCommandHandler(IUnitOfWork unitOfWork) : IRequest
         var customer = Customer.Create(command.Request.FullName, command.Request.PhoneNumber);
 
         await unitOfWork.Customers.AddAsync(customer, cancellationToken);
+
         await unitOfWork.CompleteAsync(cancellationToken);
 
         return Result.Success(customer.Adapt<CustomerResponse>());

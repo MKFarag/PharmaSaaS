@@ -1,5 +1,3 @@
-using PharmaSaaS.Domain.Enums;
-
 namespace PharmaSaaS.Domain.Entities;
 
 public sealed class PurchaseOrder

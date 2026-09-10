@@ -9,7 +9,7 @@ public sealed class Return
 
     public int InvoiceId { get; private set; }
     public int ProductId { get; private set; }
-    
+
     public Invoice Invoice { get; private set; } = default!;
     public Product Product { get; private set; } = default!;
 

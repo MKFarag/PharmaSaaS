@@ -21,6 +21,7 @@ public sealed class Shift
     public decimal TotalExpenses { get; private set; }
 
     public decimal CurrentBalance => OpeningBalance + TotalSales - TotalReturns - TotalExpenses;
+    public bool IsOpen => Status == ShiftStatus.Open;
 
     public static Shift Create(string openedById, decimal openingBalance)
     {

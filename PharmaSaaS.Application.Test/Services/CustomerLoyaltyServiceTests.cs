@@ -1,11 +1,3 @@
-using FakeItEasy;
-
-using PharmaSaaS.Application.Interfaces.Infrastructure;
-using PharmaSaaS.Application.Services;
-using PharmaSaaS.Domain.Entities;
-using System.Linq.Expressions;
-using Xunit;
-
 namespace PharmaSaaS.Application.Test.Services;
 
 public class CustomerLoyaltyServiceTests
@@ -183,7 +175,7 @@ public class CustomerLoyaltyServiceTests
     {
         // Arrange
         var customer = Customer.Create("John Doe", "123456789");
-        
+
         A.CallTo(() => _unitOfWork.LoyaltyTiers.GetAllAsync(A<CancellationToken>._))
             .Returns(new List<LoyaltyTier>()); // Empty tiers
 

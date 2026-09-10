@@ -1,6 +1,3 @@
-using PharmaSaaS.Application.Contracts.Invoices;
-using PharmaSaaS.Application.Interfaces.Infrastructure;
-
 namespace PharmaSaaS.Application.Features.Invoices.GetById;
 
 public sealed class GetInvoiceByIdQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetInvoiceByIdQuery, Result<InvoiceDetailResponse>>

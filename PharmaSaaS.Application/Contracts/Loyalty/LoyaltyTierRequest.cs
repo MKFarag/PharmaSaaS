@@ -3,8 +3,10 @@ namespace PharmaSaaS.Application.Contracts.Loyalty;
 public record LoyaltyTierRequest(
     string Name,
     decimal SpendThreshold,
-    IEnumerable<DiscountRuleRequest>? DiscountRules = null
+    IEnumerable<DiscountRuleRequest>? DiscountRules
 );
+
+#region Validation
 
 public class LoyaltyTierRequestValidator : AbstractValidator<LoyaltyTierRequest>
 {
@@ -18,3 +20,5 @@ public class LoyaltyTierRequestValidator : AbstractValidator<LoyaltyTierRequest>
             .GreaterThanOrEqualTo(0);
     }
 }
+
+#endregion

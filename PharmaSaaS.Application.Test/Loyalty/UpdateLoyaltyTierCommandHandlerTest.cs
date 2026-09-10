@@ -22,7 +22,7 @@ public class UpdateLoyaltyTierCommandHandlerTest : IClassFixture<MapsterTestFixt
     public async Task Handle_WhenNotFound_ReturnsError()
     {
         A.CallTo(() => _tierRepo.GetAsync(A<object[]>.Ignored, A<CancellationToken>.Ignored)).Returns((LoyaltyTier?)null);
-        var result = await _handler.Handle(new UpdateLoyaltyTierCommand(1, new LoyaltyTierRequest("Gold", 1000)), CancellationToken.None);
+        var result = await _handler.Handle(new UpdateLoyaltyTierCommand(1, new LoyaltyTierRequest("Gold", 1000, null)), CancellationToken.None);
         Assert.True(result.IsFailure);
         Assert.Equal(LoyaltyErrors.TierNotFound, result.Error);
     }
@@ -34,7 +34,7 @@ public class UpdateLoyaltyTierCommandHandlerTest : IClassFixture<MapsterTestFixt
         A.CallTo(() => _tierRepo.GetAsync(A<object[]>.Ignored, A<CancellationToken>.Ignored)).Returns(tier);
         A.CallTo(() => _tierRepo.AnyAsync(A<Expression<Func<LoyaltyTier, bool>>>.Ignored, A<CancellationToken>.Ignored)).Returns(false);
 
-        var result = await _handler.Handle(new UpdateLoyaltyTierCommand(1, new LoyaltyTierRequest("Gold", 1000)), CancellationToken.None);
+        var result = await _handler.Handle(new UpdateLoyaltyTierCommand(1, new LoyaltyTierRequest("Gold", 1000, null)), CancellationToken.None);
         Assert.True(result.IsSuccess);
         A.CallTo(() => _tierRepo.Update(A<LoyaltyTier>.Ignored)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _unitOfWork.CompleteAsync(A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();

@@ -5,6 +5,8 @@ public record DiscountRuleRequest(
     decimal DiscountPercent
 );
 
+#region Validation
+
 public class DiscountRuleRequestValidator : AbstractValidator<DiscountRuleRequest>
 {
     public DiscountRuleRequestValidator()
@@ -17,3 +19,5 @@ public class DiscountRuleRequestValidator : AbstractValidator<DiscountRuleReques
             .LessThanOrEqualTo(100);
     }
 }
+
+#endregion

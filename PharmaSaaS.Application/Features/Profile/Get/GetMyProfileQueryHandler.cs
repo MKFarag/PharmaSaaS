@@ -1,6 +1,6 @@
-﻿namespace PharmaSaaS.Application.Features.Profile.Get;
+namespace PharmaSaaS.Application.Features.Profile.Get;
 
-public class GetMyProfileQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetMyProfileQuery, Result<UserProfileResponse>>
+public sealed class GetMyProfileQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetMyProfileQuery, Result<UserProfileResponse>>
 {
     public async Task<Result<UserProfileResponse>> Handle(GetMyProfileQuery request, CancellationToken cancellationToken = default)
     {

@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.DosageForms.Delete;
 
-public class DeleteDosageFormCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<DeleteDosageFormCommand, Result>
+public sealed class DeleteDosageFormCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<DeleteDosageFormCommand, Result>
 {
     public async Task<Result> Handle(DeleteDosageFormCommand command, CancellationToken cancellationToken = default)
     {
@@ -12,9 +12,9 @@ public class DeleteDosageFormCommandHandler(IUnitOfWork unitOfWork, ICacheServic
 
         unitOfWork.DosageForms.Delete(dosageForm);
 
-        await unitOfWork.CompleteAsync(cancellationToken);
-
         await cacheService.RemoveByTagAsync(Cache.Tags.DosageForms(currentTenantGetter.GetTenantId()!), cancellationToken);
+
+        await unitOfWork.CompleteAsync(cancellationToken);
 
         return Result.Success();
     }

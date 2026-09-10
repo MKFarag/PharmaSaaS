@@ -1,4 +1,4 @@
-namespace PharmaSaaS.Application.Contracts.Pharmacies;
+namespace PharmaSaaS.Application.Contracts.SubscriptionRequests;
 
 public record SetSubscriptionRequest(
     DateOnly End

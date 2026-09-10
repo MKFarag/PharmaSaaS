@@ -1,5 +1,4 @@
 using PharmaSaaS.Application.Features.Expenses.Delete;
-using Xunit;
 
 namespace PharmaSaaS.Application.Test.Expenses;
 
@@ -63,7 +62,7 @@ public class DeleteExpenseCommandHandlerTests : IClassFixture<MapsterTestFixture
         // Arrange
         var shift = Shift.Create("user1", 1000m);
         shift.AddExpense(100m);
-        
+
         var expense = Expense.Create(1, 100m, "Internet Bill");
 
         A.CallTo(() => _expenseRepo.GetAsync(A<object[]>.Ignored, A<CancellationToken>.Ignored))
@@ -82,7 +81,7 @@ public class DeleteExpenseCommandHandlerTests : IClassFixture<MapsterTestFixture
 
         A.CallTo(() => _expenseRepo.Delete(expense))
             .MustHaveHappenedOnceExactly();
-        
+
         A.CallTo(() => _unitOfWork.CompleteAsync(A<CancellationToken>.Ignored))
             .MustHaveHappenedOnceExactly();
     }

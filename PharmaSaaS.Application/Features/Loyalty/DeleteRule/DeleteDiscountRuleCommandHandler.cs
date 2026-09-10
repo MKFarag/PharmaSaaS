@@ -4,13 +4,14 @@ public sealed class DeleteDiscountRuleCommandHandler(IUnitOfWork unitOfWork, ICa
 {
     public async Task<Result> Handle(DeleteDiscountRuleCommand command, CancellationToken cancellationToken = default)
     {
-        if (await unitOfWork.DiscountRules.GetAsync([command.Id], cancellationToken: cancellationToken) is not { } rule)
+        if (await unitOfWork.DiscountRules.GetAsync([command.Id], cancellationToken) is not { } rule)
             return Result.Failure(LoyaltyErrors.RuleNotFound);
 
         unitOfWork.DiscountRules.Delete(rule);
-        await unitOfWork.CompleteAsync(cancellationToken);
 
         await cacheService.RemoveByTagAsync(Cache.Tags.LoyaltyTiers(tenantGetter.GetTenantId()!), cancellationToken);
+
+        await unitOfWork.CompleteAsync(cancellationToken);
 
         return Result.Success();
     }

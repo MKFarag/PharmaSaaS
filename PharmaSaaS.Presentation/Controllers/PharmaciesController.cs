@@ -1,4 +1,5 @@
 ﻿using PharmaSaaS.Application.Contracts.Pharmacies;
+using PharmaSaaS.Application.Contracts.SubscriptionRequests;
 using PharmaSaaS.Application.Features.Pharmacies.Get;
 using PharmaSaaS.Application.Features.Pharmacies.GetAll;
 using PharmaSaaS.Application.Features.Pharmacies.SetSubscription;

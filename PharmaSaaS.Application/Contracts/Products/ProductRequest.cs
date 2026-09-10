@@ -9,6 +9,8 @@ public record ProductRequest(
     int DosageFormId
 );
 
+#region Validation
+
 public class ProductRequestValidator : AbstractValidator<ProductRequest>
 {
     public ProductRequestValidator()
@@ -36,3 +38,5 @@ public class ProductRequestValidator : AbstractValidator<ProductRequest>
             .GreaterThan(0);
     }
 }
+
+#endregion

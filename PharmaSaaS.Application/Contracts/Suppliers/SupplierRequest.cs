@@ -5,6 +5,8 @@ public record SupplierRequest(
     string? ContactInfo
 );
 
+#region Validation
+
 public class SupplierRequestValidator : AbstractValidator<SupplierRequest>
 {
     public SupplierRequestValidator()
@@ -17,3 +19,5 @@ public class SupplierRequestValidator : AbstractValidator<SupplierRequest>
             .MaximumLength(500);
     }
 }
+
+#endregion

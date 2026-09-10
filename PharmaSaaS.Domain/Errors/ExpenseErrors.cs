@@ -1,4 +1,3 @@
-using PharmaSaaS.Domain.Abstraction;
 using StatusCodes = PharmaSaaS.Domain.Constants.StatusCodes;
 
 namespace PharmaSaaS.Domain.Errors;

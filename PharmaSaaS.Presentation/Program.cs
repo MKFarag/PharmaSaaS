@@ -2,6 +2,7 @@ using Hangfire;
 using HangfireBasicAuthenticationFilter;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using PharmaSaaS.Domain.Entities;
 using PharmaSaaS.Infrastructure.Factories;
 using PharmaSaaS.Presentation;
 using PharmaSaaS.Presentation.Middleware;
@@ -55,10 +56,10 @@ app.MapHangfireDashboard("/jobs", new DashboardOptions
     IsReadOnlyFunc = context => true
 });
 
-//RecurringJob.AddOrUpdate<IRecurringJobService>(
-//    "RemoveExpiredRefreshTokens",
-//    x => x.RemoveExpiredRefreshTokenAsync(),
-//    Cron.DayInterval(RefreshToken.AutoRemoveAfterDays));
+RecurringJob.AddOrUpdate<IRecurringJobService>(
+    "RemoveExpiredRefreshTokens",
+    x => x.RemoveExpiredRefreshTokenAsync(),
+    Cron.DayInterval(RefreshToken.AutoRemoveAfterDays));
 
 app.UseCors();
 

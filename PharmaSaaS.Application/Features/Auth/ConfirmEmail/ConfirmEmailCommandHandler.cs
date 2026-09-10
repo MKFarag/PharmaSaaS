@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Auth.ConfirmEmail;
 
-public class ConfirmEmailCommandHandler(IUnitOfWork unitOfWork, IUrlEncoder urlEncoder) : IRequestHandler<ConfirmEmailCommand, Result>
+public sealed class ConfirmEmailCommandHandler(IUnitOfWork unitOfWork, IUrlEncoder urlEncoder) : IRequestHandler<ConfirmEmailCommand, Result>
 {
     public async Task<Result> Handle(ConfirmEmailCommand request, CancellationToken cancellationToken = default)
     {

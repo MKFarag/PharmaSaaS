@@ -1,15 +1,7 @@
-using FakeItEasy;
 using PharmaSaaS.Application.Contracts.PurchaseOrders;
 using PharmaSaaS.Application.Features.PurchaseOrders.Approve;
-using PharmaSaaS.Application.Interfaces.Infrastructure;
-using PharmaSaaS.Domain.Constants;
-using PharmaSaaS.Domain.Entities;
-using Xunit;
-using System.Linq.Expressions;
 
-using PharmaSaaS.Domain.Enums;
-
-namespace PharmaSaaS.Application.Test.Features.PurchaseOrders;
+namespace PharmaSaaS.Application.Test.PurchaseOrders;
 
 public class ApprovePurchaseOrderCommandHandlerTests : IClassFixture<MapsterTestFixture>
 {
@@ -34,7 +26,7 @@ public class ApprovePurchaseOrderCommandHandlerTests : IClassFixture<MapsterTest
                 A<CancellationToken>._))
             .Returns(po);
 
-        var handler = new ApprovePurchaseOrderCommandHandler(_unitOfWork);
+        var handler = new ApprovePurchaseOrderCommandHandler(_unitOfWork, new PurchaseOrderService());
 
         // Act
         var result = await handler.Handle(command);

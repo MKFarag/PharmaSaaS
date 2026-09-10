@@ -1,11 +1,4 @@
-using FakeItEasy;
-using PharmaSaaS.Application.Contracts.Invoices;
 using PharmaSaaS.Application.Features.Invoices.GetAll;
-using PharmaSaaS.Application.Interfaces.Infrastructure;
-using PharmaSaaS.Domain.Abstraction;
-using PharmaSaaS.Domain.Entities;
-using System.Linq.Expressions;
-using Xunit;
 
 namespace PharmaSaaS.Application.Test.Invoices;
 
@@ -28,7 +21,7 @@ public class GetAllInvoicesQueryHandlerTests
         var query = new GetAllInvoicesQuery(filters);
 
         var paginatedList = A.Fake<IPaginatedList<InvoiceResponse>>();
-        
+
         A.CallTo(() => _unitOfWork.Invoices.FindPaginatedListAsync<InvoiceResponse>(
             A<Expression<Func<Invoice, bool>>>._,
             1,

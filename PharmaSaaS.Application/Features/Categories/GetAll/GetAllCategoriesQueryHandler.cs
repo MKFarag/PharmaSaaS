@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Categories.GetAll;
 
-public class GetAllCategoriesQueryHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<GetAllCategoriesQuery, IEnumerable<CategoryResponse>>
+public sealed class GetAllCategoriesQueryHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<GetAllCategoriesQuery, IEnumerable<CategoryResponse>>
 {
     public async Task<IEnumerable<CategoryResponse>> Handle(GetAllCategoriesQuery request, CancellationToken cancellationToken = default)
     {

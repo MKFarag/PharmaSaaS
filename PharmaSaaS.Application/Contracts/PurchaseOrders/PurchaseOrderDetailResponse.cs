@@ -1,5 +1,3 @@
-using PharmaSaaS.Application.Contracts.Suppliers;
-
 namespace PharmaSaaS.Application.Contracts.PurchaseOrders;
 
 public record PurchaseOrderDetailResponse(

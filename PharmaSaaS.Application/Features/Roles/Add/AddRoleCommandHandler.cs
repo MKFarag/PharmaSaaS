@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Roles.Add;
 
-public class AddRoleCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<AddRoleCommand, Result<RoleDetailResponse>>
+public sealed class AddRoleCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<AddRoleCommand, Result<RoleDetailResponse>>
 {
     public async Task<Result<RoleDetailResponse>> Handle(AddRoleCommand command, CancellationToken cancellationToken = default)
     {

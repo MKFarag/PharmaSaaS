@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Roles.Get;
 
-public class GetRoleQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetRoleQuery, Result<RoleDetailResponse>>
+public sealed class GetRoleQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetRoleQuery, Result<RoleDetailResponse>>
 {
     public async Task<Result<RoleDetailResponse>> Handle(GetRoleQuery request, CancellationToken cancellationToken = default)
     {

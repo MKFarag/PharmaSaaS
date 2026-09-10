@@ -15,7 +15,7 @@ public class UpdateStockCommandHandlerTest
     [Fact]
     public async Task Handle_WhenInventoryNotFound_ReturnsNotFoundError()
     {
-        A.CallTo(() => _inventoryRepo.FindAsync(
+        A.CallTo(() => _inventoryRepo.TrackedFindAsync(
                 A<Expression<Func<Inventory, bool>>>.Ignored,
                 A<CancellationToken>.Ignored))
             .Returns(Task.FromResult<Inventory?>(null));
@@ -33,7 +33,7 @@ public class UpdateStockCommandHandlerTest
     {
         var inventory = Inventory.Create(1, 50f, 4.00m, 30);
 
-        A.CallTo(() => _inventoryRepo.FindAsync(
+        A.CallTo(() => _inventoryRepo.TrackedFindAsync(
                 A<Expression<Func<Inventory, bool>>>.Ignored,
                 A<CancellationToken>.Ignored))
             .Returns(Task.FromResult<Inventory?>(inventory));

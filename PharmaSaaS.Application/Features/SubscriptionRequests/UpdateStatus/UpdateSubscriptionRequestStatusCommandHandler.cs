@@ -1,8 +1,7 @@
-using PharmaSaaS.Domain.Enums;
-
 namespace PharmaSaaS.Application.Features.SubscriptionRequests.UpdateStatus;
 
-public class UpdateSubscriptionRequestStatusCommandHandler(IUnitOfWork unitOfWork, INotificationService notificationService) : IRequestHandler<UpdateSubscriptionRequestStatusCommand, Result>
+public sealed class UpdateSubscriptionRequestStatusCommandHandler(IUnitOfWork unitOfWork, INotificationService notificationService)
+    : IRequestHandler<UpdateSubscriptionRequestStatusCommand, Result>
 {
     public async Task<Result> Handle(UpdateSubscriptionRequestStatusCommand command, CancellationToken cancellationToken = default)
     {
@@ -16,9 +15,7 @@ public class UpdateSubscriptionRequestStatusCommandHandler(IUnitOfWork unitOfWor
             case SubscriptionRequestStatus.Approved:
                 subscriptionRequest.Approve();
                 subscriptionEnd = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(command.Request.DurationInMonths!.Value));
-
                 var pharmacy = Pharmacy.Create(subscriptionRequest.PharmacyName);
-                pharmacy.TenantId = $"{Guid.NewGuid():N}"[..12] + "-" + subscriptionRequest.PharmacyName;
                 pharmacy.SetSubscriptionEnd(subscriptionEnd.Value);
                 await unitOfWork.Pharmacies.AddAsync(pharmacy, cancellationToken);
                 break;
@@ -34,11 +31,14 @@ public class UpdateSubscriptionRequestStatusCommandHandler(IUnitOfWork unitOfWor
 
         await unitOfWork.SharedCompleteAsync(cancellationToken);
 
-        await notificationService.SendSubscriptionRequestStatusUpdateAsync(
-            subscriptionRequest.Email,
-            subscriptionRequest.PharmacyName,
-            command.Request.Status.ToString(),
-            subscriptionEnd);
+        await notificationService
+            .SendSubscriptionRequestStatusUpdateAsync
+            (
+                subscriptionRequest.Email,
+                subscriptionRequest.PharmacyName,
+                command.Request.Status.ToString(),
+                subscriptionEnd
+            );
 
         return Result.Success();
     }

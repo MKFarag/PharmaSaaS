@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using PharmaSaaS.Infrastructure.Factories;
-using PharmaSaaS.Infrastructure.Messaging;
 using PharmaSaaS.Application.Interfaces.Services;
 using PharmaSaaS.Application.Services;
+using PharmaSaaS.Infrastructure.Factories;
+using PharmaSaaS.Infrastructure.Messaging;
 
 namespace PharmaSaaS.Infrastructure;
 
@@ -19,8 +19,8 @@ public static class DependencyInjection
 
             services.AddSharedDbConfig(configuration);
             services.AddScoped<ICustomerLoyaltyService, CustomerLoyaltyService>();
-            services.AddScoped<IReturnRefundCalculatorService, ReturnRefundCalculatorService>();
-            services.AddScoped<IReturnItemValidatorService, ReturnItemValidatorService>();
+            services.AddScoped<IReturnService, ReturnService>();
+            services.AddScoped<IInventoryFilterService, InventoryFilterService>();
 
             services.AddHybridCache();
 

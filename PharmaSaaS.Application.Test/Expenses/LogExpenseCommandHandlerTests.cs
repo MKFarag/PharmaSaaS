@@ -1,6 +1,5 @@
 using PharmaSaaS.Application.Contracts.Expenses;
 using PharmaSaaS.Application.Features.Expenses.Add;
-using Xunit;
 
 namespace PharmaSaaS.Application.Test.Expenses;
 
@@ -56,7 +55,7 @@ public class LogExpenseCommandHandlerTests : IClassFixture<MapsterTestFixture>
 
         A.CallTo(() => _expenseRepo.AddAsync(A<Expense>.That.Matches(e => e.Amount == 100m && e.Description == "Internet Bill"), A<CancellationToken>.Ignored))
             .MustHaveHappenedOnceExactly();
-        
+
         A.CallTo(() => _unitOfWork.CompleteAsync(A<CancellationToken>.Ignored))
             .MustHaveHappenedOnceExactly();
     }

@@ -1,5 +1,5 @@
+using PharmaSaaS.Application.Contracts.Expenses;
 using PharmaSaaS.Application.Features.Expenses.GetAllByShift;
-using Xunit;
 
 namespace PharmaSaaS.Application.Test.Expenses;
 
@@ -19,14 +19,15 @@ public class GetAllExpensesByShiftQueryHandlerTests : IClassFixture<MapsterTestF
     public async Task Handle_WhenValid_ReturnsExpenses()
     {
         // Arrange
-        var expenses = new List<Expense>
+        var expenseResponses = new List<ExpenseResponse>
         {
-            Expense.Create(1, 100m, "Internet"),
-            Expense.Create(1, 50m, "Cleaning")
+            new ExpenseResponse(1, 100m, "Internet", DateTimeOffset.UtcNow, 1),
+            new ExpenseResponse(2, 50m, "Cleaning", DateTimeOffset.UtcNow, 1)
         };
 
-        A.CallTo(() => _expenseRepo.FindAllAsync(A<Expression<Func<Expense, bool>>>.Ignored, A<CancellationToken>.Ignored))
-            .Returns(expenses);
+        A.CallTo(() => _expenseRepo.FindAllProjectionAsync<ExpenseResponse>(
+                A<Expression<Func<Expense, bool>>>.Ignored, A<CancellationToken>.Ignored))
+            .Returns(expenseResponses);
 
         var query = new GetAllExpensesByShiftQuery(1);
 
@@ -35,8 +36,9 @@ public class GetAllExpensesByShiftQueryHandlerTests : IClassFixture<MapsterTestF
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Equal(2, result.Value.Count);
-        Assert.Equal(100m, result.Value[0].Amount);
-        Assert.Equal(50m, result.Value[1].Amount);
+        var value = result.Value.ToList();
+        Assert.Equal(2, value.Count);
+        Assert.Equal(100m, value[0].Amount);
+        Assert.Equal(50m, value[1].Amount);
     }
 }

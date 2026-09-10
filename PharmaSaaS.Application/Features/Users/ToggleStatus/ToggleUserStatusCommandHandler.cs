@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Users.ToggleStatus;
 
-public class ToggleUserStatusCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<ToggleUserStatusCommand, Result>
+public sealed class ToggleUserStatusCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<ToggleUserStatusCommand, Result>
 {
     public async Task<Result> Handle(ToggleUserStatusCommand request, CancellationToken cancellationToken = default)
     {

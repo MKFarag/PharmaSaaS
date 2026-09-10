@@ -6,6 +6,8 @@ public record ExpiryReportRequest(
     string? Notes
 );
 
+#region Validation
+
 public class ExpiryReportRequestValidator : AbstractValidator<ExpiryReportRequest>
 {
     public ExpiryReportRequestValidator()
@@ -21,3 +23,5 @@ public class ExpiryReportRequestValidator : AbstractValidator<ExpiryReportReques
             .When(x => x.Notes is not null);
     }
 }
+
+#endregion

@@ -1,7 +1,6 @@
 namespace PharmaSaaS.Application.Features.Suppliers.GetAll;
 
-public sealed class GetAllSuppliersQueryHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter tenantGetter)
-    : IRequestHandler<GetAllSuppliersQuery, IEnumerable<SupplierResponse>>
+public sealed class GetAllSuppliersQueryHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter tenantGetter) : IRequestHandler<GetAllSuppliersQuery, IEnumerable<SupplierResponse>>
 {
     public async Task<IEnumerable<SupplierResponse>> Handle(GetAllSuppliersQuery request, CancellationToken cancellationToken = default)
     {

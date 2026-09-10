@@ -1,14 +1,20 @@
 namespace PharmaSaaS.Application.Features.ExpiryReports.Create;
 
-public sealed class LogExpiryReportCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<LogExpiryReportCommand, Result>
+public sealed class LogExpiryReportCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<LogExpiryReportCommand, Result<ExpiryReportResponse>>
 {
-    public async Task<Result> Handle(LogExpiryReportCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result<ExpiryReportResponse>> Handle(LogExpiryReportCommand command, CancellationToken cancellationToken = default)
     {
-        if (await unitOfWork.Inventories.FindAsync(i => i.ProductId == command.Request.ProductId, cancellationToken) is not { } inventory)
-            return Result.Failure(InventoryErrors.ProductNotFound);
+        string[] includes = [
+            nameof(Inventory.Product),
+            $"{nameof(Inventory.Product)}.{nameof(Product.Category)}",
+            $"{nameof(Inventory.Product)}.{nameof(Product.DosageForm)}"
+        ];
 
-        if (command.Request.ExpiredQuantity > inventory.Quantity)
-            return Result.Failure(InventoryErrors.QuantityExceedsStock);
+        if (await unitOfWork.Inventories.TrackedFindAsync(i => i.ProductId == command.Request.ProductId, includes, cancellationToken) is not { } inventory)
+            return Result.Failure<ExpiryReportResponse>(InventoryErrors.ProductNotFound);
+
+        if (!inventory.TryDeductStock(command.Request.ExpiredQuantity))
+            return Result.Failure<ExpiryReportResponse>(InventoryErrors.QuantityExceedsStock);
 
         var expiryReport = ExpiryReport.Create(
             command.Request.ProductId,
@@ -18,10 +24,17 @@ public sealed class LogExpiryReportCommandHandler(IUnitOfWork unitOfWork) : IReq
 
         await unitOfWork.ExpiryReports.AddAsync(expiryReport, cancellationToken);
 
-        inventory.DeductStock(command.Request.ExpiredQuantity);
-
         await unitOfWork.CompleteAsync(cancellationToken);
 
-        return Result.Success();
+        var response = new ExpiryReportResponse(
+            expiryReport.Id,
+            expiryReport.ExpiredQuantity,
+            expiryReport.ReportDate,
+            expiryReport.Notes,
+            expiryReport.ReportedByEmployeeId,
+            inventory.Product.Adapt<ProductResponse>()
+        );
+
+        return Result.Success(response);
     }
 }

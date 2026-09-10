@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Users.Update;
 
-public class UpdateUserCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<UpdateUserCommand, Result>
+public sealed class UpdateUserCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<UpdateUserCommand, Result>
 {
     public async Task<Result> Handle(UpdateUserCommand command, CancellationToken cancellationToken = default)
     {

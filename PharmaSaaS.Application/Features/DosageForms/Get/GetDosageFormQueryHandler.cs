@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.DosageForms.Get;
 
-public class GetDosageFormQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetDosageFormQuery, Result<DosageFormResponse>>
+public sealed class GetDosageFormQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetDosageFormQuery, Result<DosageFormResponse>>
 {
     public async Task<Result<DosageFormResponse>> Handle(GetDosageFormQuery request, CancellationToken cancellationToken = default)
     {

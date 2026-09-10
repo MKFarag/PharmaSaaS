@@ -1,15 +1,11 @@
-using PharmaSaaS.Application.Contracts.Suppliers;
-
 namespace PharmaSaaS.Application.Contracts.PurchaseOrders;
 
 public record PurchaseOrderResponse(
     int Id,
-    DateOnly OrderDate,
-    decimal TotalAmount,
-    decimal PaidAmount,
-    decimal RemainingAmount,
+    int SupplierId,
+    string SupplierName,
     decimal CalculatedAmount,
-    decimal ReturnedAmount,
+    DateOnly OrderDate,
     string Status,
-    SupplierResponse Supplier
+    decimal RemainingAmount
 );

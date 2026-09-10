@@ -1,23 +1,21 @@
-using Microsoft.AspNetCore.Mvc;
-using PharmaSaaS.Domain.Enums;
 using PharmaSaaS.Application.Contracts.PurchaseOrders;
+using PharmaSaaS.Application.Features.PurchaseOrders.Approve;
 using PharmaSaaS.Application.Features.PurchaseOrders.Create;
 using PharmaSaaS.Application.Features.PurchaseOrders.Delete;
 using PharmaSaaS.Application.Features.PurchaseOrders.Get;
+using PharmaSaaS.Application.Features.PurchaseOrders.GetItems;
 using PharmaSaaS.Application.Features.PurchaseOrders.List;
-using PharmaSaaS.Application.Features.PurchaseOrders.Approve;
 using PharmaSaaS.Application.Features.PurchaseOrders.Return;
 using PharmaSaaS.Application.Features.PurchaseOrders.Update;
-using PharmaSaaS.Domain.Abstraction;
-using PharmaSaaS.Domain.Constants;
-using PharmaSaaS.Presentation.Attributes;
 
 namespace PharmaSaaS.Presentation.Controllers;
 
 /// <summary>Manage Purchase Orders.</summary>
 [Route("api/purchase-orders")]
 [ApiController]
-public class PurchaseOrdersController(ISender sender) : ControllerBase
+[Authorize]
+[EnableRateLimiting(RateLimitingOptions.PolicyNames.Concurrency)]
+public sealed class PurchaseOrdersController(ISender sender) : ControllerBase
 {
     /// <summary>List Purchase Orders</summary>
     /// <remarks>

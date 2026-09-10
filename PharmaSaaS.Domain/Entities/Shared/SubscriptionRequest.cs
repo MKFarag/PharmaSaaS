@@ -1,5 +1,3 @@
-using PharmaSaaS.Domain.Enums;
-
 namespace PharmaSaaS.Domain.Entities.Shared;
 
 public sealed class SubscriptionRequest

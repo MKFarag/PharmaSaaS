@@ -5,6 +5,8 @@ public record CustomerRequest(
     string PhoneNumber
 );
 
+#region Validation
+
 public class CustomerRequestValidator : AbstractValidator<CustomerRequest>
 {
     public CustomerRequestValidator()
@@ -18,3 +20,5 @@ public class CustomerRequestValidator : AbstractValidator<CustomerRequest>
             .MaximumLength(20);
     }
 }
+
+#endregion

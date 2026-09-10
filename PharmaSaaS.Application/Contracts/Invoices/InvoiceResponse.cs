@@ -5,10 +5,8 @@ public record InvoiceResponse(
     int ShiftId,
     int? CustomerId,
     string? CustomerName,
-    decimal Total,
     decimal DiscountAmount,
     decimal FinalAmount,
-    int ItemCount,
     bool HasReturn,
-    DateOnly Date
+    DateTime CreatedAt
 );

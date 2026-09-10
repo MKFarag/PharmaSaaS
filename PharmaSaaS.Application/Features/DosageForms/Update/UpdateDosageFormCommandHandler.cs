@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.DosageForms.Update;
 
-public class UpdateDosageFormCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<UpdateDosageFormCommand, Result>
+public sealed class UpdateDosageFormCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<UpdateDosageFormCommand, Result>
 {
     public async Task<Result> Handle(UpdateDosageFormCommand command, CancellationToken cancellationToken = default)
     {
@@ -12,9 +12,9 @@ public class UpdateDosageFormCommandHandler(IUnitOfWork unitOfWork, ICacheServic
 
         dosageForm.Update(command.Request.Name);
 
-        await unitOfWork.CompleteAsync(cancellationToken);
-
         await cacheService.RemoveByTagAsync(Cache.Tags.DosageForms(currentTenantGetter.GetTenantId()!), cancellationToken);
+
+        await unitOfWork.CompleteAsync(cancellationToken);
 
         return Result.Success();
     }

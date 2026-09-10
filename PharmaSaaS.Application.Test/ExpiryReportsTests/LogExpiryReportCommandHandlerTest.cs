@@ -17,8 +17,9 @@ public class LogExpiryReportCommandHandlerTest
     [Fact]
     public async Task Handle_WhenInventoryNotFound_ReturnsProductNotFoundError()
     {
-        A.CallTo(() => _inventoryRepo.FindAsync(
+        A.CallTo(() => _inventoryRepo.TrackedFindAsync(
                 A<Expression<Func<Inventory, bool>>>.Ignored,
+                A<string[]>.Ignored,
                 A<CancellationToken>.Ignored))
             .Returns(Task.FromResult<Inventory?>(null));
 
@@ -33,8 +34,9 @@ public class LogExpiryReportCommandHandlerTest
     {
         var inventory = Inventory.Create(1, 5f, 5.50m, 50);
 
-        A.CallTo(() => _inventoryRepo.FindAsync(
+        A.CallTo(() => _inventoryRepo.TrackedFindAsync(
                 A<Expression<Func<Inventory, bool>>>.Ignored,
+                A<string[]>.Ignored,
                 A<CancellationToken>.Ignored))
             .Returns(Task.FromResult<Inventory?>(inventory));
 
@@ -47,10 +49,20 @@ public class LogExpiryReportCommandHandlerTest
     [Fact]
     public async Task Handle_ValidData_ReturnsSuccess()
     {
+        var category = Category.Create("Cat");
+        var dosageForm = DosageForm.Create("Form");
+        var product = Product.Create("Product 1", 1, 1);
+        product.SetCategory(category);
+        product.SetDosageForm(dosageForm);
+
         var inventory = Inventory.Create(1, 50f, 5.50m, 50);
 
-        A.CallTo(() => _inventoryRepo.FindAsync(
+        var prop = typeof(Inventory).GetProperty("Product");
+        prop?.SetValue(inventory, product);
+
+        A.CallTo(() => _inventoryRepo.TrackedFindAsync(
                 A<Expression<Func<Inventory, bool>>>.Ignored,
+                A<string[]>.Ignored,
                 A<CancellationToken>.Ignored))
             .Returns(Task.FromResult<Inventory?>(inventory));
 
@@ -60,6 +72,8 @@ public class LogExpiryReportCommandHandlerTest
         var result = await _handler.Handle(new LogExpiryReportCommand(new ExpiryReportRequest(1, 10, "Expired batch"), "user-1"), CancellationToken.None);
 
         Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Equal(10f, result.Value.ExpiredQuantity);
         Assert.Equal(40f, inventory.Quantity);
 
         A.CallTo(() => _expiryReportRepo.AddAsync(A<ExpiryReport>.Ignored, A<CancellationToken>.Ignored))

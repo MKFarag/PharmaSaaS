@@ -1,6 +1,7 @@
 using PharmaSaaS.Application.Contracts.Inventories;
 using PharmaSaaS.Application.Features.Inventories.AdjustStock;
 using PharmaSaaS.Application.Features.Inventories.GetAllInventories;
+using PharmaSaaS.Application.Features.Inventories.GetInventoryById;
 using PharmaSaaS.Application.Features.Inventories.ToggleRare;
 using PharmaSaaS.Application.Features.Inventories.UpdateStock;
 
@@ -42,6 +43,35 @@ public class InventoryController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAll([FromQuery] InventoryRequestFilters filters, CancellationToken cancellationToken)
         => Ok(await sender.Send(new GetAllInventoriesQuery(filters), cancellationToken));
+
+    /// <summary>
+    /// Retrieves the full details of a single inventory record by product ID.
+    /// </summary>
+    /// <remarks>
+    /// Returns complete inventory data including product details, stock statistics, and dates.
+    ///
+    /// Sample request:
+    ///
+    ///     GET /api/Inventory/42
+    ///
+    /// </remarks>
+    /// <param name="productId">The product identifier whose inventory record to retrieve.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Full inventory detail for the given product.</returns>
+    /// <response code="200">Returns the inventory detail record.</response>
+    /// <response code="401">If the user is unauthorized.</response>
+    /// <response code="404">If no inventory record exists for the given product.</response>
+    [HttpGet("{productId}")]
+    [HasPermission(Permissions.ReadInventory)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetById([FromRoute] int productId, CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new GetInventoryByIdQuery(productId), cancellationToken);
+
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+    }
 
     /// <summary>
     /// Updates stock for a specific product.

@@ -2,12 +2,9 @@ namespace PharmaSaaS.Application.Contracts.Inventories;
 
 public record InventoryResponse(
     int Id,
-    float Quantity,
+    string Name,
+    string? Concentration,
     decimal SellingPrice,
-    int? TargetStock,
-    bool IsRare,
-    float TotalUnitsSold,
-    DateOnly? LastSoldAt,
-    DateOnly? LastOrderedAt,
-    ProductResponse Product
+    float Quantity,
+    bool IsRare
 );

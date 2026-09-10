@@ -7,6 +7,8 @@ public record UpdateStockRequest(
     bool IsRare
 );
 
+#region Validation
+
 public class UpdateStockRequestValidator : AbstractValidator<UpdateStockRequest>
 {
     public UpdateStockRequestValidator()
@@ -22,3 +24,5 @@ public class UpdateStockRequestValidator : AbstractValidator<UpdateStockRequest>
             .When(x => x.TargetStock is not null);
     }
 }
+
+#endregion

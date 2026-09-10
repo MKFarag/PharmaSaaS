@@ -8,13 +8,24 @@ public sealed class UpdateProductCommandHandler(IUnitOfWork unitOfWork) : IReque
         if (await unitOfWork.Products.GetAsync([command.Id], cancellationToken) is not { } product)
             return Result.Failure(ProductErrors.NotFound);
 
-        if (command.Request.Barcode is not null &&
-            await unitOfWork.Products.AnyAsync(p => p.Barcode == command.Request.Barcode && p.Id != command.Id, cancellationToken))
+        if (command.Request.Barcode is not null && await unitOfWork.Products
+            .AnyAsync
+            (
+                p => p.Barcode == command.Request.Barcode &&
+                p.Id != command.Id,
+                cancellationToken
+            ))
             return Result.Failure(ProductErrors.DuplicatedBarcode);
 
-        if (await unitOfWork.Products.AnyAsync(
-                p => p.Name == command.Request.Name && p.Concentration == command.Request.Concentration && p.DosageFormId == command.Request.DosageFormId && p.Id != command.Id,
-                cancellationToken))
+        if (await unitOfWork.Products
+            .AnyAsync
+            (
+                p => p.Name == command.Request.Name &&
+                p.Concentration == command.Request.Concentration &&
+                p.DosageFormId == command.Request.DosageFormId &&
+                p.Id != command.Id,
+                cancellationToken
+            ))
             return Result.Failure(ProductErrors.CompositeDuplicate);
 
         if (!await unitOfWork.Categories.AnyAsync(c => c.Id == command.Request.CategoryId, cancellationToken))
@@ -23,8 +34,15 @@ public sealed class UpdateProductCommandHandler(IUnitOfWork unitOfWork) : IReque
         if (!await unitOfWork.DosageForms.AnyAsync(d => d.Id == command.Request.DosageFormId, cancellationToken))
             return Result.Failure(ProductErrors.DosageFormNotFound);
 
-        product.Update(command.Request.Name, command.Request.CategoryId, command.Request.DosageFormId,
-            command.Request.Barcode, command.Request.Concentration, command.Request.MaxStorageTemperature);
+        product.Update
+            (
+                command.Request.Name,
+                command.Request.CategoryId,
+                command.Request.DosageFormId,
+                command.Request.Barcode,
+                command.Request.Concentration,
+                command.Request.MaxStorageTemperature
+            );
 
         await unitOfWork.CompleteAsync(cancellationToken);
 

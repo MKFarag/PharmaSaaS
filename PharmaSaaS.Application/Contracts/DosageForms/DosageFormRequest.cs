@@ -4,6 +4,8 @@ public record DosageFormRequest(
     string Name
 );
 
+#region Validation
+
 public class DosageFormRequestValidator : AbstractValidator<DosageFormRequest>
 {
     public DosageFormRequestValidator()
@@ -13,3 +15,5 @@ public class DosageFormRequestValidator : AbstractValidator<DosageFormRequest>
             .Length(2, 100);
     }
 }
+
+#endregion

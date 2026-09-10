@@ -1,12 +1,8 @@
-
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using PharmaSaaS.Application.Contracts.SubscriptionRequests;
 using PharmaSaaS.Application.Features.SubscriptionRequests.Create;
 using PharmaSaaS.Application.Features.SubscriptionRequests.Get;
 using PharmaSaaS.Application.Features.SubscriptionRequests.GetAll;
 using PharmaSaaS.Application.Features.SubscriptionRequests.UpdateStatus;
-using PharmaSaaS.Domain.Enums;
 
 namespace PharmaSaaS.Presentation.Controllers;
 

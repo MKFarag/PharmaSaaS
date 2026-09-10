@@ -1,28 +1,20 @@
 namespace PharmaSaaS.Application.Features.Inventories.GetAllInventories;
 
-public sealed class GetAllInventoriesQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetAllInventoriesQuery, IPaginatedList<InventoryResponse>>
+public sealed class GetAllInventoriesQueryHandler(IUnitOfWork unitOfWork, IInventoryFilterService filterService)
+    : IRequestHandler<GetAllInventoriesQuery, IPaginatedList<InventoryResponse>>
 {
     public async Task<IPaginatedList<InventoryResponse>> Handle(GetAllInventoriesQuery request, CancellationToken cancellationToken = default)
     {
-        var f = request.Filters;
-
-        Expression<Func<Inventory, bool>> predicate = i =>
-            (!f.IsRare.HasValue || i.IsRare == f.IsRare.Value) && (f.OutOfStock != true || i.Quantity == 0) &&
-            (!f.BelowTarget.HasValue ||
-                (i.TargetStock.HasValue &&
-                    ((f.BelowTarget == true && i.Quantity < i.TargetStock.Value) || (f.BelowTarget == false && i.Quantity >= i.TargetStock.Value))));
+        var predicate = filterService.BuildPredicate(request.Filters);
+        var (sortColumn, sortDirection) = filterService.ResolveSorting(request.Filters);
 
         return await unitOfWork.Inventories.FindPaginatedListAsync<InventoryResponse>(
             predicate,
-            f.PageNumber, f.PageSize,
-            f.SearchValue, nameof(Product.Name),
-            nameof(Inventory.Id), OrderBy.Ascending,
+            request.Filters.PageNumber, request.Filters.PageSize,
+            request.Filters.ProductName, $"{nameof(Inventory.Product)}.{nameof(Product.Name)}",
+            sortColumn, sortDirection,
             ColumnType.String,
-            [
-                nameof(Inventory.Product),
-                $"{nameof(Inventory.Product)}.{nameof(Product.Category)}",
-                $"{nameof(Inventory.Product)}.{nameof(Product.DosageForm)}"
-            ],
+            [nameof(Inventory.Product)],
             cancellationToken);
     }
 }

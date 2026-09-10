@@ -5,7 +5,7 @@ namespace PharmaSaaS.Application.Test.Products;
 public class GetProductByBarcodeQueryHandlerTest : IClassFixture<MapsterTestFixture>
 {
     private readonly IUnitOfWork _unitOfWork = A.Fake<IUnitOfWork>();
-    private readonly IProductRepository _productRepo = A.Fake<IProductRepository>();
+    private readonly IGenericRepositoryWithPagination<Product> _productRepo = A.Fake<IGenericRepositoryWithPagination<Product>>();
     private readonly GetProductByBarcodeQueryHandler _handler;
 
     public GetProductByBarcodeQueryHandlerTest(MapsterTestFixture _)

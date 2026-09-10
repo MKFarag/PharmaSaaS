@@ -22,7 +22,7 @@ public class AddLoyaltyTierCommandHandlerTest : IClassFixture<MapsterTestFixture
     public async Task Handle_WhenNameDuplicated_ReturnsError()
     {
         A.CallTo(() => _tierRepo.AnyAsync(A<Expression<Func<LoyaltyTier, bool>>>.Ignored, A<CancellationToken>.Ignored)).Returns(true);
-        var result = await _handler.Handle(new AddLoyaltyTierCommand(new LoyaltyTierRequest("Gold", 1000)), CancellationToken.None);
+        var result = await _handler.Handle(new AddLoyaltyTierCommand(new LoyaltyTierRequest("Gold", 1000, null)), CancellationToken.None);
         Assert.True(result.IsFailure);
         Assert.Equal(LoyaltyErrors.DuplicatedTierName, result.Error);
     }
@@ -41,7 +41,7 @@ public class AddLoyaltyTierCommandHandlerTest : IClassFixture<MapsterTestFixture
     public async Task Handle_ValidData_ReturnsSuccess()
     {
         A.CallTo(() => _tierRepo.AnyAsync(A<Expression<Func<LoyaltyTier, bool>>>.Ignored, A<CancellationToken>.Ignored)).Returns(false);
-        var result = await _handler.Handle(new AddLoyaltyTierCommand(new LoyaltyTierRequest("Gold", 1000)), CancellationToken.None);
+        var result = await _handler.Handle(new AddLoyaltyTierCommand(new LoyaltyTierRequest("Gold", 1000, null)), CancellationToken.None);
         Assert.True(result.IsSuccess);
         A.CallTo(() => _tierRepo.AddAsync(A<LoyaltyTier>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _unitOfWork.CompleteAsync(A<CancellationToken>.Ignored)).MustHaveHappenedOnceExactly();

@@ -11,9 +11,10 @@ public sealed class DeleteLoyaltyTierCommandHandler(IUnitOfWork unitOfWork, ICac
             return Result.Failure(LoyaltyErrors.TierInUse);
 
         unitOfWork.LoyaltyTiers.Delete(tier);
-        await unitOfWork.CompleteAsync(cancellationToken);
 
         await cacheService.RemoveByTagAsync(Cache.Tags.LoyaltyTiers(tenantGetter.GetTenantId()!), cancellationToken);
+
+        await unitOfWork.CompleteAsync(cancellationToken);
 
         return Result.Success();
     }

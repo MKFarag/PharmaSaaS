@@ -1,7 +1,3 @@
-using PharmaSaaS.Application.Interfaces.Infrastructure;
-using PharmaSaaS.Application.Interfaces.Services;
-using PharmaSaaS.Domain.Entities;
-
 namespace PharmaSaaS.Application.Services;
 
 public sealed class CustomerLoyaltyService(IUnitOfWork unitOfWork) : ICustomerLoyaltyService

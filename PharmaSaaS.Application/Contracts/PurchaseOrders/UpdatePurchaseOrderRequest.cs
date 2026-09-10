@@ -1,5 +1,3 @@
-using FluentValidation;
-
 namespace PharmaSaaS.Application.Contracts.PurchaseOrders;
 
 public record UpdatePurchaseOrderRequest(

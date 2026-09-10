@@ -53,7 +53,7 @@ public class CloseShiftCommandHandlerTests : IClassFixture<MapsterTestFixture>
         // Assert
         Assert.True(result.IsFailure);
         Assert.Equal(ShiftErrors.NotOpen, result.Error);
-        
+
         A.CallTo(() => _unitOfWork.CompleteAsync(A<CancellationToken>.Ignored))
             .MustNotHaveHappened();
     }

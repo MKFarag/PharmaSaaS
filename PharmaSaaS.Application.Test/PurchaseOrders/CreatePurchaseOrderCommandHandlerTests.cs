@@ -1,12 +1,7 @@
-using FakeItEasy;
 using PharmaSaaS.Application.Contracts.PurchaseOrders;
 using PharmaSaaS.Application.Features.PurchaseOrders.Create;
-using PharmaSaaS.Application.Interfaces.Infrastructure;
-using PharmaSaaS.Domain.Entities;
-using System.Linq.Expressions;
-using Xunit;
 
-namespace PharmaSaaS.Application.Test.Features.PurchaseOrders;
+namespace PharmaSaaS.Application.Test.PurchaseOrders;
 
 public class CreatePurchaseOrderCommandHandlerTests
 {

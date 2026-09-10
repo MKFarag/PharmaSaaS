@@ -1,18 +1,11 @@
-using Mapster;
-using PharmaSaaS.Application.Abstractions.Messaging;
-using PharmaSaaS.Application.Contracts.Expenses;
-using PharmaSaaS.Application.Interfaces.Infrastructure;
-using PharmaSaaS.Domain.Abstraction;
-
 namespace PharmaSaaS.Application.Features.Expenses.GetAllByShift;
 
-public sealed class GetAllExpensesByShiftQueryHandler(IUnitOfWork unitOfWork)
-    : IRequestHandler<GetAllExpensesByShiftQuery, Result<List<ExpenseResponse>>>
+public sealed class GetAllExpensesByShiftQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetAllExpensesByShiftQuery, Result<IEnumerable<ExpenseResponse>>>
 {
-    public async Task<Result<List<ExpenseResponse>>> Handle(GetAllExpensesByShiftQuery query, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<ExpenseResponse>>> Handle(GetAllExpensesByShiftQuery query, CancellationToken cancellationToken = default)
     {
-        var expenses = await unitOfWork.Expenses.FindAllAsync(e => e.ShiftId == query.ShiftId, cancellationToken: cancellationToken);
+        var expenses = await unitOfWork.Expenses.FindAllProjectionAsync<ExpenseResponse>(x => x.ShiftId == query.ShiftId, cancellationToken);
 
-        return Result.Success(expenses.Adapt<List<ExpenseResponse>>());
+        return Result.Success(expenses);
     }
 }

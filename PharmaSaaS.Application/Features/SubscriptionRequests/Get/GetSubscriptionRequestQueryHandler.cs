@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.SubscriptionRequests.Get;
 
-public class GetSubscriptionRequestQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetSubscriptionRequestQuery, Result<SubscriptionRequestResponse>>
+public sealed class GetSubscriptionRequestQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetSubscriptionRequestQuery, Result<SubscriptionRequestResponse>>
 {
     public async Task<Result<SubscriptionRequestResponse>> Handle(GetSubscriptionRequestQuery request, CancellationToken cancellationToken = default)
     {

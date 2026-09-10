@@ -1,9 +1,9 @@
-using FluentValidation;
-using PharmaSaaS.Domain.Enums;
-
 namespace PharmaSaaS.Application.Contracts.SubscriptionRequests;
 
-public record UpdateSubscriptionRequestStatusRequest(SubscriptionRequestStatus Status, int? DurationInMonths = null);
+public record UpdateSubscriptionRequestStatusRequest(
+    SubscriptionRequestStatus Status,
+    int? DurationInMonths
+);
 
 #region Validation
 

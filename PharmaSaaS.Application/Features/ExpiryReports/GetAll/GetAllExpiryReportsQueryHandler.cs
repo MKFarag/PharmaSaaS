@@ -4,12 +4,10 @@ public sealed class GetAllExpiryReportsQueryHandler(IUnitOfWork unitOfWork) : IR
 {
     public async Task<IPaginatedList<ExpiryReportResponse>> Handle(GetAllExpiryReportsQuery request, CancellationToken cancellationToken = default)
     {
-        var f = request.Filters;
-
         return await unitOfWork.ExpiryReports.FindPaginatedListAsync<ExpiryReportResponse>(
-            er => !f.Year.HasValue || er.ReportDate.Year == f.Year.Value,
-            f.PageNumber, f.PageSize,
-            f.SearchValue, $"{nameof(ExpiryReport.Product)}.{nameof(Product.Name)}",
+            er => !request.Filters.Year.HasValue || er.ReportDate.Year == request.Filters.Year.Value,
+            request.Filters.PageNumber, request.Filters.PageSize,
+            request.Filters.ProductName, $"{nameof(ExpiryReport.Product)}.{nameof(Product.Name)}",
             nameof(ExpiryReport.ReportDate), OrderBy.Descending,
             ColumnType.String,
             [

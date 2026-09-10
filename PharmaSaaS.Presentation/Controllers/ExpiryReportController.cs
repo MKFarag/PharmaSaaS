@@ -57,14 +57,14 @@ public class ExpiryReportController(ISender sender) : ControllerBase
     /// </remarks>
     /// <param name="request">The expiry report request.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>No content on success.</returns>
-    /// <response code="204">If the expiry report was logged successfully.</response>
+    /// <returns>The logged expiry report.</returns>
+    /// <response code="201">If the expiry report was logged successfully.</response>
     /// <response code="400">If the request is invalid or quantity exceeds stock.</response>
     /// <response code="404">If the product is not found.</response>
     /// <response code="401">If the user is unauthorized.</response>
     [HttpPost("")]
     [HasPermission(Permissions.LogExpiryReport)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -73,7 +73,7 @@ public class ExpiryReportController(ISender sender) : ControllerBase
         var result = await sender.Send(new LogExpiryReportCommand(request, User.GetId()!), cancellationToken);
 
         return result.IsSuccess
-            ? NoContent()
+            ? CreatedAtAction(nameof(GetAll), new { }, result.Value)
             : result.ToProblem();
     }
 

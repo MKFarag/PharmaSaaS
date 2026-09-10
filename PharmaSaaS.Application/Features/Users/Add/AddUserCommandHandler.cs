@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Users.Add;
 
-public class AddUserCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<AddUserCommand, Result<UserResponse>>
+public sealed class AddUserCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<AddUserCommand, Result<UserResponse>>
 {
     public async Task<Result<UserResponse>> Handle(AddUserCommand command, CancellationToken cancellationToken = default)
     {

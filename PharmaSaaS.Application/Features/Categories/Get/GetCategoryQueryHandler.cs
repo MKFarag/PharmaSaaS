@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Categories.Get;
 
-public class GetCategoryQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetCategoryQuery, Result<CategoryResponse>>
+public sealed class GetCategoryQueryHandler(IUnitOfWork unitOfWork) : IRequestHandler<GetCategoryQuery, Result<CategoryResponse>>
 {
     public async Task<Result<CategoryResponse>> Handle(GetCategoryQuery request, CancellationToken cancellationToken = default)
     {

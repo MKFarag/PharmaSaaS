@@ -12,16 +12,16 @@ public sealed class SupplierPayment
 
     public ICollection<PurchaseOrder> Orders { get; private set; } = default!;
 
-    public static SupplierPayment Create(int supplierId, decimal amount, string? notes)
+    public static SupplierPayment Create(int supplierId, decimal amount, string? notes, ICollection<PurchaseOrder> orders)
         => new()
         {
             SupplierId = supplierId,
             Amount = amount,
             Notes = notes,
-            PaidAt = DateTime.UtcNow
+            PaidAt = DateTime.UtcNow,
+            Orders = orders
         };
 
     public void SetSupplier(Supplier supplier) => Supplier = supplier;
-    public void SetOrders(ICollection<PurchaseOrder> orders) => Orders = orders;
 }
 

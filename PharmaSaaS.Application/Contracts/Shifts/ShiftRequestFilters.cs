@@ -7,6 +7,8 @@ public record ShiftRequestFilters
     public DateOnly? Date { get; init; }
 }
 
+#region Validation
+
 public class ShiftRequestFiltersValidator : AbstractValidator<ShiftRequestFilters>
 {
     public ShiftRequestFiltersValidator()
@@ -18,3 +20,5 @@ public class ShiftRequestFiltersValidator : AbstractValidator<ShiftRequestFilter
             .InclusiveBetween(1, 250);
     }
 }
+
+#endregion

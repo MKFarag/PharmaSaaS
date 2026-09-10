@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Categories.Update;
 
-public class UpdateCategoryCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<UpdateCategoryCommand, Result>
+public sealed class UpdateCategoryCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<UpdateCategoryCommand, Result>
 {
     public async Task<Result> Handle(UpdateCategoryCommand command, CancellationToken cancellationToken = default)
     {
@@ -12,9 +12,9 @@ public class UpdateCategoryCommandHandler(IUnitOfWork unitOfWork, ICacheService 
 
         category.Update(command.Request.Name);
 
-        await unitOfWork.CompleteAsync(cancellationToken);
-
         await cacheService.RemoveByTagAsync(Cache.Tags.Categories(currentTenantGetter.GetTenantId()!), cancellationToken);
+
+        await unitOfWork.CompleteAsync(cancellationToken);
 
         return Result.Success();
     }

@@ -4,20 +4,13 @@ public sealed class GetAllShiftsQueryHandler(IUnitOfWork unitOfWork) : IRequestH
 {
     public async Task<IPaginatedList<ShiftResponse>> Handle(GetAllShiftsQuery request, CancellationToken cancellationToken = default)
     {
-        var f = request.Filters;
-
-        if (request.Filters.Date is { } date)
-        {
-            return await unitOfWork.Shifts.FindPaginatedListAsync<ShiftResponse>(
-                s => s.Date == date,
-                f.PageNumber, f.PageSize,
+        return await unitOfWork.Shifts
+            .FindPaginatedListAsync<ShiftResponse>
+            (
+                s => !request.Filters.Date.HasValue || s.Date == request.Filters.Date,
+                request.Filters.PageNumber, request.Filters.PageSize,
                 nameof(Shift.Id),
-                cancellationToken);
-        }
-
-        return await unitOfWork.Shifts.GetPaginatedListAsync<ShiftResponse>(
-            f.PageNumber, f.PageSize,
-            nameof(Shift.Id),
-            cancellationToken);
+                cancellationToken
+            );
     }
 }

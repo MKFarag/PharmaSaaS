@@ -4,14 +4,13 @@ public sealed class GetAllCustomersQueryHandler(IUnitOfWork unitOfWork) : IReque
 {
     public async Task<IPaginatedList<CustomerResponse>> Handle(GetAllCustomersQuery request, CancellationToken cancellationToken = default)
     {
-        var f = request.Filters;
-        f = f.Check([nameof(Customer.FullName), nameof(Customer.TotalSpend)],
-                    [nameof(Customer.FullName), nameof(Customer.PhoneNumber)]);
+        request.Filters.Check([nameof(Customer.FullName), nameof(Customer.TotalSpend)],
+                              [nameof(Customer.FullName), nameof(Customer.PhoneNumber)]);
 
         return await unitOfWork.Customers.GetPaginatedListAsync<CustomerResponse>(
-            f.PageNumber, f.PageSize,
-            f.SearchValue, f.SearchColumn,
-            f.SortColumn!, f.SortDirection!,
+            request.Filters.PageNumber, request.Filters.PageSize,
+            request.Filters.SearchValue, request.Filters.SearchColumn,
+            request.Filters.SortColumn!, request.Filters.SortDirection!,
             ColumnType.String,
             [
                 nameof(Customer.CurrentTier),

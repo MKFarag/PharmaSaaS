@@ -1,6 +1,6 @@
-﻿namespace PharmaSaaS.Application.Features.Pharmacies.ToggleStatus;
+namespace PharmaSaaS.Application.Features.Pharmacies.ToggleStatus;
 
-public class TogglePharmacyStatusCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<TogglePharmacyStatusCommand, Result>
+public sealed class TogglePharmacyStatusCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<TogglePharmacyStatusCommand, Result>
 {
     public async Task<Result> Handle(TogglePharmacyStatusCommand command, CancellationToken cancellationToken = default)
     {

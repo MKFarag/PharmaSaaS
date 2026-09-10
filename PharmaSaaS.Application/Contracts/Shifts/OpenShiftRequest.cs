@@ -1,6 +1,10 @@
 namespace PharmaSaaS.Application.Contracts.Shifts;
 
-public record OpenShiftRequest(decimal OpeningBalance);
+public record OpenShiftRequest(
+    decimal OpeningBalance
+);
+
+#region Validation
 
 public class OpenShiftRequestValidator : AbstractValidator<OpenShiftRequest>
 {
@@ -11,3 +15,5 @@ public class OpenShiftRequestValidator : AbstractValidator<OpenShiftRequest>
             .WithMessage("Opening balance must be zero or greater.");
     }
 }
+
+#endregion

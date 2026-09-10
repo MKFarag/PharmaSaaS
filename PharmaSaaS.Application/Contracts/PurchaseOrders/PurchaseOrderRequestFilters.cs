@@ -1,5 +1,3 @@
-using FluentValidation;
-
 namespace PharmaSaaS.Application.Contracts.PurchaseOrders;
 
 public record PurchaseOrderRequestFilters
@@ -16,8 +14,11 @@ public class PurchaseOrderRequestFiltersValidator : AbstractValidator<PurchaseOr
 {
     public PurchaseOrderRequestFiltersValidator()
     {
-        RuleFor(x => x.PageNumber).GreaterThan(0);
-        RuleFor(x => x.PageSize).InclusiveBetween(1, 250);
+        RuleFor(x => x.PageNumber)
+            .GreaterThan(0);
+
+        RuleFor(x => x.PageSize)
+            .InclusiveBetween(1, 250);
     }
 }
 

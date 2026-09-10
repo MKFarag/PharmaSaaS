@@ -1,12 +1,6 @@
-using FakeItEasy;
 using PharmaSaaS.Application.Features.PurchaseOrders.Delete;
-using PharmaSaaS.Application.Interfaces.Infrastructure;
-using PharmaSaaS.Domain.Entities;
-using PharmaSaaS.Domain.Errors;
-using System.Linq.Expressions;
-using Xunit;
 
-namespace PharmaSaaS.Application.Test.Features.PurchaseOrders;
+namespace PharmaSaaS.Application.Test.PurchaseOrders;
 
 public class DeletePurchaseOrderCommandHandlerTests
 {
@@ -36,7 +30,7 @@ public class DeletePurchaseOrderCommandHandlerTests
         var command = new DeletePurchaseOrderCommand(1);
         var po = PurchaseOrder.Create(1, 100, 0);
         po.Receive(); // Sets status to Received
-        
+
         A.CallTo(() => _unitOfWork.PurchaseOrders.TrackedFindAsync(A<Expression<Func<PurchaseOrder, bool>>>._, A<string[]>._, A<CancellationToken>._)).Returns(po);
 
         var handler = new DeletePurchaseOrderCommandHandler(_unitOfWork);

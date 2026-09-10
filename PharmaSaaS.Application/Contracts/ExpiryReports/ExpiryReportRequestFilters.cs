@@ -4,7 +4,7 @@ public record ExpiryReportRequestFilters
 {
     public int PageNumber { get; init; } = 1;
     public int PageSize { get; init; } = 10;
-    public string? SearchValue { get; init; }
+    public string? ProductName { get; init; }
     public int? Year { get; init; }
 }
 
@@ -21,7 +21,7 @@ public class ExpiryReportRequestFiltersValidator : AbstractValidator<ExpiryRepor
             .InclusiveBetween(1, 250);
 
         RuleFor(x => x.Year)
-            .InclusiveBetween(2000, 2100)
+            .InclusiveBetween(2025, 2100)
             .When(x => x.Year.HasValue);
     }
 }

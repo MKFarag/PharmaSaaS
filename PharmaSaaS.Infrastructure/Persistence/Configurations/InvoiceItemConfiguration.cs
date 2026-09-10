@@ -1,7 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PharmaSaaS.Domain.Entities;
-
 namespace PharmaSaaS.Infrastructure.Persistence.Configurations;
 
 public sealed class InvoiceItemConfiguration : IEntityTypeConfiguration<InvoiceItem>
@@ -17,7 +13,7 @@ public sealed class InvoiceItemConfiguration : IEntityTypeConfiguration<InvoiceI
             .WithMany()
             .HasForeignKey(x => x.ProductId)
             .OnDelete(DeleteBehavior.Restrict);
-        
+
         // InvoiceId cascade will be configured in DbContext globally to override restricted deletes
     }
 }

@@ -1,6 +1,6 @@
-﻿namespace PharmaSaaS.Application.Features.Profile.ChangeEmail;
+namespace PharmaSaaS.Application.Features.Profile.ChangeEmail;
 
-public class ChangeMyEmailCommandHandler(IUnitOfWork unitOfWork, IUrlEncoder urlEncoder, INotificationService notificationService) : IRequestHandler<ChangeMyEmailCommand, Result>
+public sealed class ChangeMyEmailCommandHandler(IUnitOfWork unitOfWork, IUrlEncoder urlEncoder, INotificationService notificationService) : IRequestHandler<ChangeMyEmailCommand, Result>
 {
     public async Task<Result> Handle(ChangeMyEmailCommand request, CancellationToken cancellationToken = default)
     {

@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Roles.ToggleStatus;
 
-public class ToggleRoleStatusCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<ToggleRoleStatusCommand, Result>
+public sealed class ToggleRoleStatusCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<ToggleRoleStatusCommand, Result>
 {
     public async Task<Result> Handle(ToggleRoleStatusCommand request, CancellationToken cancellationToken = default)
     {

@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Roles.Update;
 
-public class UpdateRoleCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<UpdateRoleCommand, Result>
+public sealed class UpdateRoleCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<UpdateRoleCommand, Result>
 {
     public async Task<Result> Handle(UpdateRoleCommand command, CancellationToken cancellationToken = default)
     {

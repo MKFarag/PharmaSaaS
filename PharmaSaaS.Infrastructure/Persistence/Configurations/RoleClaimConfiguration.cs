@@ -1,4 +1,4 @@
-﻿namespace PharmaSaaS.Infrastructure.Persistence.Configurations;
+namespace PharmaSaaS.Infrastructure.Persistence.Configurations;
 
 internal class RoleClaimConfiguration : IEntityTypeConfiguration<IdentityRoleClaim<string>>
 {

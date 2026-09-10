@@ -4,12 +4,14 @@ public sealed class GetProductByBarcodeQueryHandler(IUnitOfWork unitOfWork) : IR
 {
     public async Task<Result<ProductResponse>> Handle(GetProductByBarcodeQuery query, CancellationToken cancellationToken = default)
     {
-        var product = await unitOfWork.Products.FindAsync(
-            p => p.Barcode == query.Barcode,
-            [nameof(Product.Category), nameof(Product.DosageForm)],
-            cancellationToken);
-
-        if (product is not { })
+        if (await unitOfWork.Products
+            .FindAsync
+            (
+                p => p.Barcode == query.Barcode,
+                [nameof(Product.Category), nameof(Product.DosageForm)],
+                cancellationToken
+            )
+            is not { } product)
             return Result.Failure<ProductResponse>(ProductErrors.NotFound);
 
         return Result.Success(product.Adapt<ProductResponse>());

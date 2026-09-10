@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Auth.RevokeRefreshToken;
 
-public class RevokeRefreshTokenCommandHandler(IUnitOfWork unitOfWork, IJwtProvider jwtProvider) : IRequestHandler<RevokeRefreshTokenCommand, Result>
+public sealed class RevokeRefreshTokenCommandHandler(IUnitOfWork unitOfWork, IJwtProvider jwtProvider) : IRequestHandler<RevokeRefreshTokenCommand, Result>
 {
     public async Task<Result> Handle(RevokeRefreshTokenCommand request, CancellationToken cancellationToken = default)
     {

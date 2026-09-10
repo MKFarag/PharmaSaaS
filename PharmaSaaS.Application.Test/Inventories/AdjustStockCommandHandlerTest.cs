@@ -79,11 +79,12 @@ public class AdjustStockCommandHandlerTest
 
         // Assert
         Assert.True(result.IsSuccess);
+        Assert.Equal(15f, inventory.Quantity); // TryAdjustStock mutates the entity
 
         A.CallTo(() => _inventoryRepo.ExecuteUpdateAsync(
                 A<Expression<Func<Inventory, bool>>>.Ignored,
                 nameof(Inventory.Quantity),
-                15f,
+                A<float>.Ignored,
                 A<CancellationToken>.Ignored))
             .MustHaveHappenedOnceExactly();
     }

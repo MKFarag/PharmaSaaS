@@ -1,4 +1,3 @@
-using PharmaSaaS.Application.Contracts.Shifts;
 using PharmaSaaS.Application.Features.Shifts.GetById;
 
 namespace PharmaSaaS.Application.Test.Shifts;

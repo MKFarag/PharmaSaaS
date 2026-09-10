@@ -8,9 +8,12 @@ public sealed class AddProductCommandHandler(IUnitOfWork unitOfWork) : IRequestH
             await unitOfWork.Products.AnyAsync(p => p.Barcode == command.Request.Barcode, cancellationToken))
             return Result.Failure<ProductResponse>(ProductErrors.DuplicatedBarcode);
 
-        if (await unitOfWork.Products.AnyAsync(
+        if (await unitOfWork.Products
+            .AnyAsync
+            (
                 p => p.Name == command.Request.Name && p.Concentration == command.Request.Concentration && p.DosageFormId == command.Request.DosageFormId,
-                cancellationToken))
+                cancellationToken
+            ))
             return Result.Failure<ProductResponse>(ProductErrors.CompositeDuplicate);
 
         if (!await unitOfWork.Categories.AnyAsync(c => c.Id == command.Request.CategoryId, cancellationToken))
@@ -19,8 +22,15 @@ public sealed class AddProductCommandHandler(IUnitOfWork unitOfWork) : IRequestH
         if (!await unitOfWork.DosageForms.AnyAsync(d => d.Id == command.Request.DosageFormId, cancellationToken))
             return Result.Failure<ProductResponse>(ProductErrors.DosageFormNotFound);
 
-        var product = Product
-            .Create(command.Request.Name, command.Request.CategoryId, command.Request.DosageFormId, command.Request.Barcode, command.Request.Concentration, command.Request.MaxStorageTemperature);
+        var product = Product.Create
+            (
+                command.Request.Name,
+                command.Request.CategoryId,
+                command.Request.DosageFormId,
+                command.Request.Barcode,
+                command.Request.Concentration,
+                command.Request.MaxStorageTemperature
+            );
 
         await unitOfWork.Products.AddAsync(product, cancellationToken);
 

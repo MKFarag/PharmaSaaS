@@ -1,5 +1,4 @@
 using PharmaSaaS.Application.Features.Suppliers.Get;
-using Xunit;
 
 namespace PharmaSaaS.Application.Test.Suppliers;
 

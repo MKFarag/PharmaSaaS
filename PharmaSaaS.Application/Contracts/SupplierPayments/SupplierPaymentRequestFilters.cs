@@ -1,5 +1,3 @@
-using FluentValidation;
-
 namespace PharmaSaaS.Application.Contracts.SupplierPayments;
 
 public record SupplierPaymentRequestFilters
@@ -15,8 +13,11 @@ public class SupplierPaymentRequestFiltersValidator : AbstractValidator<Supplier
 {
     public SupplierPaymentRequestFiltersValidator()
     {
-        RuleFor(x => x.PageNumber).GreaterThan(0);
-        RuleFor(x => x.PageSize).InclusiveBetween(1, 250);
+        RuleFor(x => x.PageNumber)
+            .GreaterThan(0);
+
+        RuleFor(x => x.PageSize)
+            .InclusiveBetween(1, 250);
     }
 }
 

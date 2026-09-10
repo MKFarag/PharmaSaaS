@@ -36,5 +36,19 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasIndex(x => x.Barcode)
             .IsUnique()
             .HasFilter("[Barcode] IS NOT NULL");
+
+        // Unique (Name, Concentration) when Concentration is provided
+        builder
+            .HasIndex(x => new { x.Name, x.Concentration })
+            .IsUnique()
+            .HasFilter("[Concentration] IS NOT NULL")
+            .HasDatabaseName("IX_Products_Name_Concentration");
+
+        // Unique Name when Concentration is NULL (no concentration variant)
+        builder
+            .HasIndex(x => x.Name)
+            .IsUnique()
+            .HasFilter("[Concentration] IS NULL")
+            .HasDatabaseName("IX_Products_Name_NoConcentration");
     }
 }

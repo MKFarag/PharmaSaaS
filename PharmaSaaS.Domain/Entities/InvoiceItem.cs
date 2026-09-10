@@ -5,10 +5,10 @@ public sealed class InvoiceItem
     public int Id { get; set; }
     public int InvoiceId { get; private set; }
     public int ProductId { get; private set; }
-    
+
     public float Quantity { get; private set; }
     public decimal UnitPrice { get; private set; }
-    
+
     public decimal Subtotal => (decimal)Quantity * UnitPrice;
 
     public Invoice Invoice { get; private set; } = default!;

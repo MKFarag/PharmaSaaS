@@ -1,5 +1,3 @@
-using PharmaSaaS.Application.Contracts.Loyalty;
-
 namespace PharmaSaaS.Application.Contracts.Customers;
 
 public record CustomerResponse(

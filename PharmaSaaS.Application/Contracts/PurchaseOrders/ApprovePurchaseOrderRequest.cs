@@ -1,5 +1,3 @@
-using FluentValidation;
-
 namespace PharmaSaaS.Application.Contracts.PurchaseOrders;
 
 public record ApprovePurchaseOrderRequest(
@@ -8,8 +6,8 @@ public record ApprovePurchaseOrderRequest(
 );
 
 public record ApprovePurchaseOrderItemRequest(
-    int ProductId, 
-    float ReceivedQuantity, 
+    int ProductId,
+    float ReceivedQuantity,
     decimal UnitCost,
     bool IsMissing = false
 );
@@ -29,7 +27,8 @@ public class ApprovePurchaseOrderRequestValidator : AbstractValidator<ApprovePur
             .When(x => x.Items != null && x.Items.Count > 0)
             .WithMessage("Product IDs must be unique within the same order.");
 
-        RuleForEach(x => x.Items).SetValidator(new ApprovePurchaseOrderItemRequestValidator());
+        RuleForEach(x => x.Items)
+            .SetValidator(new ApprovePurchaseOrderItemRequestValidator());
     }
 }
 
@@ -37,9 +36,14 @@ public class ApprovePurchaseOrderItemRequestValidator : AbstractValidator<Approv
 {
     public ApprovePurchaseOrderItemRequestValidator()
     {
-        RuleFor(x => x.ProductId).GreaterThan(0);
-        RuleFor(x => x.ReceivedQuantity).GreaterThanOrEqualTo(0);
-        RuleFor(x => x.UnitCost).GreaterThanOrEqualTo(0);
+        RuleFor(x => x.ProductId)
+            .GreaterThan(0);
+
+        RuleFor(x => x.ReceivedQuantity)
+            .GreaterThanOrEqualTo(0);
+
+        RuleFor(x => x.UnitCost)
+            .GreaterThanOrEqualTo(0);
     }
 }
 

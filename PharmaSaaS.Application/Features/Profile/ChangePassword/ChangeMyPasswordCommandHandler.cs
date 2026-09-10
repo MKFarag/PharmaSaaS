@@ -1,6 +1,6 @@
-﻿namespace PharmaSaaS.Application.Features.Profile.ChangePassword;
+namespace PharmaSaaS.Application.Features.Profile.ChangePassword;
 
-public class ChangeMyPasswordCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<ChangeMyPasswordCommand, Result>
+public sealed class ChangeMyPasswordCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<ChangeMyPasswordCommand, Result>
 {
     public async Task<Result> Handle(ChangeMyPasswordCommand request, CancellationToken cancellationToken = default)
     {

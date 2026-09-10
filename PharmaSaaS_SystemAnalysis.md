@@ -511,10 +511,10 @@
 | Customers | ✅ Implemented |
 | Loyalty | ✅ Implemented |
 | Shifts | ✅ Implemented |
-| Invoices | ❌ Not yet implemented |
+| Invoices | ✅ Implemented |
 | Expenses | ✅ Implemented |
 | Suppliers | ✅ Implemented |
-| Purchase Orders | ❌ Not yet implemented |
-| Supplier Payments | ❌ Not yet implemented |
+| Purchase Orders | ✅ Implemented |
+| Supplier Payments | ✅ Implemented |
 | Reports | ❌ Not yet implemented |
 | AI | ❌ Not yet implemented |

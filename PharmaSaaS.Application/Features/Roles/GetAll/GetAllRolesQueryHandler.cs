@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Roles.GetAll;
 
-public class GetAllRolesQueryHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<GetAllRolesQuery, IEnumerable<RoleResponse>>
+public sealed class GetAllRolesQueryHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<GetAllRolesQuery, IEnumerable<RoleResponse>>
 {
     public async Task<IEnumerable<RoleResponse>> Handle(GetAllRolesQuery request, CancellationToken cancellationToken = default)
     {

@@ -1,7 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PharmaSaaS.Domain.Entities;
-
 namespace PharmaSaaS.Infrastructure.Persistence.Configurations;
 
 public sealed class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>

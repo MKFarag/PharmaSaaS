@@ -14,6 +14,6 @@ public class CategoryRequestValidator : AbstractValidator<CategoryRequest>
             .NotEmpty()
             .Length(2, 100);
     }
-} 
+}
 
 #endregion

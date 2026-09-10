@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.DosageForms.Add;
 
-public class AddDosageFormCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<AddDosageFormCommand, Result<DosageFormResponse>>
+public sealed class AddDosageFormCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter currentTenantGetter) : IRequestHandler<AddDosageFormCommand, Result<DosageFormResponse>>
 {
     public async Task<Result<DosageFormResponse>> Handle(AddDosageFormCommand command, CancellationToken cancellationToken = default)
     {
@@ -11,9 +11,9 @@ public class AddDosageFormCommandHandler(IUnitOfWork unitOfWork, ICacheService c
 
         await unitOfWork.DosageForms.AddAsync(dosageForm, cancellationToken);
 
-        await unitOfWork.CompleteAsync(cancellationToken);
-
         await cacheService.RemoveByTagAsync(Cache.Tags.DosageForms(currentTenantGetter.GetTenantId()!), cancellationToken);
+
+        await unitOfWork.CompleteAsync(cancellationToken);
 
         return Result.Success(dosageForm.Adapt<DosageFormResponse>());
     }

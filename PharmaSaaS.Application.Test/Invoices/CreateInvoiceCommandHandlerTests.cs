@@ -1,26 +1,20 @@
-using FakeItEasy;
-using PharmaSaaS.Application.Contracts.Invoices;
 using PharmaSaaS.Application.Features.Invoices.Create;
-using PharmaSaaS.Application.Interfaces.Infrastructure;
-using PharmaSaaS.Application.Interfaces.Services;
-using PharmaSaaS.Domain.Entities;
-using PharmaSaaS.Domain.Errors;
-using System.Linq.Expressions;
-using Xunit;
 
 namespace PharmaSaaS.Application.Test.Invoices;
 
 public class CreateInvoiceCommandHandlerTests
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IInvoiceService _invoiceService;
     private readonly ICustomerLoyaltyService _customerLoyaltyService;
     private readonly CreateInvoiceCommandHandler _sut;
 
     public CreateInvoiceCommandHandlerTests()
     {
         _unitOfWork = A.Fake<IUnitOfWork>();
+        _invoiceService = new PharmaSaaS.Application.Services.InvoiceService();
         _customerLoyaltyService = A.Fake<ICustomerLoyaltyService>();
-        _sut = new CreateInvoiceCommandHandler(_unitOfWork, _customerLoyaltyService);
+        _sut = new CreateInvoiceCommandHandler(_unitOfWork, _invoiceService, _customerLoyaltyService);
     }
 
     [Fact]
@@ -151,7 +145,7 @@ public class CreateInvoiceCommandHandlerTests
             .Returns(shift);
 
         var inventory = Inventory.Create(1, 5, 100m);
-        
+
         A.CallTo(() => _unitOfWork.Inventories.TrackedFindAllAsync(A<Expression<Func<Inventory, bool>>>._, A<string[]>._, A<CancellationToken>._))
             .Returns(new List<Inventory> { inventory });
 
@@ -176,7 +170,7 @@ public class CreateInvoiceCommandHandlerTests
 
         // Loyalty updates check
         A.CallTo(() => _customerLoyaltyService.UpdateCustomerLoyaltyAsync(customer, 150m, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
-        
+
         // Transaction check
         A.CallTo(() => _unitOfWork.CommitTransactionAsync(A<CancellationToken>._)).MustHaveHappenedOnceExactly();
     }

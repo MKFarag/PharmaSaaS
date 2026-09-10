@@ -1,6 +1,6 @@
 namespace PharmaSaaS.Application.Features.Pharmacies.Update;
 
-public class UpdatePharmacyCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<UpdatePharmacyCommand, Result>
+public sealed class UpdatePharmacyCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<UpdatePharmacyCommand, Result>
 {
     public async Task<Result> Handle(UpdatePharmacyCommand command, CancellationToken cancellationToken = default)
     {

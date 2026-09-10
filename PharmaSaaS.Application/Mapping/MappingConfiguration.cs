@@ -1,6 +1,3 @@
-using PharmaSaaS.Application.Contracts.PurchaseOrders;
-using PharmaSaaS.Application.Contracts.SupplierPayments;
-
 namespace PharmaSaaS.Application.Mapping;
 
 public class MappingConfiguration : IRegister
@@ -58,6 +55,14 @@ public class MappingConfiguration : IRegister
         config.NewConfig<SupplierPayment, SupplierPaymentResponse>()
             .Map(dest => dest.SupplierName, src => src.Supplier != null ? src.Supplier.Name : string.Empty)
             .Map(dest => dest.OrderIds, src => src.Orders != null ? src.Orders.Select(o => o.Id).ToList() : new List<int>());
+
+        #endregion
+
+        #region InventoryMapping
+
+        config.NewConfig<Inventory, InventoryResponse>()
+            .Map(dest => dest.Name, src => src.Product.Name)
+            .Map(dest => dest.Concentration, src => src.Product.Concentration);
 
         #endregion
 

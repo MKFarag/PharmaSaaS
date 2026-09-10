@@ -10,6 +10,7 @@ public sealed class OpenShiftCommandHandler(IUnitOfWork unitOfWork) : IRequestHa
         var shift = Shift.Create(command.UserId, command.Request.OpeningBalance);
 
         await unitOfWork.Shifts.AddAsync(shift, cancellationToken);
+
         await unitOfWork.CompleteAsync(cancellationToken);
 
         return Result.Success(shift.Adapt<ShiftResponse>());

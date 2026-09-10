@@ -10,6 +10,6 @@ public record InvoiceDetailResponse(
     decimal FinalAmount,
     bool HasReturn,
     IList<ReturnResponse> Returns,
-    DateOnly Date,
-    DateTimeOffset CreatedAt
+    DateTime CreatedAt,
+    ShiftResponse Shift
 );

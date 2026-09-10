@@ -1,9 +1,6 @@
-using PharmaSaaS.Application.Interfaces.Infrastructure;
-
 namespace PharmaSaaS.Application.Features.Suppliers.Update;
 
-public sealed class UpdateSupplierCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter tenantGetter)
-    : IRequestHandler<UpdateSupplierCommand, Result>
+public sealed class UpdateSupplierCommandHandler(IUnitOfWork unitOfWork, ICacheService cacheService, ICurrentTenantGetter tenantGetter) : IRequestHandler<UpdateSupplierCommand, Result>
 {
     public async Task<Result> Handle(UpdateSupplierCommand command, CancellationToken cancellationToken = default)
     {
@@ -15,9 +12,9 @@ public sealed class UpdateSupplierCommandHandler(IUnitOfWork unitOfWork, ICacheS
 
         supplier.Update(command.Request.Name, command.Request.ContactInfo);
 
-        await unitOfWork.CompleteAsync(cancellationToken);
-
         await cacheService.RemoveByTagAsync(Cache.Tags.Suppliers(tenantGetter.GetTenantId()!), cancellationToken);
+
+        await unitOfWork.CompleteAsync(cancellationToken);
 
         return Result.Success();
     }

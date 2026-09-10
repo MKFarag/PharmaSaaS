@@ -4,7 +4,7 @@ public sealed class ToggleRareCommandHandler(IUnitOfWork unitOfWork) : IRequestH
 {
     public async Task<Result> Handle(ToggleRareCommand command, CancellationToken cancellationToken = default)
     {
-        if (await unitOfWork.Inventories.FindAsync(i => i.ProductId == command.ProductId, cancellationToken) is not { } inventory)
+        if (await unitOfWork.Inventories.TrackedFindAsync(i => i.ProductId == command.ProductId, cancellationToken) is not { } inventory)
             return Result.Failure(InventoryErrors.NotFound);
 
         inventory.ToggleRare();

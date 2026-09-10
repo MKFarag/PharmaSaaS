@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 
 namespace PharmaSaaS.Domain.Entities;
 
-public class RefreshToken
+public sealed class RefreshToken
 {
     private const int _expiryDays = 14;
     public static int AutoRemoveAfterDays => 7;
