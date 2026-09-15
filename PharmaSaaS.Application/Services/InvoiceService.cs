@@ -12,10 +12,27 @@ public sealed class InvoiceService : IInvoiceService
             if (!inventoryByProductId.TryGetValue(item.ProductId, out var inventory))
                 return Result.Failure<decimal>(InvoiceErrors.ProductNotFound);
 
-            if (inventory.Quantity < item.Quantity)
-                return Result.Failure<decimal>(InvoiceErrors.InsufficientStock);
+            if (item.SellByStrip)
+            {
+                if (!inventory.Product.IsStripSellable)
+                    return Result.Failure<decimal>(ProductErrors.NotStripSellable);
 
-            total += (decimal)item.Quantity * inventory.SellingPrice;
+                var stripsPerBox = inventory.Product.StripsPerBox!.Value;
+                var boxQuantity = item.Quantity / stripsPerBox;
+
+                if (inventory.Quantity < boxQuantity)
+                    return Result.Failure<decimal>(InvoiceErrors.InsufficientStock);
+
+                var stripPrice = inventory.SellingPrice / stripsPerBox;
+                total += (decimal)item.Quantity * stripPrice;
+            }
+            else
+            {
+                if (inventory.Quantity < item.Quantity)
+                    return Result.Failure<decimal>(InvoiceErrors.InsufficientStock);
+
+                total += (decimal)item.Quantity * inventory.SellingPrice;
+            }
         }
 
         return Result.Success(total);
@@ -28,6 +45,19 @@ public sealed class InvoiceService : IInvoiceService
         return [.. requestedItems.Select(item =>
         {
             var inventory = inventoryByProductId[item.ProductId];
+
+            if (item.SellByStrip)
+            {
+                var stripsPerBox = inventory.Product.StripsPerBox!.Value;
+                var boxQuantity = item.Quantity / stripsPerBox;
+                var stripPrice = inventory.SellingPrice / stripsPerBox;
+
+                inventory.DeductStock(boxQuantity);
+                inventory.SetLastSold();
+                inventory.AddToSoldUnits(boxQuantity);
+
+                return InvoiceItem.Create(invoiceId, item.ProductId, item.Quantity, stripPrice);
+            }
 
             inventory.DeductStock(item.Quantity);
             inventory.SetLastSold();

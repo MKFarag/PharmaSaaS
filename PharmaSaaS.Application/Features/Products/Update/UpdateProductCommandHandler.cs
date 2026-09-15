@@ -41,7 +41,8 @@ public sealed class UpdateProductCommandHandler(IUnitOfWork unitOfWork) : IReque
                 command.Request.DosageFormId,
                 command.Request.Barcode,
                 command.Request.Concentration,
-                command.Request.MaxStorageTemperature
+                command.Request.MaxStorageTemperature,
+                command.Request.StripsPerBox
             );
 
         await unitOfWork.CompleteAsync(cancellationToken);

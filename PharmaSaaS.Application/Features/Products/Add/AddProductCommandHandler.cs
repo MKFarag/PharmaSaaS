@@ -29,7 +29,8 @@ public sealed class AddProductCommandHandler(IUnitOfWork unitOfWork) : IRequestH
                 command.Request.DosageFormId,
                 command.Request.Barcode,
                 command.Request.Concentration,
-                command.Request.MaxStorageTemperature
+                command.Request.MaxStorageTemperature,
+                command.Request.StripsPerBox
             );
 
         await unitOfWork.Products.AddAsync(product, cancellationToken);

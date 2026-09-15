@@ -7,7 +7,8 @@ public record CreateInvoiceRequest(
 
 public record InvoiceItemRequest(
     int ProductId,
-    float Quantity
+    float Quantity,
+    bool SellByStrip = false
 );
 
 #region Validation

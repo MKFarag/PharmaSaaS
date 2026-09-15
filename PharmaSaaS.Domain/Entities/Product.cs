@@ -9,12 +9,15 @@ public sealed class Product
     public decimal? MaxStorageTemperature { get; private set; }
     public int CategoryId { get; private set; }
     public int DosageFormId { get; private set; }
+    public int? StripsPerBox { get; private set; }
+
+    public bool IsStripSellable => StripsPerBox is not null;
 
     public Category Category { get; private set; } = default!;
     public DosageForm DosageForm { get; private set; } = default!;
     public Inventory? Inventory { get; private set; }
 
-    public static Product Create(string name, int categoryId, int dosageFormId, string? barcode = null, string? concentration = null, decimal? maxStorageTemperature = null)
+    public static Product Create(string name, int categoryId, int dosageFormId, string? barcode = null, string? concentration = null, decimal? maxStorageTemperature = null, int? stripsPerBox = null)
         => new()
         {
             Name = name,
@@ -22,10 +25,11 @@ public sealed class Product
             DosageFormId = dosageFormId,
             Barcode = barcode,
             Concentration = concentration,
-            MaxStorageTemperature = maxStorageTemperature
+            MaxStorageTemperature = maxStorageTemperature,
+            StripsPerBox = stripsPerBox
         };
 
-    public void Update(string name, int categoryId, int dosageFormId, string? barcode = null, string? concentration = null, decimal? maxStorageTemperature = null)
+    public void Update(string name, int categoryId, int dosageFormId, string? barcode = null, string? concentration = null, decimal? maxStorageTemperature = null, int? stripsPerBox = null)
     {
         Name = name;
         CategoryId = categoryId;
@@ -33,6 +37,7 @@ public sealed class Product
         Barcode = barcode;
         Concentration = concentration;
         MaxStorageTemperature = maxStorageTemperature;
+        StripsPerBox = stripsPerBox;
     }
     public void SetCategory(Category category) => Category = category;
     public void SetDosageForm(DosageForm dosageForm) => DosageForm = dosageForm;

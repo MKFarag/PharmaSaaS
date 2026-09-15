@@ -19,4 +19,7 @@ public record ProductErrors
 
     public static readonly Error HasInventory =
         new("Product.HasInventory", "Cannot delete product because it has associated inventory records", StatusCodes.Conflict);
+
+    public static readonly Error NotStripSellable =
+        new("Product.NotStripSellable", "This product does not support strip-level selling", StatusCodes.Conflict);
 }

@@ -6,6 +6,7 @@ public record ProductResponse(
     string? Barcode,
     string? Concentration,
     decimal? MaxStorageTemperature,
+    int? StripsPerBox,
     CategoryResponse Category,
     DosageFormResponse DosageForm
 );

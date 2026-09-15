@@ -6,7 +6,8 @@ public record ProductRequest(
     string? Concentration,
     decimal? MaxStorageTemperature,
     int CategoryId,
-    int DosageFormId
+    int DosageFormId,
+    int? StripsPerBox
 );
 
 #region Validation
@@ -36,6 +37,10 @@ public class ProductRequestValidator : AbstractValidator<ProductRequest>
 
         RuleFor(x => x.DosageFormId)
             .GreaterThan(0);
+
+        RuleFor(x => x.StripsPerBox)
+            .GreaterThanOrEqualTo(2)
+            .When(x => x.StripsPerBox is not null);
     }
 }
 

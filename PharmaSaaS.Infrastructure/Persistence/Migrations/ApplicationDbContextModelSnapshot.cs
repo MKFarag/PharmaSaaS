@@ -475,6 +475,9 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int?>("StripsPerBox")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Barcode")

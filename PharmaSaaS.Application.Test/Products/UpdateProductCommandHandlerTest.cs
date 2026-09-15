@@ -26,7 +26,7 @@ public class UpdateProductCommandHandlerTest : IClassFixture<MapsterTestFixture>
             .Returns((Product?)null);
 
         var result = await _handler.Handle(
-            new UpdateProductCommand(99, new ProductRequest("Amoxicillin", null, null, null, 1, 1)),
+            new UpdateProductCommand(99, new ProductRequest("Amoxicillin", null, null, null, 1, 1, null)),
             CancellationToken.None);
 
         Assert.True(result.IsFailure);
@@ -46,7 +46,7 @@ public class UpdateProductCommandHandlerTest : IClassFixture<MapsterTestFixture>
             .Returns(true);
 
         var result = await _handler.Handle(
-            new UpdateProductCommand(1, new ProductRequest("Amoxicillin", "6291040100216", null, null, 1, 1)),
+            new UpdateProductCommand(1, new ProductRequest("Amoxicillin", "6291040100216", null, null, 1, 1, null)),
             CancellationToken.None);
 
         Assert.True(result.IsFailure);
@@ -71,7 +71,7 @@ public class UpdateProductCommandHandlerTest : IClassFixture<MapsterTestFixture>
         A.CallTo(() => _unitOfWork.CompleteAsync(A<CancellationToken>.Ignored)).Returns(1);
 
         var result = await _handler.Handle(
-            new UpdateProductCommand(1, new ProductRequest("Amoxicillin Updated", null, "500 mg", 25.0m, 2, 2)),
+            new UpdateProductCommand(1, new ProductRequest("Amoxicillin Updated", null, "500 mg", 25.0m, 2, 2, null)),
             CancellationToken.None);
 
         Assert.True(result.IsSuccess);

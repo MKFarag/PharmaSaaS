@@ -19,7 +19,7 @@ public class GetAllProductsQueryHandlerTest : IClassFixture<MapsterTestFixture>
     {
         var items = new List<ProductResponse>
         {
-            new(1, "Amoxicillin", null, null, null,
+            new(1, "Amoxicillin", null, null, null, null,
                 new CategoryResponse(1, "Antibiotics"),
                 new DosageFormResponse(1, "Tablet"))
         };

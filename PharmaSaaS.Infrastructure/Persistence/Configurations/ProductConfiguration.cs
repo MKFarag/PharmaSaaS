@@ -21,6 +21,10 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasColumnType("decimal(5,2)");
 
         builder
+            .Property(x => x.StripsPerBox)
+            .IsRequired(false);
+
+        builder
             .HasOne(x => x.Category)
             .WithMany()
             .HasForeignKey(x => x.CategoryId)
