@@ -828,6 +828,26 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "019ea876-57f9-78e8-a72a-e0bb31c3b6a4",
+                            ConcurrencyStamp = "019ea876-7ae1-7e71-8460-0beb2d037d38",
+                            IsDefault = false,
+                            IsDisabled = false,
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "019ea876-b713-7528-bbeb-003fa1d80ab5",
+                            ConcurrencyStamp = "019ea876-cf09-7883-91b4-3ad44fee485c",
+                            IsDefault = true,
+                            IsDisabled = false,
+                            Name = "User",
+                            NormalizedName = "USER"
+                        });
                 });
 
             modelBuilder.Entity("PharmaSaaS.Infrastructure.Persistence.Identities.ApplicationUser", b =>
@@ -906,6 +926,27 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "019ea884-cfe2-74be-873f-2907ba32c338",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "019ea884-e1fc-736e-a46d-74f88d783d1c",
+                            Email = "mkfarag-admin@PharmaSaaS.com",
+                            EmailConfirmed = true,
+                            FirstName = "Mohamed Khaled",
+                            IsDisabled = false,
+                            LastName = "Farag",
+                            LockoutEnabled = false,
+                            NormalizedEmail = "MKFARAG-ADMIN@PHARMASAAS.COM",
+                            NormalizedUserName = "MKFARAG-ADMIN@PHARMASAAS.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAEO/wXsU2Tq19zlBGeTMr/ZNIjY9N40DbfywL9b4/6tHJWIh5ekuefxOjAj2v7XCCzw==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "64F1D1C1D6284264840AF3D1AF3C2CFC",
+                            TwoFactorEnabled = false,
+                            UserName = "mkfarag-admin@PharmaSaaS.com"
+                        });
                 });
 
             modelBuilder.Entity("PurchaseOrderSupplierPayment", b =>
