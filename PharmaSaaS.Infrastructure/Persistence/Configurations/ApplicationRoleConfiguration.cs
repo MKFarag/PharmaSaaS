@@ -4,24 +4,23 @@ internal class ApplicationRoleConfiguration : IEntityTypeConfiguration<Applicati
 {
     public void Configure(EntityTypeBuilder<ApplicationRole> builder)
     {
-        // CHECK: Uncomment this.
         // Default data
 
-        //builder.HasData(new ApplicationRole
-        //{
-        //    Id = DefaultRoles.Admin.Id,
-        //    Name = DefaultRoles.Admin.Name,
-        //    NormalizedName = DefaultRoles.Admin.Name.ToUpper(),
-        //    ConcurrencyStamp = DefaultRoles.Admin.ConcurrencyStamp,
-        //    IsDefault = false,
-        //},
-        //new ApplicationRole
-        //{
-        //    Id = DefaultRoles.Default.Id,
-        //    Name = DefaultRoles.Default.Name,
-        //    NormalizedName = DefaultRoles.Default.Name.ToUpper(),
-        //    ConcurrencyStamp = DefaultRoles.Default.ConcurrencyStamp,
-        //    IsDefault = true,
-        //});
+        builder.HasData(new ApplicationRole
+        {
+            Id = DefaultRoles.Admin.Id,
+            Name = DefaultRoles.Admin.Name,
+            NormalizedName = DefaultRoles.Admin.Name.ToUpper(),
+            ConcurrencyStamp = DefaultRoles.Admin.ConcurrencyStamp,
+            IsDefault = false,
+        },
+        new ApplicationRole
+        {
+            Id = DefaultRoles.User.Id,
+            Name = DefaultRoles.User.Name,
+            NormalizedName = DefaultRoles.User.Name.ToUpper(),
+            ConcurrencyStamp = DefaultRoles.User.ConcurrencyStamp,
+            IsDefault = true,
+        });
     }
 }

@@ -22,24 +22,23 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
             .Property(x => x.LastName)
             .HasMaxLength(100);
 
-        // CHECK: Uncomment this.
         // Default data
 
-        //builder
-        //    .HasData(new ApplicationUser
-        //    {
-        //        Id = DefaultUsers.Admin.Id,
-        //        Email = DefaultUsers.Admin.Email,
-        //        NormalizedEmail = DefaultUsers.Admin.Email.ToUpper(),
-        //        EmailConfirmed = true,
-        //        UserName = DefaultUsers.Admin.Email,
-        //        NormalizedUserName = DefaultUsers.Admin.Email.ToUpper(),
-        //        PasswordHash = DefaultUsers.Admin.PasswordHash,
-        //        SecurityStamp = DefaultUsers.Admin.SecurityStamp,
-        //        ConcurrencyStamp = DefaultUsers.Admin.ConcurrencyStamp,
-        //        FirstName = DefaultUsers.Admin.FirstName,
-        //        LastName = DefaultUsers.Admin.LastName,
-        //        IsDisabled = false
-        //    });
+        builder
+            .HasData(new ApplicationUser
+            {
+                Id = DefaultUsers.Admin.Id,
+                Email = DefaultUsers.Admin.Email,
+                NormalizedEmail = DefaultUsers.Admin.Email.ToUpper(),
+                EmailConfirmed = true,
+                UserName = DefaultUsers.Admin.Email,
+                NormalizedUserName = DefaultUsers.Admin.Email.ToUpper(),
+                PasswordHash = DefaultUsers.Admin.PasswordHash,
+                SecurityStamp = DefaultUsers.Admin.SecurityStamp,
+                ConcurrencyStamp = DefaultUsers.Admin.ConcurrencyStamp,
+                FirstName = DefaultUsers.Admin.FirstName,
+                LastName = DefaultUsers.Admin.LastName,
+                IsDisabled = false
+            });
     }
 }
