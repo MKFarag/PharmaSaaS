@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -30,21 +30,11 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                 nullable: false,
                 oldClrType: typeof(DateTimeOffset),
                 oldType: "datetimeoffset");
-
-            migrationBuilder.InsertData(
-                table: "AspNetUserRoles",
-                columns: new[] { "RoleId", "UserId" },
-                values: new object[] { "019ea876-57f9-78e8-a72a-e0bb31c3b6a4", "019ea884-cfe2-74be-873f-2907ba32c338" });
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DeleteData(
-                table: "AspNetUserRoles",
-                keyColumns: new[] { "RoleId", "UserId" },
-                keyValues: new object[] { "019ea876-57f9-78e8-a72a-e0bb31c3b6a4", "019ea884-cfe2-74be-873f-2907ba32c338" });
-
             migrationBuilder.AlterColumn<string>(
                 name: "Status",
                 table: "PurchaseOrderItems",
