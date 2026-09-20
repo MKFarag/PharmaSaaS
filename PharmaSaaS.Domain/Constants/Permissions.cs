@@ -123,6 +123,16 @@ public static class Permissions
 
     #endregion
 
+    #region Reports
+
+    public const string ReadDailyReport = "report:daily";
+    public const string ReadProfitReport = "report:profit";
+    public const string ReadShortageReport = "report:shortage";
+    public const string ReadExpenseReport = "report:expenses";
+    public const string ReadTopProductsReport = "report:top-products";
+
+    #endregion
+
     public static IList<string?> GetAll()
         => [.. typeof(Permissions).GetFields().Select(x => x.GetValue(x) as string)];
 }

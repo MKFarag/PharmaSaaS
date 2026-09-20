@@ -16,6 +16,7 @@ global using PharmaSaaS.Application.Contracts.Products;
 global using PharmaSaaS.Application.Contracts.Profile;
 global using PharmaSaaS.Application.Contracts.PurchaseOrders;
 global using PharmaSaaS.Application.Contracts.Roles;
+global using PharmaSaaS.Application.Contracts.Reports;
 global using PharmaSaaS.Application.Contracts.Shifts;
 global using PharmaSaaS.Application.Contracts.SubscriptionRequests;
 global using PharmaSaaS.Application.Contracts.SupplierPayments;

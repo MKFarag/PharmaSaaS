@@ -50,6 +50,7 @@ public static class DependencyInjection
             services.AddScoped<PharmaSaaS.Application.Interfaces.Services.IInvoiceService, PharmaSaaS.Application.Services.InvoiceService>();
             services.AddScoped<PharmaSaaS.Application.Interfaces.Services.IPurchaseOrderService, PharmaSaaS.Application.Services.PurchaseOrderService>();
             services.AddScoped<PharmaSaaS.Application.Interfaces.Services.ISupplierPaymentService, PharmaSaaS.Application.Services.SupplierPaymentService>();
+            services.AddScoped<PharmaSaaS.Application.Interfaces.Services.IReportService, PharmaSaaS.Application.Services.ReportService>();
 
             services.AddHealthChecks()
                 .AddSqlServer(connectionString: configuration.GetConnectionString("SharedDb")!, name: "Database")

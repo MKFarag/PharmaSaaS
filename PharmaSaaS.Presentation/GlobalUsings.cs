@@ -6,6 +6,7 @@ global using Microsoft.AspNetCore.Mvc.Filters;
 global using Microsoft.AspNetCore.RateLimiting;
 global using PharmaSaaS.Application.Abstractions.Messaging;
 global using PharmaSaaS.Application.Contracts.Common;
+global using PharmaSaaS.Application.Contracts.Reports;
 global using PharmaSaaS.Application.Interfaces.Infrastructure;
 global using PharmaSaaS.Domain.Abstraction;
 global using PharmaSaaS.Domain.Constants;
