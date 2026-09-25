@@ -21,7 +21,7 @@ public class CreateInvoiceCommandHandlerTests
     public async Task Handle_WhenShiftNotOpen_ReturnsShiftNotOpenError()
     {
         // Arrange
-        var command = new CreateInvoiceCommand(new CreateInvoiceRequest(null, new List<InvoiceItemRequest>()), "user1");
+        var command = new CreateInvoiceCommand(new CreateInvoiceRequest(null, new List<InvoiceItemRequest>()));
 
         A.CallTo(() => _unitOfWork.Shifts.TrackedFindAsync(A<Expression<Func<Shift, bool>>>._, A<CancellationToken>._))
             .Returns(Task.FromResult<Shift?>(null));
@@ -40,7 +40,7 @@ public class CreateInvoiceCommandHandlerTests
         // Arrange
         var shift = Shift.Create("user1", 100m);
         var request = new CreateInvoiceRequest(null, new List<InvoiceItemRequest> { new InvoiceItemRequest(1, 2) });
-        var command = new CreateInvoiceCommand(request, "user1");
+        var command = new CreateInvoiceCommand(request);
 
         A.CallTo(() => _unitOfWork.Shifts.TrackedFindAsync(A<Expression<Func<Shift, bool>>>._, A<CancellationToken>._))
             .Returns(shift);
@@ -63,7 +63,7 @@ public class CreateInvoiceCommandHandlerTests
         // Arrange
         var shift = Shift.Create("user1", 100m);
         var request = new CreateInvoiceRequest(null, new List<InvoiceItemRequest> { new InvoiceItemRequest(1, 10) }); // Requesting 10
-        var command = new CreateInvoiceCommand(request, "user1");
+        var command = new CreateInvoiceCommand(request);
 
         A.CallTo(() => _unitOfWork.Shifts.TrackedFindAsync(A<Expression<Func<Shift, bool>>>._, A<CancellationToken>._))
             .Returns(shift);
@@ -90,7 +90,7 @@ public class CreateInvoiceCommandHandlerTests
         shift.Id = 1;
 
         var request = new CreateInvoiceRequest(null, new List<InvoiceItemRequest> { new InvoiceItemRequest(1, 2) });
-        var command = new CreateInvoiceCommand(request, "user1");
+        var command = new CreateInvoiceCommand(request);
 
         A.CallTo(() => _unitOfWork.Shifts.TrackedFindAsync(A<Expression<Func<Shift, bool>>>._, A<CancellationToken>._))
             .Returns(shift);
@@ -136,7 +136,7 @@ public class CreateInvoiceCommandHandlerTests
 
         var customerId = 5;
         var request = new CreateInvoiceRequest(customerId, new List<InvoiceItemRequest> { new InvoiceItemRequest(1, 2) });
-        var command = new CreateInvoiceCommand(request, "user1");
+        var command = new CreateInvoiceCommand(request);
 
         var customer = Customer.Create("Jane Doe", "0123");
         customer.Id = customerId;

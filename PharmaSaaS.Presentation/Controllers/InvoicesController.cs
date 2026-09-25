@@ -42,7 +42,7 @@ public sealed class InvoicesController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> CreateInvoice([FromBody] CreateInvoiceRequest request, CancellationToken cancellationToken)
     {
-        var command = new CreateInvoiceCommand(request, User.GetId()!);
+        var command = new CreateInvoiceCommand(request);
         var result = await sender.Send(command, cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
@@ -75,7 +75,7 @@ public sealed class InvoicesController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ProcessReturn([FromRoute] int id, [FromBody] ProcessReturnRequest request, CancellationToken cancellationToken)
     {
-        var command = new ProcessReturnCommand(id, request, User.GetId()!);
+        var command = new ProcessReturnCommand(id, request);
         var result = await sender.Send(command, cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }

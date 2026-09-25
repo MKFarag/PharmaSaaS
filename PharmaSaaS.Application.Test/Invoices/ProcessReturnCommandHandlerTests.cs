@@ -1,4 +1,4 @@
-﻿namespace PharmaSaaS.Application.Test.Invoices;
+namespace PharmaSaaS.Application.Test.Invoices;
 
 public class ProcessReturnCommandHandlerTests
 {
@@ -13,7 +13,7 @@ public class ProcessReturnCommandHandlerTests
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static ProcessReturnCommand DefaultCommand(int? customerId = null)
-        => new(1, new ProcessReturnRequest([new ReturnItemRequest(1, 2)]), "user1");
+        => new(1, new ProcessReturnRequest([new ReturnItemRequest(1, 2)]));
 
     private void SetupInvoice(Invoice? invoice)
         => A.CallTo(() => _unitOfWork.Invoices.TrackedFindAsync(

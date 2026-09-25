@@ -35,8 +35,7 @@ public class GetAllExpensesByShiftQueryHandlerTests : IClassFixture<MapsterTestF
         var result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        var value = result.Value.ToList();
+        var value = result.ToList();
         Assert.Equal(2, value.Count);
         Assert.Equal(100m, value[0].Amount);
         Assert.Equal(50m, value[1].Amount);

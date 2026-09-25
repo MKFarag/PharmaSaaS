@@ -59,7 +59,7 @@ public class ExpensesController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     [HttpGet("shift/{shiftId}")]
     [HasPermission(Permissions.ReadExpense)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<ExpenseResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAllExpensesByShift([FromRoute] int shiftId, CancellationToken cancellationToken)
         => Ok(await sender.Send(new GetAllExpensesByShiftQuery(shiftId), cancellationToken));

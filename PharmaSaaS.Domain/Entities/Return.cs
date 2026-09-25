@@ -2,7 +2,7 @@ namespace PharmaSaaS.Domain.Entities;
 
 public sealed class Return
 {
-    public int Id { get; private set; }
+    public int Id { get; set; }
     public int Quantity { get; private set; }
     public decimal RefundAmount { get; private set; }
     public DateTime ReturnDate { get; private set; }
