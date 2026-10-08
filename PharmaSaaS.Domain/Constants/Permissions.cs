@@ -133,6 +133,14 @@ public static class Permissions
 
     #endregion
 
+    #region AI
+
+    public const string ParsePrescription = "ai:parse-prescription";
+    public const string SuggestMedications = "ai:suggest-medications";
+    public const string SetAiApiKey = "ai:set-api-key";
+
+    #endregion
+
     public static IList<string?> GetAll()
         => [.. typeof(Permissions).GetFields().Select(x => x.GetValue(x) as string)];
 }

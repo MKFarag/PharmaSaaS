@@ -4,6 +4,7 @@ using PharmaSaaS.Application.Interfaces.Services;
 using PharmaSaaS.Application.Services;
 using PharmaSaaS.Infrastructure.Factories;
 using PharmaSaaS.Infrastructure.Messaging;
+using PharmaSaaS.Infrastructure.Services;
 
 namespace PharmaSaaS.Infrastructure;
 
@@ -21,6 +22,10 @@ public static class DependencyInjection
             services.AddScoped<ICustomerLoyaltyService, CustomerLoyaltyService>();
             services.AddScoped<IReturnService, ReturnService>();
             services.AddScoped<IInventoryFilterService, InventoryFilterService>();
+            services.AddScoped<IAIService, AIService>();
+
+            services.AddOptions<OpenRouterSettings>().BindConfiguration(nameof(OpenRouterSettings));
+            services.AddHttpClient("OpenRouter", client => client.BaseAddress = new Uri("https://openrouter.ai/"));
 
             services.AddHybridCache();
 

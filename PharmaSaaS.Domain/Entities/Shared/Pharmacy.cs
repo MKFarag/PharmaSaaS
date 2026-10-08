@@ -8,6 +8,7 @@ public sealed class Pharmacy
     public DateOnly? SubscriptionStart { get; private set; }
     public DateOnly? SubscriptionEnd { get; private set; }
     public bool IsActive { get; private set; }
+    public string? CustomAiApiKey { get; private set; }
 
     public static Pharmacy Create(string name)
         => new() { Name = name, TenantId = $"{Guid.NewGuid():N}"[..12] + "-" + name };
@@ -20,4 +21,7 @@ public sealed class Pharmacy
 
     public void ToggleStatus()
         => IsActive = !IsActive;
+
+    public void SetCustomAiApiKey(string? apiKey)
+        => CustomAiApiKey = apiKey;
 }

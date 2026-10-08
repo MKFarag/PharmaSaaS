@@ -10,5 +10,6 @@ internal class PharmacyConfiguration : IEntityTypeConfiguration<Pharmacy>
         builder.Property(x => x.TenantId).HasMaxLength(50).IsRequired();
         builder.Property(x => x.Name).HasMaxLength(200).IsRequired();
         builder.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
+        builder.Property(x => x.CustomAiApiKey).HasMaxLength(200);
     }
 }

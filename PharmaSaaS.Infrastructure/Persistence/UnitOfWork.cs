@@ -33,6 +33,7 @@ public sealed class UnitOfWork : IUnitOfWork
     public IGenericRepository<InvoiceItem> InvoiceItems { get; private set; }
     public IGenericRepositoryWithPagination<Return> Returns { get; private set; }
     public IGenericRepositoryWithPagination<Expense> Expenses { get; private set; }
+    public IGenericRepository<AIUsageLog> AIUsageLogs { get; private set; }
 
     public IGenericRepositoryWithPagination<Supplier> Suppliers { get; private set; }
     public IGenericRepositoryWithPagination<PurchaseOrder> PurchaseOrders { get; private set; }
@@ -70,6 +71,7 @@ public sealed class UnitOfWork : IUnitOfWork
         InvoiceItems = new GenericRepository<InvoiceItem>(_context);
         Returns = new GenericRepositoryWithPagination<Return>(_context);
         Expenses = new GenericRepositoryWithPagination<Expense>(_context);
+        AIUsageLogs = new GenericRepository<AIUsageLog>(_context);
 
         Suppliers = new GenericRepositoryWithPagination<Supplier>(_context);
         PurchaseOrders = new GenericRepositoryWithPagination<PurchaseOrder>(_context);

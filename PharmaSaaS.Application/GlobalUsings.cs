@@ -1,6 +1,7 @@
 global using FluentValidation;
 global using Mapster;
 global using PharmaSaaS.Application.Abstractions.Messaging;
+global using PharmaSaaS.Application.Contracts.AI;
 global using PharmaSaaS.Application.Contracts.Auth;
 global using PharmaSaaS.Application.Contracts.Categories;
 global using PharmaSaaS.Application.Contracts.Common;

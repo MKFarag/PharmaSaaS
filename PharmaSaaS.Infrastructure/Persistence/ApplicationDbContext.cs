@@ -18,6 +18,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<InvoiceItem> InvoiceItems { get; set; }
     public DbSet<Return> Returns { get; set; }
     public DbSet<Expense> Expenses { get; set; }
+    public DbSet<AIUsageLog> AIUsageLogs { get; set; }
     public DbSet<Supplier> Suppliers { get; set; }
     public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
     public DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }

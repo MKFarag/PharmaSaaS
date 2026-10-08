@@ -1,4 +1,4 @@
-﻿namespace PharmaSaaS.Infrastructure.Persistence.Repositories;
+namespace PharmaSaaS.Infrastructure.Persistence.Repositories;
 
 public class PharmacyRepository(SharedDbContext context) : IPharmacyRepository
 {
@@ -7,6 +7,9 @@ public class PharmacyRepository(SharedDbContext context) : IPharmacyRepository
 
     public async Task<Pharmacy?> GetAsync(int id, CancellationToken cancellationToken = default)
         => await context.Pharmacies.FindAsync([id], cancellationToken);
+
+    public async Task<Pharmacy?> FindByTenantIdAsync(string tenantId, CancellationToken cancellationToken = default)
+        => await context.Pharmacies.FirstOrDefaultAsync(p => p.TenantId == tenantId, cancellationToken);
 
     public async Task<bool> NameExistsAsync(string tenantId, string name, int excludeId, CancellationToken cancellationToken = default)
         => await context.Pharmacies.AnyAsync(p => p.TenantId == tenantId && p.Name == name && p.Id != excludeId, cancellationToken);

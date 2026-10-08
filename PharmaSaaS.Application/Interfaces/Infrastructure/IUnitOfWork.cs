@@ -25,6 +25,7 @@ public interface IUnitOfWork : IDisposable
     IGenericRepository<InvoiceItem> InvoiceItems { get; }
     IGenericRepositoryWithPagination<Return> Returns { get; }
     IGenericRepositoryWithPagination<Expense> Expenses { get; }
+    IGenericRepository<AIUsageLog> AIUsageLogs { get; }
 
     IGenericRepositoryWithPagination<Supplier> Suppliers { get; }
     IGenericRepositoryWithPagination<PurchaseOrder> PurchaseOrders { get; }
