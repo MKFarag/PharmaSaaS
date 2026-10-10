@@ -37,9 +37,10 @@ public class SubscriptionRequestsController(ISender sender) : ControllerBase
     /// <response code="204">If the subscription request was successfully submitted.</response>
     [HttpPost]
     [Idempotent]
+    [NoTenantRequired]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Submit([FromBody] CreateSubscriptionRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new SubmitSubscriptionRequestCommand(request), cancellationToken);
@@ -80,8 +81,8 @@ public class SubscriptionRequestsController(ISender sender) : ControllerBase
     [HttpGet("{id}")]
     [SystemOwner]
     [EnableRateLimiting(RateLimitingOptions.PolicyNames.Sliding)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(SubscriptionRequestResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get([FromRoute] string id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetSubscriptionRequestQuery(id), cancellationToken);
@@ -116,7 +117,7 @@ public class SubscriptionRequestsController(ISender sender) : ControllerBase
     [SystemOwner]
     [EnableRateLimiting(RateLimitingOptions.PolicyNames.Sliding)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateStatus([FromRoute] string id, [FromBody] UpdateSubscriptionRequestStatusRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new UpdateSubscriptionRequestStatusCommand(id, request), cancellationToken);

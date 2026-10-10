@@ -18,7 +18,7 @@ public class AdjustStockCommandHandlerTest
     public async Task Handle_WhenInventoryNotFound_ReturnsNotFoundError()
     {
         // Arrange
-        A.CallTo(() => _inventoryRepo.FindAsync(
+        A.CallTo(() => _inventoryRepo.TrackedFindAsync(
                 A<Expression<Func<Inventory, bool>>>.Ignored,
                 A<CancellationToken>.Ignored))
             .Returns((Inventory?)null);
@@ -39,7 +39,7 @@ public class AdjustStockCommandHandlerTest
         // Arrange
         var inventory = Inventory.Create(1, 10f, 5.50m, 50);
 
-        A.CallTo(() => _inventoryRepo.FindAsync(
+        A.CallTo(() => _inventoryRepo.TrackedFindAsync(
                 A<Expression<Func<Inventory, bool>>>.Ignored,
                 A<CancellationToken>.Ignored))
             .Returns(inventory);
@@ -52,22 +52,15 @@ public class AdjustStockCommandHandlerTest
         // Assert
         Assert.True(result.IsFailure);
         Assert.Equal(InventoryErrors.InsufficientStock, result.Error);
-
-        A.CallTo(() => _inventoryRepo.ExecuteUpdateAsync(
-                A<Expression<Func<Inventory, bool>>>.Ignored,
-                A<string>.Ignored,
-                A<float>.Ignored,
-                A<CancellationToken>.Ignored))
-            .MustNotHaveHappened();
     }
 
     [Fact]
-    public async Task Handle_WhenValidAdjustment_ExecutesUpdateAndReturnsSuccess()
+    public async Task Handle_WhenValidAdjustment_MutatesQuantityAndReturnsSuccess()
     {
         // Arrange
         var inventory = Inventory.Create(1, 10f, 5.50m, 50);
 
-        A.CallTo(() => _inventoryRepo.FindAsync(
+        A.CallTo(() => _inventoryRepo.TrackedFindAsync(
                 A<Expression<Func<Inventory, bool>>>.Ignored,
                 A<CancellationToken>.Ignored))
             .Returns(inventory);
@@ -79,13 +72,6 @@ public class AdjustStockCommandHandlerTest
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Equal(15f, inventory.Quantity); // TryAdjustStock mutates the entity
-
-        A.CallTo(() => _inventoryRepo.ExecuteUpdateAsync(
-                A<Expression<Func<Inventory, bool>>>.Ignored,
-                nameof(Inventory.Quantity),
-                A<float>.Ignored,
-                A<CancellationToken>.Ignored))
-            .MustHaveHappenedOnceExactly();
+        Assert.Equal(15f, inventory.Quantity);
     }
 }

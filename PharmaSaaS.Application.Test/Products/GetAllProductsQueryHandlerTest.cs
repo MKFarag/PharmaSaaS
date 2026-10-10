@@ -31,9 +31,7 @@ public class GetAllProductsQueryHandlerTest : IClassFixture<MapsterTestFixture>
         A.CallTo(() => _productRepo.FindPaginatedListAsync<ProductResponse>(
                 A<Expression<Func<Product, bool>>>.Ignored,
                 A<int>.Ignored, A<int>.Ignored,
-                A<string?>.Ignored, A<string?>.Ignored,
-                A<string>.Ignored, A<string>.Ignored,
-                A<ColumnType>.Ignored,
+                nameof(Product.Name),
                 A<string[]>.Ignored,
                 A<CancellationToken>.Ignored))
             .Returns(paginatedList);

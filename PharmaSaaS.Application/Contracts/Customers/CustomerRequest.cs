@@ -17,6 +17,8 @@ public class CustomerRequestValidator : AbstractValidator<CustomerRequest>
 
         RuleFor(x => x.PhoneNumber)
             .NotEmpty()
+            .Matches(RegexPatterns.PhoneNumber)
+            .WithMessage("Invalid phone number format.")
             .MaximumLength(20);
     }
 }

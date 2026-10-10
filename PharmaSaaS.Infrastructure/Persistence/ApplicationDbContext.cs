@@ -58,9 +58,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         #region Allow Cascade Delete
 
         builder.Entity<Product>()
-            .HasMany<Inventory>()
+            .HasOne(x => x.Inventory)
             .WithOne(x => x.Product)
-            .HasForeignKey(x => x.ProductId)
+            .HasForeignKey<Inventory>(x => x.ProductId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<Product>()
@@ -70,7 +70,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<Invoice>()
-            .HasMany<InvoiceItem>()
+            .HasMany(x => x.Items)
             .WithOne(x => x.Invoice)
             .HasForeignKey(x => x.InvoiceId)
             .OnDelete(DeleteBehavior.Cascade);

@@ -1,4 +1,4 @@
-using PharmaSaaS.Application.Contracts.ExpiryReports;
+﻿using PharmaSaaS.Application.Contracts.ExpiryReports;
 using PharmaSaaS.Application.Features.ExpiryReports.Create;
 using PharmaSaaS.Application.Features.ExpiryReports.GetAll;
 using PharmaSaaS.Application.Features.ExpiryReports.Revert;
@@ -34,8 +34,8 @@ public class ExpiryReportController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     [HttpGet("")]
     [HasPermission(Permissions.ReadExpiryReport)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(IPaginatedList<ExpiryReportResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAll([FromQuery] ExpiryReportRequestFilters filters, CancellationToken cancellationToken)
         => Ok(await sender.Send(new GetAllExpiryReportsQuery(filters), cancellationToken));
 
@@ -64,10 +64,10 @@ public class ExpiryReportController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     [HttpPost("")]
     [HasPermission(Permissions.LogExpiryReport)]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ExpiryReportResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> LogExpiryReport([FromBody] ExpiryReportRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new LogExpiryReportCommand(request, User.GetId()!), cancellationToken);
@@ -92,8 +92,8 @@ public class ExpiryReportController(ISender sender) : ControllerBase
     [HttpDelete("{id}")]
     [HasPermission(Permissions.RevertExpiryReport)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> RevertExpiryReport([FromRoute] int id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new RevertExpiryReportCommand(id), cancellationToken);

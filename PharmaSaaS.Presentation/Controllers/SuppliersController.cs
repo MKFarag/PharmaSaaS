@@ -1,4 +1,4 @@
-using PharmaSaaS.Application.Contracts.Suppliers;
+﻿using PharmaSaaS.Application.Contracts.Suppliers;
 using PharmaSaaS.Application.Features.Suppliers.Add;
 using PharmaSaaS.Application.Features.Suppliers.Delete;
 using PharmaSaaS.Application.Features.Suppliers.Get;
@@ -35,8 +35,8 @@ public class SuppliersController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     [HttpGet("")]
     [HasPermission(Permissions.ReadSupplier)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(IEnumerable<SupplierResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         => Ok(await sender.Send(new GetAllSuppliersQuery(), cancellationToken));
 
@@ -59,9 +59,9 @@ public class SuppliersController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     [HttpGet("{id}")]
     [HasPermission(Permissions.ReadSupplier)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(SupplierResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Get([FromRoute] int id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetSupplierByIdQuery(id), cancellationToken);
@@ -95,10 +95,10 @@ public class SuppliersController(ISender sender) : ControllerBase
     /// <response code="409">If a supplier with the same name already exists.</response>
     [HttpPost("")]
     [HasPermission(Permissions.AddSupplier)]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(SupplierResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Add([FromBody] SupplierRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new AddSupplierCommand(request), cancellationToken);
@@ -135,10 +135,10 @@ public class SuppliersController(ISender sender) : ControllerBase
     [HttpPut("{id}")]
     [HasPermission(Permissions.UpdateSupplier)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Update([FromRoute] int id, [FromBody] SupplierRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new UpdateSupplierCommand(id, request), cancellationToken);
@@ -169,9 +169,9 @@ public class SuppliersController(ISender sender) : ControllerBase
     [HttpDelete("{id}")]
     [HasPermission(Permissions.DeleteSupplier)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Delete([FromRoute] int id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new DeleteSupplierCommand(id), cancellationToken);
@@ -201,8 +201,8 @@ public class SuppliersController(ISender sender) : ControllerBase
     [HttpPatch("{id}/reset-balance")]
     [HasPermission(Permissions.ResetSupplierBalance)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> ResetBalance([FromRoute] int id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new ResetSupplierBalanceCommand(id), cancellationToken);

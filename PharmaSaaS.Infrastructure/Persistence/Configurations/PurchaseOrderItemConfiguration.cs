@@ -12,5 +12,8 @@ internal sealed class PurchaseOrderItemConfiguration : IEntityTypeConfiguration<
             .IsRequired()
             .HasMaxLength(50)
             .HasConversion<string>();
+
+        builder.Property(x => x.UnitCost)
+            .HasPrecision(18, 2);
     }
 }

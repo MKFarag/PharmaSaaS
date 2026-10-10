@@ -1,4 +1,4 @@
-using PharmaSaaS.Application.Features.AI.ParsePrescription;
+﻿using PharmaSaaS.Application.Features.AI.ParsePrescription;
 using PharmaSaaS.Application.Features.AI.SetApiKey;
 using PharmaSaaS.Application.Features.AI.SuggestMedications;
 using PharmaSaaS.Domain.Errors;
@@ -18,7 +18,7 @@ public class AIController(ISender sender) : ControllerBase
     /// Parse a handwritten prescription image and extract drug names.
     /// </summary>
     /// <remarks>
-    /// Accepts a prescription image (JPG, JPEG, PNG — max 5 MB) as multipart/form-data.
+    /// Accepts a prescription image (JPG, JPEG, PNG â€” max 5 MB) as multipart/form-data.
     /// The image is validated for file size, blocked signatures, and allowed extensions
     /// before being sent to the AI service.
     ///
@@ -43,10 +43,10 @@ public class AIController(ISender sender) : ControllerBase
     [HttpPost("parse-prescription")]
     [HasPermission(Permissions.ParsePrescription)]
     [ProducesResponseType(typeof(AIResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(AIRateLimitResponse), StatusCodes.Status429TooManyRequests)]
-    [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status503ServiceUnavailable)]
     public async Task<IActionResult> ParsePrescription([FromForm] ParsePrescriptionRequest request, CancellationToken cancellationToken)
     {
         using var memoryStream = new MemoryStream();
@@ -79,7 +79,7 @@ public class AIController(ISender sender) : ControllerBase
     ///
     ///     POST /api/AI/suggest-medications
     ///     {
-    ///       "description": "شراب للكحة الجافة لطفل 5 سنين"
+    ///       "description": "Ø´Ø±Ø§Ø¨ Ù„Ù„ÙƒØ­Ø© Ø§Ù„Ø¬Ø§ÙØ© Ù„Ø·ÙÙ„ 5 Ø³Ù†ÙŠÙ†"
     ///     }
     ///
     /// </remarks>
@@ -94,10 +94,10 @@ public class AIController(ISender sender) : ControllerBase
     [HttpPost("suggest-medications")]
     [HasPermission(Permissions.SuggestMedications)]
     [ProducesResponseType(typeof(AIResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(AIRateLimitResponse), StatusCodes.Status429TooManyRequests)]
-    [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status503ServiceUnavailable)]
     public async Task<IActionResult> SuggestMedications([FromBody] SuggestMedicationsRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new SuggestMedicationsCommand(request), cancellationToken);
@@ -140,9 +140,9 @@ public class AIController(ISender sender) : ControllerBase
     [HttpPut("api-key")]
     [HasPermission(Permissions.SetAiApiKey)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> SetApiKey([FromBody] SetAiApiKeyRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new SetAiApiKeyCommand(request), cancellationToken);

@@ -1,4 +1,4 @@
-using PharmaSaaS.Application.Contracts.Shifts;
+﻿using PharmaSaaS.Application.Contracts.Shifts;
 using PharmaSaaS.Application.Features.Shifts.Close;
 using PharmaSaaS.Application.Features.Shifts.GetAll;
 using PharmaSaaS.Application.Features.Shifts.GetById;
@@ -34,8 +34,8 @@ public class ShiftsController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     [HttpGet("")]
     [HasPermission(Permissions.ReadShift)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(IPaginatedList<ShiftResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAll([FromQuery] ShiftRequestFilters filters, CancellationToken cancellationToken)
         => Ok(await sender.Send(new GetAllShiftsQuery(filters), cancellationToken));
 
@@ -58,9 +58,9 @@ public class ShiftsController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     [HttpGet("{id}")]
     [HasPermission(Permissions.ReadShift)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ShiftDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Get([FromRoute] int id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetShiftByIdQuery(id), cancellationToken);
@@ -93,10 +93,10 @@ public class ShiftsController(ISender sender) : ControllerBase
     /// <response code="409">If an open shift already exists for today.</response>
     [HttpPost("open")]
     [HasPermission(Permissions.OpenShift)]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ShiftResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Open([FromBody] OpenShiftRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new OpenShiftCommand(request, User.GetId()!), cancellationToken);
@@ -131,11 +131,11 @@ public class ShiftsController(ISender sender) : ControllerBase
     /// <response code="409">If the shift is already closed.</response>
     [HttpPost("{id}/close")]
     [HasPermission(Permissions.CloseShift)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(CloseShiftResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Close([FromRoute] int id, [FromBody] CloseShiftRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new CloseShiftCommand(id, request), cancellationToken);

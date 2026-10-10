@@ -2,6 +2,7 @@ using PharmaSaaS.Application.Contracts.Roles;
 using PharmaSaaS.Application.Features.Roles.Add;
 using PharmaSaaS.Application.Features.Roles.Get;
 using PharmaSaaS.Application.Features.Roles.GetAll;
+using PharmaSaaS.Application.Features.Roles.GetAllPermissions;
 using PharmaSaaS.Application.Features.Roles.ToggleStatus;
 using PharmaSaaS.Application.Features.Roles.Update;
 
@@ -30,11 +31,30 @@ public class RolesController(ISender sender) : ControllerBase
     /// <response code="403">If the user does not have permission to read roles.</response>
     [HttpGet("")]
     [HasPermission(Permissions.ReadRole)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(IEnumerable<RoleResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetAll([FromQuery] bool includeDisabled = false, CancellationToken cancellationToken = default)
         => Ok(await sender.Send(new GetAllRolesQuery(includeDisabled), cancellationToken));
+
+    /// <summary>
+    /// Retrieves all system permissions.
+    /// </summary>
+    /// <remarks>
+    /// Returns a list of all available system permissions that can be assigned to roles.
+    /// </remarks>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A list of permissions.</returns>
+    /// <response code="200">Returns the list of permissions.</response>
+    /// <response code="401">If the user is unauthorized.</response>
+    /// <response code="403">If the user does not have permission to read roles.</response>
+    [HttpGet("permissions")]
+    [HasPermission(Permissions.ReadRole)]
+    [ProducesResponseType(typeof(IEnumerable<PermissionResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetAllPermissions(CancellationToken cancellationToken = default)
+        => Ok(await sender.Send(new GetAllPermissionsQuery(), cancellationToken));
 
     /// <summary>
     /// Retrieves a specific role by ID.
@@ -51,10 +71,10 @@ public class RolesController(ISender sender) : ControllerBase
     /// <response code="403">If the user does not have permission to read roles.</response>
     [HttpGet("{id}")]
     [HasPermission(Permissions.ReadRole)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(RoleDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Get([FromRoute] string id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetRoleQuery(id), cancellationToken);
@@ -89,11 +109,11 @@ public class RolesController(ISender sender) : ControllerBase
     /// <response code="409">If a role with the same name already exists.</response>
     [HttpPost("")]
     [HasPermission(Permissions.AddRole)]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(RoleDetailResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Add([FromBody] RoleRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new AddRoleCommand(request), cancellationToken);
@@ -131,11 +151,11 @@ public class RolesController(ISender sender) : ControllerBase
     [HttpPut("{id}")]
     [HasPermission(Permissions.UpdateRole)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Update([FromRoute] string id, [FromBody] RoleRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new UpdateRoleCommand(id, request), cancellationToken);
@@ -161,9 +181,9 @@ public class RolesController(ISender sender) : ControllerBase
     [HttpPut("toggle-status/{id}")]
     [HasPermission(Permissions.ToggleRoleStatus)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> ToggleStatus([FromRoute] string id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new ToggleRoleStatusCommand(id), cancellationToken);

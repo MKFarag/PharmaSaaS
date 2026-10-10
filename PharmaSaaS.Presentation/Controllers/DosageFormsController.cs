@@ -1,4 +1,4 @@
-using PharmaSaaS.Application.Contracts.DosageForms;
+﻿using PharmaSaaS.Application.Contracts.DosageForms;
 using PharmaSaaS.Application.Features.DosageForms.Add;
 using PharmaSaaS.Application.Features.DosageForms.Delete;
 using PharmaSaaS.Application.Features.DosageForms.Get;
@@ -28,8 +28,8 @@ public class DosageFormsController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     [HttpGet("")]
     [HasPermission(Permissions.ReadDosageForm)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(IEnumerable<DosageFormResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         => Ok(await sender.Send(new GetAllDosageFormsQuery(), cancellationToken));
 
@@ -47,9 +47,9 @@ public class DosageFormsController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     [HttpGet("{id}")]
     [HasPermission(Permissions.ReadDosageForm)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(DosageFormResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Get([FromRoute] int id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetDosageFormQuery(id), cancellationToken);
@@ -82,10 +82,10 @@ public class DosageFormsController(ISender sender) : ControllerBase
     /// <response code="409">If a dosage form with the same name already exists.</response>
     [HttpPost("")]
     [HasPermission(Permissions.AddDosageForm)]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(DosageFormResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Add([FromBody] DosageFormRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new AddDosageFormCommand(request), cancellationToken);
@@ -121,10 +121,10 @@ public class DosageFormsController(ISender sender) : ControllerBase
     [HttpPut("{id}")]
     [HasPermission(Permissions.UpdateDosageForm)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Update([FromRoute] int id, [FromBody] DosageFormRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new UpdateDosageFormCommand(id, request), cancellationToken);
@@ -150,9 +150,9 @@ public class DosageFormsController(ISender sender) : ControllerBase
     [HttpDelete("{id}")]
     [HasPermission(Permissions.DeleteDosageForm)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Delete([FromRoute] int id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new DeleteDosageFormCommand(id), cancellationToken);

@@ -1,4 +1,4 @@
-using PharmaSaaS.Application.Contracts.Customers;
+﻿using PharmaSaaS.Application.Contracts.Customers;
 using PharmaSaaS.Application.Features.Customers.Add;
 using PharmaSaaS.Application.Features.Customers.Get;
 using PharmaSaaS.Application.Features.Customers.GetAll;
@@ -28,8 +28,8 @@ public class CustomersController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     [HttpGet("")]
     [HasPermission(Permissions.ReadCustomer)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(IPaginatedList<CustomerResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAll([FromQuery] RequestFilters filters, CancellationToken cancellationToken)
         => Ok(await sender.Send(new GetAllCustomersQuery(filters), cancellationToken));
 
@@ -47,9 +47,9 @@ public class CustomersController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     [HttpGet("{id}")]
     [HasPermission(Permissions.ReadCustomer)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(CustomerResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Get([FromRoute] int id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetCustomerByIdQuery(id), cancellationToken);
@@ -74,10 +74,10 @@ public class CustomersController(ISender sender) : ControllerBase
     /// <response code="409">If a customer with the same phone number already exists.</response>
     [HttpPost("")]
     [HasPermission(Permissions.AddCustomer)]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(CustomerResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Add([FromBody] CustomerRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new AddCustomerCommand(request), cancellationToken);
@@ -105,10 +105,10 @@ public class CustomersController(ISender sender) : ControllerBase
     [HttpPut("{id}")]
     [HasPermission(Permissions.UpdateCustomer)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Update([FromRoute] int id, [FromBody] CustomerRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new UpdateCustomerCommand(id, request), cancellationToken);

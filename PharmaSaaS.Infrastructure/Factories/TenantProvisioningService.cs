@@ -1,4 +1,4 @@
-﻿namespace PharmaSaaS.Infrastructure.Factories;
+namespace PharmaSaaS.Infrastructure.Factories;
 
 public class TenantProvisioningService(IOptions<TenantSettings> options)
 {

@@ -13,11 +13,14 @@ public class TenantHeaderOperationProcessor : IOperationProcessor
         var hasSystemOwner = context.MethodInfo?.GetCustomAttribute<SystemOwnerAttribute>() is not null
             || context.ControllerType?.GetCustomAttribute<SystemOwnerAttribute>() is not null;
 
+        var isNoTenantRequired = context.MethodInfo?.GetCustomAttribute<NoTenantRequiredAttribute>() is not null
+            || context.ControllerType?.GetCustomAttribute<NoTenantRequiredAttribute>() is not null;
+
         if (hasSystemOwner)
         {
             AddHeader(context, "X-System-Owner-Key", "System Owner API Key", isRequired: true);
         }
-        else
+        else if (!isNoTenantRequired)
         {
             AddHeader(context, "X-Tenant-Id", "Tenant ID", isRequired: false);
         }

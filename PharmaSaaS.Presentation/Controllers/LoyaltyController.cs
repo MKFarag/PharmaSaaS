@@ -1,4 +1,4 @@
-using PharmaSaaS.Application.Contracts.Loyalty;
+﻿using PharmaSaaS.Application.Contracts.Loyalty;
 using PharmaSaaS.Application.Features.Loyalty.AddRule;
 using PharmaSaaS.Application.Features.Loyalty.AddTier;
 using PharmaSaaS.Application.Features.Loyalty.DeleteRule;
@@ -30,8 +30,8 @@ public class LoyaltyController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     [HttpGet("tiers")]
     [HasPermission(Permissions.ReadLoyalty)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(IEnumerable<LoyaltyTierResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         => Ok(await sender.Send(new GetAllLoyaltyTiersQuery(), cancellationToken));
 
@@ -50,10 +50,10 @@ public class LoyaltyController(ISender sender) : ControllerBase
     /// <response code="409">If a tier with the same name already exists.</response>
     [HttpPost("tiers")]
     [HasPermission(Permissions.ManageLoyalty)]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(LoyaltyTierResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> AddTier([FromBody] LoyaltyTierRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new AddLoyaltyTierCommand(request), cancellationToken);
@@ -81,10 +81,10 @@ public class LoyaltyController(ISender sender) : ControllerBase
     [HttpPut("tiers/{id}")]
     [HasPermission(Permissions.ManageLoyalty)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> UpdateTier([FromRoute] int id, [FromBody] LoyaltyTierRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new UpdateLoyaltyTierCommand(id, request), cancellationToken);
@@ -110,9 +110,9 @@ public class LoyaltyController(ISender sender) : ControllerBase
     [HttpDelete("tiers/{id}")]
     [HasPermission(Permissions.ManageLoyalty)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> DeleteTier([FromRoute] int id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new DeleteLoyaltyTierCommand(id), cancellationToken);
@@ -138,10 +138,10 @@ public class LoyaltyController(ISender sender) : ControllerBase
     /// <response code="404">If the tier is not found.</response>
     [HttpPost("tiers/{tierId}/rules")]
     [HasPermission(Permissions.ManageLoyalty)]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(DiscountRuleResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> AddRule([FromRoute] int tierId, [FromBody] DiscountRuleRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new AddDiscountRuleCommand(tierId, request), cancellationToken);
@@ -168,9 +168,9 @@ public class LoyaltyController(ISender sender) : ControllerBase
     [HttpPut("rules/{ruleId}")]
     [HasPermission(Permissions.ManageLoyalty)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> UpdateRule([FromRoute] int ruleId, [FromBody] DiscountRuleRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new UpdateDiscountRuleCommand(ruleId, request), cancellationToken);
@@ -195,8 +195,8 @@ public class LoyaltyController(ISender sender) : ControllerBase
     [HttpDelete("rules/{ruleId}")]
     [HasPermission(Permissions.ManageLoyalty)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> DeleteRule([FromRoute] int ruleId, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new DeleteDiscountRuleCommand(ruleId), cancellationToken);

@@ -23,6 +23,8 @@ public class CreateSubscriptionRequestValidator : AbstractValidator<CreateSubscr
 
         RuleFor(x => x.PhoneNumber)
             .NotEmpty()
+            .Matches(RegexPatterns.PhoneNumber)
+            .WithMessage("Invalid phone number format.")
             .MaximumLength(20);
 
         RuleFor(x => x.Email)

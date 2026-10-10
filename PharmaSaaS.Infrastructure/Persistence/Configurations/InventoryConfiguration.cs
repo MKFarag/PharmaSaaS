@@ -9,9 +9,9 @@ internal class InventoryConfiguration : IEntityTypeConfiguration<Inventory>
             .HasColumnType("decimal(18,2)");
 
         builder
-            .HasOne<Product>()
-            .WithMany()
-            .HasForeignKey(x => x.ProductId);
+            .HasOne(x => x.Product)
+            .WithOne(x => x.Inventory)
+            .HasForeignKey<Inventory>(x => x.ProductId);
 
         builder
             .HasIndex(x => x.ProductId)

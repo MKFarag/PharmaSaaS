@@ -1,4 +1,4 @@
-using PharmaSaaS.Application.Contracts.Expenses;
+﻿using PharmaSaaS.Application.Contracts.Expenses;
 using PharmaSaaS.Application.Features.Expenses.Add;
 using PharmaSaaS.Application.Features.Expenses.Delete;
 using PharmaSaaS.Application.Features.Expenses.GetAllByShift;
@@ -38,8 +38,8 @@ public class ExpensesController(ISender sender) : ControllerBase
     [HttpPost]
     [HasPermission(Permissions.LogExpense)]
     [ProducesResponseType(typeof(ExpenseResponse), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Log([FromBody] ExpenseRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new LogExpenseCommand(request), cancellationToken);
@@ -60,7 +60,7 @@ public class ExpensesController(ISender sender) : ControllerBase
     [HttpGet("shift/{shiftId}")]
     [HasPermission(Permissions.ReadExpense)]
     [ProducesResponseType(typeof(IEnumerable<ExpenseResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAllExpensesByShift([FromRoute] int shiftId, CancellationToken cancellationToken)
         => Ok(await sender.Send(new GetAllExpensesByShiftQuery(shiftId), cancellationToken));
 
@@ -80,9 +80,9 @@ public class ExpensesController(ISender sender) : ControllerBase
     [HttpDelete("{id}")]
     [HasPermission(Permissions.DeleteExpense)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Delete([FromRoute] int id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new DeleteExpenseCommand(id), cancellationToken);

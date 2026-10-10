@@ -1,4 +1,4 @@
-using PharmaSaaS.Application.Contracts.Users;
+﻿using PharmaSaaS.Application.Contracts.Users;
 using PharmaSaaS.Application.Features.Users.Add;
 using PharmaSaaS.Application.Features.Users.Get;
 using PharmaSaaS.Application.Features.Users.GetAll;
@@ -29,9 +29,9 @@ public class UsersController(ISender sender) : ControllerBase
     /// <response code="403">If the user does not have admin privileges.</response>
     [HttpGet("")]
     [HasPermission(Permissions.ReadUser)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(IEnumerable<UserResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         => Ok(await sender.Send(new GetAllUsersQuery(), cancellationToken));
 
@@ -50,10 +50,10 @@ public class UsersController(ISender sender) : ControllerBase
     /// <response code="403">If the user does not have admin privileges.</response>
     [HttpGet("{id}")]
     [HasPermission(Permissions.ReadUser)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Get([FromRoute] string id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetUserQuery(id), cancellationToken);
@@ -91,11 +91,11 @@ public class UsersController(ISender sender) : ControllerBase
     /// <response code="409">If the user's email is already exist'.</response>
     [HttpPost("")]
     [HasPermission(Permissions.AddUser)]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Add([FromBody] CreateUserRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new AddUserCommand(request), cancellationToken);
@@ -135,11 +135,11 @@ public class UsersController(ISender sender) : ControllerBase
     [HttpPut("{id}")]
     [HasPermission(Permissions.UpdateUser)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Update([FromRoute] string id, [FromBody] UpdateUserRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new UpdateUserCommand(id, request), cancellationToken);
@@ -165,9 +165,9 @@ public class UsersController(ISender sender) : ControllerBase
     [HttpPut("{id}/toggle-status")]
     [HasPermission(Permissions.ToggleUserStatus)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> ToggleStatus([FromRoute] string id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new ToggleUserStatusCommand(id), cancellationToken);

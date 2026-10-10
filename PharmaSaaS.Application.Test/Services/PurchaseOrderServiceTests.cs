@@ -28,10 +28,10 @@ public class PurchaseOrderServiceTests
 
         var inventory = Inventory.Create(1, 50, 20);
 
-        A.CallTo(() => _unitOfWork.Inventories.TrackedFindAsync(
+        A.CallTo(() => _unitOfWork.Inventories.TrackedFindAllAsync(
                 A<Expression<Func<Inventory, bool>>>._,
                 A<CancellationToken>._))
-            .Returns(inventory);
+            .Returns(new List<Inventory> { inventory });
 
         // Act
         var result = await _service.ApproveItemsAsync(po, requestedItems, _unitOfWork);

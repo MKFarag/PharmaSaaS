@@ -16,6 +16,9 @@ internal sealed class PurchaseOrderConfiguration : IEntityTypeConfiguration<Purc
         builder.Property(o => o.TotalAmount)
             .HasPrecision(18, 2);
 
+        builder.Property(o => o.PaidAmount)
+            .HasPrecision(18, 2);
+
         builder.HasOne(o => o.Supplier)
             .WithMany(s => s.PurchaseOrders)
             .HasForeignKey(o => o.SupplierId)

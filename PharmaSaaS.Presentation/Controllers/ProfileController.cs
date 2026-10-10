@@ -1,4 +1,4 @@
-using PharmaSaaS.Application.Contracts.Profile;
+﻿using PharmaSaaS.Application.Contracts.Profile;
 using PharmaSaaS.Application.Features.Profile.ChangeEmail;
 using PharmaSaaS.Application.Features.Profile.ChangePassword;
 using PharmaSaaS.Application.Features.Profile.ConfirmChangeEmail;
@@ -28,9 +28,9 @@ public class ProfileController(ISender sender) : ControllerBase
     /// <response code="401">If the user is not authenticated.</response>
     /// <response code="404">If the authenticated user is not found.</response>
     [HttpGet("")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(UserProfileResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetMyProfile(CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetMyProfileQuery(User.GetId()!), cancellationToken);
@@ -64,9 +64,9 @@ public class ProfileController(ISender sender) : ControllerBase
     /// <response code="404">If the authenticated user is not found.</response>
     [HttpPut("")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserProfileRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new UpdateProfileCommand(User.GetId()!, request), cancellationToken);
@@ -100,9 +100,9 @@ public class ProfileController(ISender sender) : ControllerBase
     /// <response code="404">If the authenticated user is not found.</response>
     [HttpPut("change-password")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new ChangeMyPasswordCommand(User.GetId()!, request.CurrentPassword, request.NewPassword), cancellationToken);
@@ -136,10 +136,10 @@ public class ProfileController(ISender sender) : ControllerBase
     /// <response code="409">If the new email is already in use by another account.</response>
     [HttpPut("change-email")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new ChangeMyEmailCommand(User.GetId()!, request.NewEmail), cancellationToken);
@@ -173,9 +173,9 @@ public class ProfileController(ISender sender) : ControllerBase
     /// <response code="404">If the authenticated user is not found.</response>
     [HttpPost("confirm-change-email")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ConfirmChangeEmail([FromBody] ConfirmChangeEmailRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new ConfirmChangeMyEmailCommand(User.GetId()!, request.NewEmail, request.Token), cancellationToken);

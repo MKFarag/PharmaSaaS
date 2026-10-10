@@ -27,7 +27,7 @@ public class PharmaciesController(ISender sender) : ControllerBase
     /// <returns>A list of pharmacies.</returns>
     /// <response code="200">Returns the list of pharmacies.</response>
     [HttpGet("")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<PharmacyResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         => Ok(await sender.Send(new GetAllPharmaciesQuery(), cancellationToken));
 
@@ -43,8 +43,8 @@ public class PharmaciesController(ISender sender) : ControllerBase
     /// <response code="200">Returns the pharmacy details.</response>
     /// <response code="404">If the pharmacy is not found.</response>
     [HttpGet("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(PharmacyResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get([FromRoute] int id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetPharmacyQuery(id), cancellationToken);
@@ -77,8 +77,8 @@ public class PharmaciesController(ISender sender) : ControllerBase
     /// <response code="409">If another pharmacy with the same name exists under this tenant.</response>
     [HttpPut("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Update([FromRoute] int id, [FromBody] PharmacyRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new UpdatePharmacyCommand(id, request), cancellationToken);
@@ -101,7 +101,7 @@ public class PharmaciesController(ISender sender) : ControllerBase
     /// <response code="404">If the pharmacy is not found.</response>
     [HttpPut("toggle-status/{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ToggleStatus([FromRoute] int id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new TogglePharmacyStatusCommand(id), cancellationToken);
@@ -133,7 +133,7 @@ public class PharmaciesController(ISender sender) : ControllerBase
     /// <response code="404">If the pharmacy is not found.</response>
     [HttpPut("{id}/subscription")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> SetSubscription([FromRoute] int id, [FromBody] SetSubscriptionRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new SetPharmacySubscriptionCommand(id, request), cancellationToken);

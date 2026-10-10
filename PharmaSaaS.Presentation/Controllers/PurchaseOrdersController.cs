@@ -1,4 +1,4 @@
-using PharmaSaaS.Application.Contracts.PurchaseOrders;
+﻿using PharmaSaaS.Application.Contracts.PurchaseOrders;
 using PharmaSaaS.Application.Features.PurchaseOrders.Approve;
 using PharmaSaaS.Application.Features.PurchaseOrders.Create;
 using PharmaSaaS.Application.Features.PurchaseOrders.Delete;
@@ -54,7 +54,7 @@ public sealed class PurchaseOrdersController(ISender sender) : ControllerBase
     [HttpGet("{id}")]
     [HasPermission(Permissions.ReadPurchaseOrder)]
     [ProducesResponseType(typeof(PurchaseOrderDetailResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get(int id, CancellationToken cancellationToken = default)
     {
         var result = await sender.Send(new GetPurchaseOrderQuery(id), cancellationToken);
@@ -79,7 +79,7 @@ public sealed class PurchaseOrdersController(ISender sender) : ControllerBase
     [HttpGet("{id}/items")]
     [HasPermission(Permissions.ReadPurchaseOrder)]
     [ProducesResponseType(typeof(List<PurchaseOrderItemResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetItemsByState(int id, [FromQuery] PurchaseOrderItemStatus status, CancellationToken cancellationToken = default)
     {
         var result = await sender.Send(new GetPurchaseOrderItemsByStateQuery(id, status), cancellationToken);
@@ -108,8 +108,8 @@ public sealed class PurchaseOrdersController(ISender sender) : ControllerBase
     [HttpPost]
     [HasPermission(Permissions.ManagePurchaseOrder)]
     [ProducesResponseType(typeof(PurchaseOrderResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Create([FromBody] PurchaseOrderRequest request, CancellationToken cancellationToken = default)
     {
         var result = await sender.Send(new CreatePurchaseOrderCommand(request), cancellationToken);
@@ -140,9 +140,9 @@ public sealed class PurchaseOrdersController(ISender sender) : ControllerBase
     [HttpPut("{id}")]
     [HasPermission(Permissions.ManagePurchaseOrder)]
     [ProducesResponseType(typeof(PurchaseOrderResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdatePurchaseOrderRequest request, CancellationToken cancellationToken = default)
     {
         var result = await sender.Send(new UpdatePurchaseOrderCommand(id, request), cancellationToken);
@@ -172,9 +172,9 @@ public sealed class PurchaseOrdersController(ISender sender) : ControllerBase
     [HttpPut("{id}/approve")]
     [HasPermission(Permissions.ManagePurchaseOrder)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Approve(int id, [FromBody] ApprovePurchaseOrderRequest request, CancellationToken cancellationToken = default)
     {
         var result = await sender.Send(new ApprovePurchaseOrderCommand(id, request), cancellationToken);
@@ -203,8 +203,8 @@ public sealed class PurchaseOrdersController(ISender sender) : ControllerBase
     [HttpPut("{id}/return")]
     [HasPermission(Permissions.ManagePurchaseOrder)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ReturnItems(int id, [FromBody] ReturnPurchaseOrderItemsRequest request, CancellationToken cancellationToken = default)
     {
         var result = await sender.Send(new ReturnPurchaseOrderItemsCommand(id, request), cancellationToken);
@@ -227,8 +227,8 @@ public sealed class PurchaseOrdersController(ISender sender) : ControllerBase
     [HttpDelete("{id}")]
     [HasPermission(Permissions.ManagePurchaseOrder)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
     {
         var result = await sender.Send(new DeletePurchaseOrderCommand(id), cancellationToken);

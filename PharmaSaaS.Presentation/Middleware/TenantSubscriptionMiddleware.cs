@@ -1,4 +1,4 @@
-﻿using PharmaSaaS.Infrastructure.Tenants;
+using PharmaSaaS.Infrastructure.Tenants;
 
 namespace PharmaSaaS.Presentation.Middleware;
 
@@ -21,8 +21,9 @@ public class TenantSubscriptionMiddleware(RequestDelegate next)
 
         var endpoint = context.GetEndpoint();
         var isSystemOwner = endpoint?.Metadata.GetMetadata<SystemOwnerAttribute>() is not null;
+        var isNoTenantRequired = endpoint?.Metadata.GetMetadata<NoTenantRequiredAttribute>() is not null;
 
-        if (isSystemOwner)
+        if (isSystemOwner || isNoTenantRequired)
         {
             await _next(context);
             return;

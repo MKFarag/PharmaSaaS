@@ -1,4 +1,4 @@
-using PharmaSaaS.Application.Contracts.SupplierPayments;
+﻿using PharmaSaaS.Application.Contracts.SupplierPayments;
 using PharmaSaaS.Application.Features.SupplierPayments.List;
 using PharmaSaaS.Application.Features.SupplierPayments.Record;
 
@@ -26,7 +26,7 @@ public class SupplierPaymentsController(ISender sender) : ControllerBase
     [HttpGet]
     [HasPermission(Permissions.ReadSupplier)]
     [ProducesResponseType(typeof(IPaginatedList<SupplierPaymentResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> List(
         [FromQuery] SupplierPaymentRequestFilters filters,
         CancellationToken cancellationToken = default)
@@ -58,9 +58,9 @@ public class SupplierPaymentsController(ISender sender) : ControllerBase
     [HttpPost]
     [HasPermission(Permissions.ManagePurchaseOrder)]
     [ProducesResponseType(typeof(SupplierPaymentResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Record([FromBody] SupplierPaymentRequest request, CancellationToken cancellationToken = default)
     {
         var result = await sender.Send(new RecordSupplierPaymentCommand(request), cancellationToken);

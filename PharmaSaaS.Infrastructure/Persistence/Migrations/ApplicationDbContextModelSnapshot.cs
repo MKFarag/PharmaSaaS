@@ -342,9 +342,6 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ProductId2")
-                        .HasColumnType("int");
-
                     b.Property<float>("Quantity")
                         .HasColumnType("real");
 
@@ -361,10 +358,6 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ProductId")
                         .IsUnique();
-
-                    b.HasIndex("ProductId2")
-                        .IsUnique()
-                        .HasFilter("[ProductId2] IS NOT NULL");
 
                     b.ToTable("Inventory");
                 });
@@ -421,9 +414,6 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.Property<int>("InvoiceId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("InvoiceId1")
-                        .HasColumnType("int");
-
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
@@ -436,8 +426,6 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("InvoiceId");
-
-                    b.HasIndex("InvoiceId1");
 
                     b.HasIndex("ProductId");
 
@@ -536,6 +524,7 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                         .HasColumnType("date");
 
                     b.Property<decimal>("PaidAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Status")
@@ -589,6 +578,7 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<decimal>("UnitCost")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -1094,14 +1084,10 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.Inventory", b =>
                 {
                     b.HasOne("PharmaSaaS.Domain.Entities.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
+                        .WithOne("Inventory")
+                        .HasForeignKey("PharmaSaaS.Domain.Entities.Inventory", "ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("PharmaSaaS.Domain.Entities.Product", null)
-                        .WithOne("Inventory")
-                        .HasForeignKey("PharmaSaaS.Domain.Entities.Inventory", "ProductId2");
 
                     b.Navigation("Product");
                 });
@@ -1127,14 +1113,10 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.InvoiceItem", b =>
                 {
                     b.HasOne("PharmaSaaS.Domain.Entities.Invoice", "Invoice")
-                        .WithMany()
+                        .WithMany("Items")
                         .HasForeignKey("InvoiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("PharmaSaaS.Domain.Entities.Invoice", null)
-                        .WithMany("Items")
-                        .HasForeignKey("InvoiceId1");
 
                     b.HasOne("PharmaSaaS.Domain.Entities.Product", "Product")
                         .WithMany()

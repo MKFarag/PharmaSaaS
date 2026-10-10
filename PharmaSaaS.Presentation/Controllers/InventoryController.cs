@@ -1,4 +1,4 @@
-using PharmaSaaS.Application.Contracts.Inventories;
+﻿using PharmaSaaS.Application.Contracts.Inventories;
 using PharmaSaaS.Application.Features.Inventories.AdjustStock;
 using PharmaSaaS.Application.Features.Inventories.GetAllInventories;
 using PharmaSaaS.Application.Features.Inventories.GetInventoryById;
@@ -39,8 +39,8 @@ public class InventoryController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     [HttpGet("")]
     [HasPermission(Permissions.ReadInventory)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(IPaginatedList<InventoryResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAll([FromQuery] InventoryRequestFilters filters, CancellationToken cancellationToken)
         => Ok(await sender.Send(new GetAllInventoriesQuery(filters), cancellationToken));
 
@@ -63,9 +63,9 @@ public class InventoryController(ISender sender) : ControllerBase
     /// <response code="404">If no inventory record exists for the given product.</response>
     [HttpGet("{productId}")]
     [HasPermission(Permissions.ReadInventory)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(InventoryDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById([FromRoute] int productId, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetInventoryByIdQuery(productId), cancellationToken);
@@ -87,9 +87,9 @@ public class InventoryController(ISender sender) : ControllerBase
     [HttpPut("{productId}")]
     [HasPermission(Permissions.UpdateInventory)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> UpdateStock([FromRoute] int productId, [FromBody] UpdateStockRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new UpdateStockCommand(productId, request), cancellationToken);
@@ -115,8 +115,8 @@ public class InventoryController(ISender sender) : ControllerBase
     [HttpPatch("{productId}/rare")]
     [HasPermission(Permissions.ToggleRare)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> ToggleRare([FromRoute] int productId, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new ToggleRareCommand(productId), cancellationToken);
@@ -140,9 +140,9 @@ public class InventoryController(ISender sender) : ControllerBase
     [HttpPatch("{productId}/stock")]
     [HasPermission(Permissions.AdjustInventoryStock)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> AdjustStock([FromRoute] int productId, [FromBody] AdjustStockRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new AdjustStockCommand(productId, request), cancellationToken);

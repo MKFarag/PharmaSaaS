@@ -1,4 +1,4 @@
-﻿namespace PharmaSaaS.Domain.Constants;
+namespace PharmaSaaS.Domain.Constants;
 
 public static class RegexPatterns
 {
@@ -16,4 +16,6 @@ public static class RegexPatterns
 
     // Only contain letters, numbers, underscores, hyphens, and periods
     public const string SafeFileName = @"^[A-Za-z0-9_\-\.]*$";
+
+    public const string PhoneNumber = @"^(?:(?:\+|00)[1-9]\d{6,14}|01[0125]\d{8}|0[2-9]\d{7,8})$";
 }

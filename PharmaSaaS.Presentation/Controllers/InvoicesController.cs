@@ -1,4 +1,4 @@
-using PharmaSaaS.Application.Contracts.Invoices;
+﻿using PharmaSaaS.Application.Contracts.Invoices;
 using PharmaSaaS.Application.Features.Invoices.CheckReturnImpact;
 using PharmaSaaS.Application.Features.Invoices.Create;
 using PharmaSaaS.Application.Features.Invoices.GetAll;
@@ -38,8 +38,8 @@ public sealed class InvoicesController(ISender sender) : ControllerBase
     [HasPermission(Permissions.CreateInvoice)]
     [Idempotent]
     [ProducesResponseType(typeof(InvoiceDetailResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> CreateInvoice([FromBody] CreateInvoiceRequest request, CancellationToken cancellationToken)
     {
         var command = new CreateInvoiceCommand(request);
@@ -70,9 +70,9 @@ public sealed class InvoicesController(ISender sender) : ControllerBase
     [HasPermission(Permissions.ProcessReturn)]
     [Idempotent]
     [ProducesResponseType(typeof(ProcessReturnResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ProcessReturn([FromRoute] int id, [FromBody] ProcessReturnRequest request, CancellationToken cancellationToken)
     {
         var command = new ProcessReturnCommand(id, request);
@@ -96,7 +96,7 @@ public sealed class InvoicesController(ISender sender) : ControllerBase
     [HttpGet("")]
     [HasPermission(Permissions.ReadInvoice)]
     [ProducesResponseType(typeof(IPaginatedList<InvoiceResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetAllInvoices([FromQuery] InvoiceRequestFilters filters, CancellationToken cancellationToken)
     {
         var query = new GetAllInvoicesQuery(filters);
@@ -121,8 +121,8 @@ public sealed class InvoicesController(ISender sender) : ControllerBase
     [HttpGet("{id}")]
     [HasPermission(Permissions.ReadInvoice)]
     [ProducesResponseType(typeof(InvoiceDetailResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetInvoiceById([FromRoute] int id, CancellationToken cancellationToken)
     {
         var query = new GetInvoiceByIdQuery(id);
@@ -156,9 +156,9 @@ public sealed class InvoicesController(ISender sender) : ControllerBase
     [HttpGet("{id}/return/preview")]
     [HasPermission(Permissions.PreviewReturn)]
     [ProducesResponseType(typeof(CheckReturnImpactResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> PreviewReturnImpact([FromRoute] int id, [FromQuery] ProcessReturnRequest request, CancellationToken cancellationToken)
     {
         var query = new CheckReturnImpactQuery(id, request);

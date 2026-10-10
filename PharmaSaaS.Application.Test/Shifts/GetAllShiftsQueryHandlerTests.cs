@@ -46,7 +46,8 @@ public class GetAllShiftsQueryHandlerTests : IClassFixture<MapsterTestFixture>
         var request = new GetAllShiftsQuery(new ShiftRequestFilters { PageNumber = 2, PageSize = 20 });
         var expectedList = A.Fake<IPaginatedList<ShiftResponse>>();
 
-        A.CallTo(() => _shiftRepo.GetPaginatedListAsync<ShiftResponse>(
+        A.CallTo(() => _shiftRepo.FindPaginatedListAsync<ShiftResponse>(
+            A<Expression<Func<Shift, bool>>>.Ignored,
             2, 20, nameof(Shift.Id), A<CancellationToken>.Ignored))
             .Returns(expectedList);
 
@@ -55,7 +56,8 @@ public class GetAllShiftsQueryHandlerTests : IClassFixture<MapsterTestFixture>
 
         // Assert
         Assert.Same(expectedList, result);
-        A.CallTo(() => _shiftRepo.GetPaginatedListAsync<ShiftResponse>(
+        A.CallTo(() => _shiftRepo.FindPaginatedListAsync<ShiftResponse>(
+            A<Expression<Func<Shift, bool>>>.Ignored,
             2, 20, nameof(Shift.Id), A<CancellationToken>.Ignored))
             .MustHaveHappenedOnceExactly();
     }

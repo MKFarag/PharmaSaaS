@@ -1,4 +1,4 @@
-using PharmaSaaS.Application.Contracts.Auth;
+﻿using PharmaSaaS.Application.Contracts.Auth;
 using PharmaSaaS.Application.Features.Auth.ConfirmEmail;
 using PharmaSaaS.Application.Features.Auth.GetRefreshToken;
 using PharmaSaaS.Application.Features.Auth.GetToken;
@@ -39,8 +39,8 @@ public class AuthController(ISender sender) : ControllerBase
     /// <response code="200">Returns the authentication tokens.</response>
     /// <response code="400">If the credentials are invalid.</response>
     [HttpPost("")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
     {
         var command = new GetTokenCommand(request.Email, request.Password);
@@ -72,8 +72,8 @@ public class AuthController(ISender sender) : ControllerBase
     /// <response code="200">Returns the new tokens.</response>
     /// <response code="400">If the tokens are invalid or expired.</response>
     [HttpPost("refresh")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetRefreshToken([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
     {
         var command = new GetRefreshTokenCommand(request.Token, request.RefreshToken);
@@ -106,7 +106,7 @@ public class AuthController(ISender sender) : ControllerBase
     /// <response code="400">If the tokens are invalid.</response>
     [HttpPost("revoke-refresh")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> RevokeRefreshToken([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
     {
         var command = new RevokeRefreshTokenCommand(request.Token, request.RefreshToken);
@@ -141,7 +141,7 @@ public class AuthController(ISender sender) : ControllerBase
     /// <response code="400">If the registration data is invalid or email exists.</response>
     [HttpPost("register")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
     {
         var command = new RegisterCommand(request);
@@ -174,7 +174,7 @@ public class AuthController(ISender sender) : ControllerBase
     /// <response code="400">If the token or user ID is invalid.</response>
     [HttpPost("confirm")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequest request, CancellationToken cancellationToken)
     {
         var command = new ConfirmEmailCommand(request.UserId, request.Token);
@@ -206,7 +206,7 @@ public class AuthController(ISender sender) : ControllerBase
     /// <response code="400">If the email is invalid or already confirmed.</response>
     [HttpPost("resend-confirm")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ResendConfirmEmail([FromBody] ResendConfirmationEmailRequest request, CancellationToken cancellationToken)
     {
         var command = new ResendConfirmationEmailCommand(request.Email);
@@ -238,7 +238,7 @@ public class AuthController(ISender sender) : ControllerBase
     /// <response code="400">If the email is invalid.</response>
     [HttpPost("forget-password")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordRequest request, CancellationToken cancellationToken)
     {
         var command = new SendResetPasswordCommand(request.Email);
@@ -272,7 +272,7 @@ public class AuthController(ISender sender) : ControllerBase
     /// <response code="400">If the reset token or data is invalid.</response>
     [HttpPost("reset-password")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request, CancellationToken cancellationToken)
     {
         var command = new ResetPasswordCommand(request.Email, request.Token, request.NewPassword);
