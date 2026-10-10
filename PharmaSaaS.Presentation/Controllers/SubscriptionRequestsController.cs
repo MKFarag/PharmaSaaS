@@ -36,7 +36,7 @@ public class SubscriptionRequestsController(ISender sender) : ControllerBase
     /// <returns>No content on success.</returns>
     /// <response code="204">If the subscription request was successfully submitted.</response>
     [HttpPost]
-    [Idempotent]
+    //[Idempotent]
     [NoTenantRequired]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

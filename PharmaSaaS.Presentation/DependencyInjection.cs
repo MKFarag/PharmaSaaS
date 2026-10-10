@@ -325,6 +325,7 @@ public static class DependencyInjection
                     options.AddBearerSecurity();
                     options.OperationProcessors.Add(new ApiVersionHeaderOperationProcessor(description));
                     options.OperationProcessors.Add(new TenantHeaderOperationProcessor());
+                    options.OperationProcessors.Add(new IdempotencyHeaderOperationProcessor());
                 });
             }
 

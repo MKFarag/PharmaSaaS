@@ -1,11 +1,11 @@
-﻿using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.Caching.Hybrid;
 using System.Text.Json;
 
 namespace PharmaSaaS.Presentation.Attributes;
 
 public class IdempotentAttribute : ActionFilterAttribute
 {
-    private const string _idempotencyKeyHeader = "X-Idempotency-Key";
+    public const string _headerName = "X-Idempotency-Key";
     private const string _inProgressValue = "in-progress";
 
     private static readonly HybridCacheEntryOptions _lockOptions = new()
@@ -24,10 +24,10 @@ public class IdempotentAttribute : ActionFilterAttribute
 
     public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        if (!context.HttpContext.Request.Headers.TryGetValue(_idempotencyKeyHeader, out var idempotencyKey)
+        if (!context.HttpContext.Request.Headers.TryGetValue(_headerName, out var idempotencyKey)
             || string.IsNullOrWhiteSpace(idempotencyKey))
         {
-            context.Result = new BadRequestObjectResult($"Missing or invalid {_idempotencyKeyHeader} header.");
+            context.Result = new BadRequestObjectResult($"Missing or invalid {_headerName} header.");
             return;
         }
 
