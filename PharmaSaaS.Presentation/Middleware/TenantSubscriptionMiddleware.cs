@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc.Controllers;
 using PharmaSaaS.Infrastructure.Tenants;
 
 namespace PharmaSaaS.Presentation.Middleware;
@@ -6,22 +7,19 @@ public class TenantSubscriptionMiddleware(RequestDelegate next)
 {
     private readonly RequestDelegate _next = next;
 
-    private static readonly string[] _excludedPaths =
-        ["/swagger", "/redoc", "/health", "/jobs"];
-
     public async Task InvokeAsync(HttpContext context, ITenantService tenantService)
     {
-        var path = context.Request.Path.Value?.ToLowerInvariant() ?? string.Empty;
+        var endpoint = context.GetEndpoint();
+        var actionDescriptor = endpoint?.Metadata.GetMetadata<ControllerActionDescriptor>();
 
-        if (_excludedPaths.Any(p => path.StartsWith(p)))
+        if (actionDescriptor is null)
         {
             await _next(context);
             return;
         }
 
-        var endpoint = context.GetEndpoint();
-        var isSystemOwner = endpoint?.Metadata.GetMetadata<SystemOwnerAttribute>() is not null;
-        var isNoTenantRequired = endpoint?.Metadata.GetMetadata<NoTenantRequiredAttribute>() is not null;
+        var isSystemOwner = endpoint!.Metadata.GetMetadata<SystemOwnerAttribute>() is not null;
+        var isNoTenantRequired = endpoint.Metadata.GetMetadata<NoTenantRequiredAttribute>() is not null;
 
         if (isSystemOwner || isNoTenantRequired)
         {

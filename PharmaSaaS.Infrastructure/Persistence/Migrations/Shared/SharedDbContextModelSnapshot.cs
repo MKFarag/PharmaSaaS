@@ -24,11 +24,9 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations.Shared
 
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.Shared.Pharmacy", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
 
                     b.Property<string>("CustomAiApiKey")
                         .HasMaxLength(200)

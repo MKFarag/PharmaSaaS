@@ -1,3 +1,3 @@
 namespace PharmaSaaS.Application.Features.Pharmacies.Update;
 
-public record UpdatePharmacyCommand(int Id, PharmacyRequest Request) : IRequest<Result>;
+public record UpdatePharmacyCommand(string Id, PharmacyRequest Request) : IRequest<Result>;

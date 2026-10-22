@@ -1,4 +1,4 @@
-﻿namespace PharmaSaaS.Application.Contracts.Roles;
+namespace PharmaSaaS.Application.Contracts.Roles;
 
 public record RoleRequest(
     string Name,
@@ -13,6 +13,8 @@ public class RoleRequestValidator : AbstractValidator<RoleRequest>
     {
         RuleFor(x => x.Name)
             .NotEmpty()
+            .Matches(RegexPatterns.BusinessName)
+            .WithMessage("Role name must start and end with a letter or number, and can contain spaces, hyphens, apostrophes, periods, underscores, and ampersands.")
             .Length(2, 200);
 
         RuleFor(x => x.Permissions)

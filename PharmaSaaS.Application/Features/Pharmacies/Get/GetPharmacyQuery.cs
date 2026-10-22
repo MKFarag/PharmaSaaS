@@ -1,3 +1,3 @@
-﻿namespace PharmaSaaS.Application.Features.Pharmacies.Get;
+namespace PharmaSaaS.Application.Features.Pharmacies.Get;
 
-public record GetPharmacyQuery(int Id) : IRequest<Result<PharmacyResponse>>;
+public record GetPharmacyQuery(string Id) : IRequest<Result<PharmacyResponse>>;

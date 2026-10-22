@@ -1,4 +1,4 @@
-﻿namespace PharmaSaaS.Application.Contracts.Profile;
+namespace PharmaSaaS.Application.Contracts.Profile;
 
 public record UpdateUserProfileRequest(
     string FirstName,
@@ -13,14 +13,14 @@ public class UpdateUserProfileRequestValidator : AbstractValidator<UpdateUserPro
     {
         RuleFor(x => x.FirstName)
             .NotEmpty()
-            .Matches(RegexPatterns.OnlyLettersWithSpaces)
-            .WithMessage("FirstName must start and end with a letter, and spaces are allowed only in the middle.")
+            .Matches(RegexPatterns.PersonName)
+            .WithMessage("FirstName must start and end with a letter, and spaces, hyphens, and apostrophes are allowed only in the middle.")
             .Length(2, 50);
 
         RuleFor(x => x.LastName)
             .NotEmpty()
-            .Matches(RegexPatterns.OnlyLettersWithSpaces)
-            .WithMessage("LastName must start and end with a letter, and spaces are allowed only in the middle.")
+            .Matches(RegexPatterns.PersonName)
+            .WithMessage("LastName must start and end with a letter, and spaces, hyphens, and apostrophes are allowed only in the middle.")
             .Length(2, 100);
     }
 }

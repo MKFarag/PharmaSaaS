@@ -24,4 +24,9 @@ internal sealed class SubscriptionRequestRepository(SharedDbContext context) : I
                  s.PhoneNumber == phoneNumber &&
                  s.Email == email &&
                  s.Status == SubscriptionRequestStatus.Pending, cancellationToken);
+
+    public async Task<bool> ExistsApprovedAsync(string pharmacyName, string phoneNumber, string email, CancellationToken cancellationToken = default)
+        => await context.SubscriptionRequests.AnyAsync(
+            s => (s.PharmacyName == pharmacyName || s.PhoneNumber == phoneNumber || s.Email == email) &&
+                 s.Status == SubscriptionRequestStatus.Approved, cancellationToken);
 }

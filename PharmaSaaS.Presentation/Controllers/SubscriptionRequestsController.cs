@@ -103,7 +103,8 @@ public class SubscriptionRequestsController(ISender sender) : ControllerBase
     ///
     ///     PUT /api/SubscriptionRequests/{id}/status
     ///     {
-    ///       "status": "Approved"
+    ///       "status": "Approved",
+    ///       "durationInMonths": 1
     ///     }
     ///
     /// </remarks>

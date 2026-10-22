@@ -17,6 +17,7 @@ using PharmaSaaS.Presentation.SwaggerProcessors;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using System.Reflection;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
 namespace PharmaSaaS.Presentation;
@@ -27,7 +28,8 @@ public static class DependencyInjection
     {
         public IServiceCollection AddDependencies(IConfiguration configuration)
         {
-            services.AddControllers();
+            services.AddControllers()
+                .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
             services.AddInfrastructureDependencies(configuration);
             services.AddCORSConfig(configuration);
             services.AddAuthConfig(configuration);

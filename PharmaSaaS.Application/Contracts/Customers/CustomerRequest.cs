@@ -13,6 +13,8 @@ public class CustomerRequestValidator : AbstractValidator<CustomerRequest>
     {
         RuleFor(x => x.FullName)
             .NotEmpty()
+            .Matches(RegexPatterns.PersonName)
+            .WithMessage("FullName must contain only letters and allowed separators (single space, hyphen, or apostrophe).")
             .MaximumLength(150);
 
         RuleFor(x => x.PhoneNumber)

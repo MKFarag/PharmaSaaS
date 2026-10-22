@@ -1,3 +1,3 @@
-﻿namespace PharmaSaaS.Application.Features.Pharmacies.SetSubscription;
+namespace PharmaSaaS.Application.Features.Pharmacies.SetSubscription;
 
-public record SetPharmacySubscriptionCommand(int Id, SetSubscriptionRequest Request) : IRequest<Result>;
+public record SetPharmacySubscriptionCommand(string Id, SetSubscriptionRequest Request) : IRequest<Result>;

@@ -2,7 +2,7 @@ namespace PharmaSaaS.Domain.Entities.Shared;
 
 public sealed class Pharmacy
 {
-    public int Id { get; set; }
+    public string Id { get; set; } = string.Empty;
     public string TenantId { get; private set; } = string.Empty;
     public string Name { get; private set; } = string.Empty;
     public DateOnly? SubscriptionStart { get; private set; }
@@ -10,8 +10,20 @@ public sealed class Pharmacy
     public bool IsActive { get; private set; }
     public string? CustomAiApiKey { get; private set; }
 
-    public static Pharmacy Create(string name)
-        => new() { Name = name, TenantId = $"{Guid.NewGuid():N}"[..12] + "-" + name };
+    public static Pharmacy Create(string name, DateOnly subscriptionEnd)
+    {
+        var subscriptionStart = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        return new Pharmacy
+        {
+            Id = Guid.CreateVersion7().ToString(),
+            Name = name,
+            TenantId = $"{Guid.NewGuid():N}"[..16],
+            SubscriptionStart = subscriptionStart,
+            SubscriptionEnd = subscriptionEnd,
+            IsActive = true
+        };
+    }
 
     public void Update(string name)
         => Name = name;

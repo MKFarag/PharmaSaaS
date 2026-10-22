@@ -1,4 +1,4 @@
-﻿using PharmaSaaS.Application.Contracts.Pharmacies;
+using PharmaSaaS.Application.Contracts.Pharmacies;
 using PharmaSaaS.Application.Contracts.SubscriptionRequests;
 using PharmaSaaS.Application.Features.Pharmacies.Get;
 using PharmaSaaS.Application.Features.Pharmacies.GetAll;
@@ -45,7 +45,7 @@ public class PharmaciesController(ISender sender) : ControllerBase
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(PharmacyResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Get([FromRoute] int id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Get([FromRoute] string id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetPharmacyQuery(id), cancellationToken);
 
@@ -79,7 +79,7 @@ public class PharmaciesController(ISender sender) : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Update([FromRoute] int id, [FromBody] PharmacyRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Update([FromRoute] string id, [FromBody] PharmacyRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new UpdatePharmacyCommand(id, request), cancellationToken);
 
@@ -102,7 +102,7 @@ public class PharmaciesController(ISender sender) : ControllerBase
     [HttpPut("toggle-status/{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> ToggleStatus([FromRoute] int id, CancellationToken cancellationToken)
+    public async Task<IActionResult> ToggleStatus([FromRoute] string id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new TogglePharmacyStatusCommand(id), cancellationToken);
 
@@ -134,7 +134,7 @@ public class PharmaciesController(ISender sender) : ControllerBase
     [HttpPut("{id}/subscription")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> SetSubscription([FromRoute] int id, [FromBody] SetSubscriptionRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> SetSubscription([FromRoute] string id, [FromBody] SetSubscriptionRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new SetPharmacySubscriptionCommand(id, request), cancellationToken);
 

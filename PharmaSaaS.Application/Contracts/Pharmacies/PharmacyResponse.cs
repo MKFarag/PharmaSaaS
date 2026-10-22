@@ -1,7 +1,7 @@
-﻿namespace PharmaSaaS.Application.Contracts.Pharmacies;
+namespace PharmaSaaS.Application.Contracts.Pharmacies;
 
 public record PharmacyResponse(
-    int Id,
+    string Id,
     string TenantId,
     string Name,
     DateOnly? SubscriptionStart,

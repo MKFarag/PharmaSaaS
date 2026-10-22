@@ -6,4 +6,5 @@ public interface ISubscriptionRequestRepository
     Task<SubscriptionRequest?> GetAsync(string id, CancellationToken cancellationToken = default);
     Task AddAsync(SubscriptionRequest request, CancellationToken cancellationToken = default);
     Task<bool> ExistsPendingAsync(string pharmacyName, string phoneNumber, string email, CancellationToken cancellationToken = default);
+    Task<bool> ExistsApprovedAsync(string pharmacyName, string phoneNumber, string email, CancellationToken cancellationToken = default);
 }

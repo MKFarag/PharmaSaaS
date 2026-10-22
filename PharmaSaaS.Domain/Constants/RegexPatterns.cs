@@ -9,7 +9,11 @@ public static class RegexPatterns
     public const string AlphanumericUnderscore = @"^[a-zA-Z0-9_]+$";
 
     // Only contain letters and spaces in the middle.
-    public const string OnlyLettersWithSpaces = @"^[A-Za-z]+(?:\s[A-Za-z]+)*$";
+    public const string OnlyLettersWithSpaces = @"^[\p{L}\p{M}]+(?:\s[\p{L}\p{M}]+)*$";
+
+    public const string PersonName = @"^[\p{L}\p{M}]+(?:['\- ][\p{L}\p{M}]+)*$";
+
+    public const string BusinessName = @"^[\p{L}\p{M}0-9]+(?:(?:\.\s|['\-_.]|\s*&\s*|\s)[\p{L}\p{M}0-9]+)*\.?$";
 
     // Only contain numbers
     public const string OnlyNumbers = @"^[0-9]+$";

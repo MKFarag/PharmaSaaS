@@ -18,10 +18,10 @@ public class SetPharmacySubscriptionCommandHandlerTest
     public async Task Handle_WhenPharmacyNotFound_ReturnsNotFoundError()
     {
         // Arrange
-        A.CallTo(() => _pharmacyRepo.GetAsync(A<int>.Ignored, A<CancellationToken>.Ignored))
+        A.CallTo(() => _pharmacyRepo.GetAsync(A<string>.Ignored, A<CancellationToken>.Ignored))
             .Returns((Pharmacy?)null);
 
-        var command = new SetPharmacySubscriptionCommand(1, new SetSubscriptionRequest(DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1))));
+        var command = new SetPharmacySubscriptionCommand(Guid.NewGuid().ToString(), new SetSubscriptionRequest(DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1))));
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -35,16 +35,16 @@ public class SetPharmacySubscriptionCommandHandlerTest
     public async Task Handle_ValidData_SetsSubscriptionEndAndReturnsSuccess()
     {
         // Arrange
-        var pharmacy = Pharmacy.Create("Pharmacy");
+        var pharmacy = Pharmacy.Create("Pharmacy", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)));
         var end = new DateOnly(2027, 1, 1);
 
-        A.CallTo(() => _pharmacyRepo.GetAsync(A<int>.Ignored, A<CancellationToken>.Ignored))
+        A.CallTo(() => _pharmacyRepo.GetAsync(A<string>.Ignored, A<CancellationToken>.Ignored))
             .Returns(pharmacy);
 
         A.CallTo(() => _unitOfWork.SharedCompleteAsync(A<CancellationToken>.Ignored))
             .Returns(1);
 
-        var command = new SetPharmacySubscriptionCommand(1, new SetSubscriptionRequest(end));
+        var command = new SetPharmacySubscriptionCommand(pharmacy.Id, new SetSubscriptionRequest(end));
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);

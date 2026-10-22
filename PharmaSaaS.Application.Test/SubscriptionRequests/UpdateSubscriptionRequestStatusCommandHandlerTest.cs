@@ -26,7 +26,7 @@ public class UpdateSubscriptionRequestStatusCommandHandlerTest
         A.CallTo(() => _subRepo.GetAsync(A<string>.Ignored, A<CancellationToken>.Ignored))
             .Returns((SubscriptionRequest?)null);
 
-        var command = new UpdateSubscriptionRequestStatusCommand("non-existent", new UpdateSubscriptionRequestStatusRequest(SubscriptionRequestStatus.Approved, null));
+        var command = new UpdateSubscriptionRequestStatusCommand("non-existent", new UpdateSubscriptionRequestStatusRequest(nameof(SubscriptionRequestStatus.Approved), null));
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -43,7 +43,7 @@ public class UpdateSubscriptionRequestStatusCommandHandlerTest
         A.CallTo(() => _subRepo.GetAsync("req-1", A<CancellationToken>.Ignored))
             .Returns(subscriptionRequest);
 
-        var command = new UpdateSubscriptionRequestStatusCommand("req-1", new UpdateSubscriptionRequestStatusRequest(SubscriptionRequestStatus.Approved, 6));
+        var command = new UpdateSubscriptionRequestStatusCommand("req-1", new UpdateSubscriptionRequestStatusRequest(nameof(SubscriptionRequestStatus.Approved), 6));
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -51,7 +51,11 @@ public class UpdateSubscriptionRequestStatusCommandHandlerTest
         Assert.Equal(SubscriptionRequestStatus.Approved, subscriptionRequest.Status);
 
         A.CallTo(() => _pharmacyRepo.AddAsync(
-            A<Pharmacy>.That.Matches(p => p.Name == "New Pharmacy"),
+            A<Pharmacy>.That.Matches(p =>
+                p.Name == "New Pharmacy" &&
+                p.SubscriptionStart == DateOnly.FromDateTime(DateTime.UtcNow) &&
+                p.SubscriptionEnd == DateOnly.FromDateTime(DateTime.UtcNow).AddMonths(6) &&
+                p.IsActive),
             A<CancellationToken>.Ignored))
             .MustHaveHappenedOnceExactly();
 
@@ -68,7 +72,7 @@ public class UpdateSubscriptionRequestStatusCommandHandlerTest
         A.CallTo(() => _subRepo.GetAsync("req-2", A<CancellationToken>.Ignored))
             .Returns(subscriptionRequest);
 
-        var command = new UpdateSubscriptionRequestStatusCommand("req-2", new UpdateSubscriptionRequestStatusRequest(SubscriptionRequestStatus.Rejected, null));
+        var command = new UpdateSubscriptionRequestStatusCommand("req-2", new UpdateSubscriptionRequestStatusRequest(nameof(SubscriptionRequestStatus.Rejected), null));
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -88,7 +92,7 @@ public class UpdateSubscriptionRequestStatusCommandHandlerTest
         A.CallTo(() => _subRepo.GetAsync("req-3", A<CancellationToken>.Ignored))
             .Returns(subscriptionRequest);
 
-        var command = new UpdateSubscriptionRequestStatusCommand("req-3", new UpdateSubscriptionRequestStatusRequest(SubscriptionRequestStatus.Contacted, null));
+        var command = new UpdateSubscriptionRequestStatusCommand("req-3", new UpdateSubscriptionRequestStatusRequest(nameof(SubscriptionRequestStatus.Contacted), null));
 
         var result = await _handler.Handle(command, CancellationToken.None);
 

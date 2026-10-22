@@ -41,7 +41,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         base.OnModelCreating(builder);
 
-        builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly(),
+            type => type.Namespace?.Contains("Configurations.Shared") != true);
 
         #region Change delete behavior
 

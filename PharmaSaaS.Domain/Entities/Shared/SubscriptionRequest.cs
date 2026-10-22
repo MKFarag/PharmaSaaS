@@ -2,7 +2,7 @@ namespace PharmaSaaS.Domain.Entities.Shared;
 
 public sealed class SubscriptionRequest
 {
-    public string Id { get; set; } = string.Empty;
+    public string Id { get; set; } = Guid.CreateVersion7().ToString();
     public string PharmacyName { get; private set; } = string.Empty;
     public string OwnerName { get; private set; } = string.Empty;
     public string PhoneNumber { get; private set; } = string.Empty;

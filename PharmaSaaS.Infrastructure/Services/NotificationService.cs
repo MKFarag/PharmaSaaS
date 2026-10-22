@@ -53,7 +53,7 @@ public class NotificationService
         if (string.IsNullOrWhiteSpace(_templateOptions.PlatformAdminEmail))
             return;
 
-        var placeholders = BuildPlaceholders("Admin", new Dictionary<string, string>
+        var placeholders = BuildPlaceholders("Mohamed", new Dictionary<string, string>
         {
             { EmailTemplateOptions.Placeholders.PharmacyName, pharmacyName },
             { EmailTemplateOptions.Placeholders.OwnerName, ownerName },

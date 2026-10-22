@@ -56,4 +56,19 @@ public class SubmitSubscriptionRequestCommandHandlerTest
         Assert.True(result.IsFailure);
         Assert.Equal(SubscriptionRequestErrors.AlreadyPending, result.Error);
     }
+
+    [Fact]
+    public async Task Handle_WhenApprovedRequestAlreadyExists_ReturnsAlreadyApprovedError()
+    {
+        A.CallTo(() => _subRepo.ExistsApprovedAsync("Approved Pharmacy", "111", "e@e.com", A<CancellationToken>.Ignored))
+            .Returns(true);
+
+        var request = new CreateSubscriptionRequest("Approved Pharmacy", "Owner", "111", "e@e.com");
+        var command = new SubmitSubscriptionRequestCommand(request);
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(SubscriptionRequestErrors.AlreadyApproved, result.Error);
+    }
 }

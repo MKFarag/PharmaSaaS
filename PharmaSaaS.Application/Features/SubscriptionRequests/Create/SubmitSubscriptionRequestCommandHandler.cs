@@ -5,6 +5,16 @@ public sealed class SubmitSubscriptionRequestCommandHandler(IUnitOfWork unitOfWo
     public async Task<Result> Handle(SubmitSubscriptionRequestCommand command, CancellationToken cancellationToken = default)
     {
         if (await unitOfWork.SubscriptionRequests
+            .ExistsApprovedAsync
+            (
+                command.Request.PharmacyName,
+                command.Request.PhoneNumber,
+                command.Request.Email,
+                cancellationToken
+            ))
+            return Result.Failure(SubscriptionRequestErrors.AlreadyApproved);
+
+        if (await unitOfWork.SubscriptionRequests
             .ExistsPendingAsync
             (
                 command.Request.PharmacyName,

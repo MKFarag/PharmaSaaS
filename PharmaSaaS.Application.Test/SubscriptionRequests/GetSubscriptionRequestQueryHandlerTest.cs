@@ -30,6 +30,7 @@ public class GetSubscriptionRequestQueryHandlerTest : IClassFixture<MapsterTestF
         Assert.Equal("John Doe", result.Value.OwnerName);
         Assert.Equal("john@example.com", result.Value.Email);
         Assert.Equal(SubscriptionRequestStatus.Pending, result.Value.Status);
+        Assert.False(string.IsNullOrWhiteSpace(result.Value.Id));
     }
 
     [Fact]

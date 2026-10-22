@@ -10,13 +10,14 @@ public sealed class UpdateSubscriptionRequestStatusCommandHandler(IUnitOfWork un
 
         DateOnly? subscriptionEnd = null;
 
-        switch (command.Request.Status)
+        var status = Enum.Parse<SubscriptionRequestStatus>(command.Request.Status, ignoreCase: true);
+
+        switch (status)
         {
             case SubscriptionRequestStatus.Approved:
                 subscriptionRequest.Approve();
                 subscriptionEnd = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(command.Request.DurationInMonths!.Value));
-                var pharmacy = Pharmacy.Create(subscriptionRequest.PharmacyName);
-                pharmacy.SetSubscriptionEnd(subscriptionEnd.Value);
+                var pharmacy = Pharmacy.Create(subscriptionRequest.PharmacyName, subscriptionEnd.Value);
                 await unitOfWork.Pharmacies.AddAsync(pharmacy, cancellationToken);
                 break;
 
@@ -36,7 +37,7 @@ public sealed class UpdateSubscriptionRequestStatusCommandHandler(IUnitOfWork un
             (
                 subscriptionRequest.Email,
                 subscriptionRequest.PharmacyName,
-                command.Request.Status.ToString(),
+                status.ToString(),
                 subscriptionEnd
             );
 

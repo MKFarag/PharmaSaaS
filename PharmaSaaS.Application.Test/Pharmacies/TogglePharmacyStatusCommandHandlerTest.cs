@@ -18,10 +18,10 @@ public class TogglePharmacyStatusCommandHandlerTest
     public async Task Handle_WhenPharmacyNotFound_ReturnsNotFoundError()
     {
         // Arrange
-        A.CallTo(() => _pharmacyRepo.GetAsync(A<int>.Ignored, A<CancellationToken>.Ignored))
+        A.CallTo(() => _pharmacyRepo.GetAsync(A<string>.Ignored, A<CancellationToken>.Ignored))
             .Returns((Pharmacy?)null);
 
-        var command = new TogglePharmacyStatusCommand(1);
+        var command = new TogglePharmacyStatusCommand(Guid.NewGuid().ToString());
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -35,17 +35,15 @@ public class TogglePharmacyStatusCommandHandlerTest
     public async Task Handle_WhenPharmacyIsActive_TogglesToInactive()
     {
         // Arrange
-        var pharmacy = Pharmacy.Create("Pharmacy");
+        var pharmacy = Pharmacy.Create("Pharmacy", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)));
 
-        A.CallTo(() => _pharmacyRepo.GetAsync(A<int>.Ignored, A<CancellationToken>.Ignored))
+        A.CallTo(() => _pharmacyRepo.GetAsync(A<string>.Ignored, A<CancellationToken>.Ignored))
             .Returns(pharmacy);
 
         A.CallTo(() => _unitOfWork.SharedCompleteAsync(A<CancellationToken>.Ignored))
             .Returns(1);
 
-        pharmacy.ToggleStatus();
-
-        var command = new TogglePharmacyStatusCommand(1);
+        var command = new TogglePharmacyStatusCommand(pharmacy.Id);
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -62,15 +60,16 @@ public class TogglePharmacyStatusCommandHandlerTest
     public async Task Handle_WhenPharmacyIsNotActive_TogglesToActive()
     {
         // Arrange
-        var pharmacy = Pharmacy.Create("Pharmacy");
+        var pharmacy = Pharmacy.Create("Pharmacy", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)));
+        pharmacy.ToggleStatus();
 
-        A.CallTo(() => _pharmacyRepo.GetAsync(A<int>.Ignored, A<CancellationToken>.Ignored))
+        A.CallTo(() => _pharmacyRepo.GetAsync(A<string>.Ignored, A<CancellationToken>.Ignored))
             .Returns(pharmacy);
 
         A.CallTo(() => _unitOfWork.SharedCompleteAsync(A<CancellationToken>.Ignored))
             .Returns(1);
 
-        var command = new TogglePharmacyStatusCommand(1);
+        var command = new TogglePharmacyStatusCommand(pharmacy.Id);
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
