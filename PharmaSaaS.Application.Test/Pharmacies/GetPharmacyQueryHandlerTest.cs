@@ -17,7 +17,7 @@ public class GetPharmacyQueryHandlerTest : IClassFixture<MapsterTestFixture>
     [Fact]
     public async Task Handle_WhenPharmacyFound_ReturnsSuccess()
     {
-        var pharmacy = Pharmacy.Create("My Pharmacy", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)));
+        var pharmacy = Pharmacy.Create("My Pharmacy", "Owner", "01000000000", "owner@email.com", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)));
 
         A.CallTo(() => _pharmacyRepo.GetAsync(A<string>.Ignored, A<CancellationToken>.Ignored))
             .Returns(pharmacy);

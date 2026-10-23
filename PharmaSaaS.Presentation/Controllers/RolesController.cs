@@ -1,3 +1,4 @@
+using PharmaSaaS.Presentation.Attributes;
 using PharmaSaaS.Application.Contracts.Roles;
 using PharmaSaaS.Application.Features.Roles.Add;
 using PharmaSaaS.Application.Features.Roles.Get;
@@ -108,6 +109,7 @@ public class RolesController(ISender sender) : ControllerBase
     /// <response code="403">If the user does not have permission to add roles.</response>
     /// <response code="409">If a role with the same name already exists.</response>
     [HttpPost("")]
+    [Idempotent]
     [HasPermission(Permissions.AddRole)]
     [ProducesResponseType(typeof(RoleDetailResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

@@ -1,4 +1,5 @@
-﻿using PharmaSaaS.Application.Contracts.Shifts;
+using PharmaSaaS.Presentation.Attributes;
+using PharmaSaaS.Application.Contracts.Shifts;
 using PharmaSaaS.Application.Features.Shifts.Close;
 using PharmaSaaS.Application.Features.Shifts.GetAll;
 using PharmaSaaS.Application.Features.Shifts.GetById;
@@ -92,6 +93,7 @@ public class ShiftsController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     /// <response code="409">If an open shift already exists for today.</response>
     [HttpPost("open")]
+    [Idempotent]
     [HasPermission(Permissions.OpenShift)]
     [ProducesResponseType(typeof(ShiftResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -130,6 +132,7 @@ public class ShiftsController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     /// <response code="409">If the shift is already closed.</response>
     [HttpPost("{id}/close")]
+    [Idempotent]
     [HasPermission(Permissions.CloseShift)]
     [ProducesResponseType(typeof(CloseShiftResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

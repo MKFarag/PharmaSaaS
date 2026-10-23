@@ -1,4 +1,5 @@
-﻿using PharmaSaaS.Application.Contracts.SupplierPayments;
+using PharmaSaaS.Presentation.Attributes;
+using PharmaSaaS.Application.Contracts.SupplierPayments;
 using PharmaSaaS.Application.Features.SupplierPayments.List;
 using PharmaSaaS.Application.Features.SupplierPayments.Record;
 
@@ -56,6 +57,7 @@ public class SupplierPaymentsController(ISender sender) : ControllerBase
     /// <response code="404">If the supplier is not found.</response>
     /// <response code="401">If the user is unauthorized.</response>
     [HttpPost]
+    [Idempotent]
     [HasPermission(Permissions.ManagePurchaseOrder)]
     [ProducesResponseType(typeof(SupplierPaymentResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

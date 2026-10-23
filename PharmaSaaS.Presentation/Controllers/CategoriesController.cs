@@ -1,4 +1,5 @@
-﻿using PharmaSaaS.Application.Contracts.Categories;
+using PharmaSaaS.Presentation.Attributes;
+using PharmaSaaS.Application.Contracts.Categories;
 using PharmaSaaS.Application.Features.Categories.Add;
 using PharmaSaaS.Application.Features.Categories.Delete;
 using PharmaSaaS.Application.Features.Categories.Get;
@@ -81,6 +82,7 @@ public class CategoriesController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     /// <response code="409">If a category with the same name already exists.</response>
     [HttpPost("")]
+    [Idempotent]
     [HasPermission(Permissions.AddCategory)]
     [ProducesResponseType(typeof(CategoryResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

@@ -61,6 +61,11 @@ RecurringJob.AddOrUpdate<IRecurringJobService>(
     x => x.RemoveExpiredRefreshTokenAsync(),
     Cron.DayInterval(RefreshToken.AutoRemoveAfterDays));
 
+RecurringJob.AddOrUpdate<IRecurringJobService>(
+    "DeactivateExpiredPharmacySubscriptions",
+    x => x.DeactivateExpiredPharmacySubscriptionsAsync(),
+    Cron.Daily());
+
 app.UseCors();
 
 app.UseAuthentication();

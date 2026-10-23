@@ -35,7 +35,7 @@ public class SetPharmacySubscriptionCommandHandlerTest
     public async Task Handle_ValidData_SetsSubscriptionEndAndReturnsSuccess()
     {
         // Arrange
-        var pharmacy = Pharmacy.Create("Pharmacy", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)));
+        var pharmacy = Pharmacy.Create("Pharmacy", "Owner", "01000000000", "owner@email.com", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)));
         var end = new DateOnly(2027, 1, 1);
 
         A.CallTo(() => _pharmacyRepo.GetAsync(A<string>.Ignored, A<CancellationToken>.Ignored))

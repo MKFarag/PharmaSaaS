@@ -1,4 +1,5 @@
-﻿using PharmaSaaS.Application.Contracts.PurchaseOrders;
+using PharmaSaaS.Presentation.Attributes;
+using PharmaSaaS.Application.Contracts.PurchaseOrders;
 using PharmaSaaS.Application.Features.PurchaseOrders.Approve;
 using PharmaSaaS.Application.Features.PurchaseOrders.Create;
 using PharmaSaaS.Application.Features.PurchaseOrders.Delete;
@@ -106,6 +107,7 @@ public sealed class PurchaseOrdersController(ISender sender) : ControllerBase
     /// <response code="400">If the request is invalid</response>
     /// <response code="404">If the supplier or a product is not found</response>
     [HttpPost]
+    [Idempotent]
     [HasPermission(Permissions.ManagePurchaseOrder)]
     [ProducesResponseType(typeof(PurchaseOrderResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -170,6 +172,7 @@ public sealed class PurchaseOrdersController(ISender sender) : ControllerBase
     /// <response code="404">If the purchase order or an item is not found</response>
     /// <response code="409">If the purchase order is already received</response>
     [HttpPut("{id}/approve")]
+    [Idempotent]
     [HasPermission(Permissions.ManagePurchaseOrder)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

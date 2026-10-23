@@ -1,4 +1,5 @@
-﻿using PharmaSaaS.Application.Contracts.Users;
+using PharmaSaaS.Presentation.Attributes;
+using PharmaSaaS.Application.Contracts.Users;
 using PharmaSaaS.Application.Features.Users.Add;
 using PharmaSaaS.Application.Features.Users.Get;
 using PharmaSaaS.Application.Features.Users.GetAll;
@@ -90,6 +91,7 @@ public class UsersController(ISender sender) : ControllerBase
     /// <response code="403">If the user does not have admin privileges.</response>
     /// <response code="409">If the user's email is already exist'.</response>
     [HttpPost("")]
+    [Idempotent]
     [HasPermission(Permissions.AddUser)]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

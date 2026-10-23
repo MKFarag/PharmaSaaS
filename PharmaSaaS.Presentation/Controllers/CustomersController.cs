@@ -1,4 +1,5 @@
-﻿using PharmaSaaS.Application.Contracts.Customers;
+using PharmaSaaS.Presentation.Attributes;
+using PharmaSaaS.Application.Contracts.Customers;
 using PharmaSaaS.Application.Features.Customers.Add;
 using PharmaSaaS.Application.Features.Customers.Get;
 using PharmaSaaS.Application.Features.Customers.GetAll;
@@ -73,6 +74,7 @@ public class CustomersController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     /// <response code="409">If a customer with the same phone number already exists.</response>
     [HttpPost("")]
+    [Idempotent]
     [HasPermission(Permissions.AddCustomer)]
     [ProducesResponseType(typeof(CustomerResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

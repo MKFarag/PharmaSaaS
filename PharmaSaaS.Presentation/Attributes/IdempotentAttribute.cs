@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Caching.Hybrid;
+using PharmaSaaS.Application.Tenants;
 using System.Text.Json;
 
 namespace PharmaSaaS.Presentation.Attributes;
@@ -27,12 +28,33 @@ public class IdempotentAttribute : ActionFilterAttribute
         if (!context.HttpContext.Request.Headers.TryGetValue(_headerName, out var idempotencyKey)
             || string.IsNullOrWhiteSpace(idempotencyKey))
         {
-            context.Result = new BadRequestObjectResult($"Missing or invalid {_headerName} header.");
+            var problemDetails = new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Bad Request",
+                Detail = $"Missing or invalid {_headerName} header.",
+                Extensions = new Dictionary<string, object?>
+                {
+                    {
+                        "error", new Dictionary<string, string>
+                        {
+                            { "code", "Idempotency.MissingHeader" },
+                            { "description", $"Missing or invalid {_headerName} header." }
+                        }
+                    }
+                }
+            };
+
+            context.Result = new BadRequestObjectResult(problemDetails);
             return;
         }
 
         var cache = context.HttpContext.RequestServices.GetRequiredService<HybridCache>();
-        var cacheKey = $"idempotency:{idempotencyKey}";
+        var tenantGetter = context.HttpContext.RequestServices.GetService<ICurrentTenantGetter>();
+        var tenantId = tenantGetter?.GetTenantId() ?? "shared";
+        var path = context.HttpContext.Request.Path.Value?.ToLowerInvariant();
+        var method = context.HttpContext.Request.Method;
+        var cacheKey = $"idempotency:{tenantId}:{method}:{path}:{idempotencyKey}";
         var cached = await cache.GetOrCreateAsync(cacheKey, _ => ValueTask.FromResult<string?>(null));
 
         switch (cached)
@@ -45,7 +67,9 @@ public class IdempotentAttribute : ActionFilterAttribute
                 var cachedResponse = JsonSerializer.Deserialize<CachedResponse>(cached);
                 if (cachedResponse is not null)
                 {
-                    context.Result = new ObjectResult(cachedResponse.Value) { StatusCode = cachedResponse.StatusCode };
+                    context.Result = cachedResponse.Value is not null
+                        ? new ObjectResult(cachedResponse.Value) { StatusCode = cachedResponse.StatusCode }
+                        : new StatusCodeResult(cachedResponse.StatusCode);
                     return;
                 }
                 break;
@@ -55,24 +79,24 @@ public class IdempotentAttribute : ActionFilterAttribute
 
         var executedContext = await next();
 
-        if (executedContext.Result is not ObjectResult objectResult)
+        int? statusCode = null;
+        object? responseValue = null;
+
+        if (executedContext.Result is ObjectResult objectResult)
         {
-            await cache.RemoveAsync(cacheKey);
-            return;
+            statusCode = objectResult.StatusCode
+                ?? (objectResult.Value is ProblemDetails pd ? pd.Status : null);
+            responseValue = objectResult.Value;
         }
-
-        var statusCode = objectResult.StatusCode
-            ?? (objectResult.Value is ProblemDetails pd ? pd.Status : null);
-
-        if (statusCode is null)
+        else if (executedContext.Result is StatusCodeResult statusCodeResult)
         {
-            await cache.RemoveAsync(cacheKey);
-            return;
+            statusCode = statusCodeResult.StatusCode;
+            responseValue = null;
         }
 
         if (statusCode is >= 200 and < 300)
         {
-            var response = new CachedResponse(statusCode.Value, objectResult.Value);
+            var response = new CachedResponse(statusCode.Value, responseValue);
             var responseJson = JsonSerializer.Serialize(response);
             await cache.SetAsync(cacheKey, responseJson, _resultOptions);
         }

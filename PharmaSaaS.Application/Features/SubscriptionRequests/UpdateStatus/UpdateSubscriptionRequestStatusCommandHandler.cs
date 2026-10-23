@@ -17,7 +17,15 @@ public sealed class UpdateSubscriptionRequestStatusCommandHandler(IUnitOfWork un
             case SubscriptionRequestStatus.Approved:
                 subscriptionRequest.Approve();
                 subscriptionEnd = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(command.Request.DurationInMonths!.Value));
-                var pharmacy = Pharmacy.Create(subscriptionRequest.PharmacyName, subscriptionEnd.Value);
+                var pharmacy = Pharmacy
+                    .Create
+                    (
+                        subscriptionRequest.PharmacyName,
+                        subscriptionRequest.OwnerName,
+                        subscriptionRequest.PhoneNumber,
+                        subscriptionRequest.Email,
+                        subscriptionEnd.Value
+                    );
                 await unitOfWork.Pharmacies.AddAsync(pharmacy, cancellationToken);
                 break;
 

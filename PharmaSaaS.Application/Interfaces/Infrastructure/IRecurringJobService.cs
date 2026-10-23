@@ -1,6 +1,7 @@
-﻿namespace PharmaSaaS.Application.Interfaces.Infrastructure;
+namespace PharmaSaaS.Application.Interfaces.Infrastructure;
 
 public interface IRecurringJobService
 {
     Task RemoveExpiredRefreshTokenAsync();
+    Task DeactivateExpiredPharmacySubscriptionsAsync();
 }

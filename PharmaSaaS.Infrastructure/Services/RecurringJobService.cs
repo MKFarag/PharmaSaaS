@@ -1,8 +1,8 @@
-﻿using PharmaSaaS.Infrastructure.Factories;
+using PharmaSaaS.Infrastructure.Factories;
 
 namespace PharmaSaaS.Infrastructure.Services;
 
-public class RecurringJobService(IOptions<TenantSettings> tenantSettings) : IRecurringJobService
+public class RecurringJobService(IOptions<TenantSettings> tenantSettings, IUnitOfWork unitOfWork, INotificationService notificationService) : IRecurringJobService
 {
     public async Task RemoveExpiredRefreshTokenAsync()
     {
@@ -19,5 +19,26 @@ public class RecurringJobService(IOptions<TenantSettings> tenantSettings) : IRec
                 .Where(t => t.ExpiresOn < DateTime.UtcNow)
                 .ExecuteDeleteAsync();
         }
+    }
+
+    public async Task DeactivateExpiredPharmacySubscriptionsAsync()
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        var expiredPharmacies = await unitOfWork.Pharmacies.GetActiveWithExpiredSubscriptionAsync(today);
+
+        if (expiredPharmacies.Count == 0)
+            return;
+
+        foreach (var pharmacy in expiredPharmacies)
+            pharmacy.Deactivate();
+
+        await unitOfWork.SharedCompleteAsync();
+
+        await notificationService.SendExpiredSubscriptionsReportAsync(
+            expiredPharmacies.Select(p => p.Name).ToList().AsReadOnly());
+
+        foreach (var pharmacy in expiredPharmacies)
+            await notificationService.SendPharmacySubscriptionExpiredAsync(pharmacy.Email, pharmacy.OwnerName, pharmacy.Name, pharmacy.SubscriptionEnd!.Value);
     }
 }

@@ -1,4 +1,5 @@
-﻿using PharmaSaaS.Application.Contracts.Products;
+using PharmaSaaS.Presentation.Attributes;
+using PharmaSaaS.Application.Contracts.Products;
 using PharmaSaaS.Application.Features.Products.Add;
 using PharmaSaaS.Application.Features.Products.Delete;
 using PharmaSaaS.Application.Features.Products.Get;
@@ -116,6 +117,7 @@ public class ProductsController(ISender sender) : ControllerBase
     /// <response code="404">If the specified category or dosage form does not exist.</response>
     /// <response code="409">If a product with the same barcode or composite key already exists.</response>
     [HttpPost("")]
+    [Idempotent]
     [HasPermission(Permissions.AddProduct)]
     [ProducesResponseType(typeof(ProductResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

@@ -1,4 +1,5 @@
-﻿using PharmaSaaS.Application.Contracts.Invoices;
+using PharmaSaaS.Presentation.Attributes;
+using PharmaSaaS.Application.Contracts.Invoices;
 using PharmaSaaS.Application.Features.Invoices.CheckReturnImpact;
 using PharmaSaaS.Application.Features.Invoices.Create;
 using PharmaSaaS.Application.Features.Invoices.GetAll;
@@ -36,7 +37,7 @@ public sealed class InvoicesController(ISender sender) : ControllerBase
     /// <response code="401">Unauthorized.</response>
     [HttpPost("")]
     [HasPermission(Permissions.CreateInvoice)]
-    //[Idempotent]
+    [Idempotent]
     [ProducesResponseType(typeof(InvoiceDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -68,7 +69,7 @@ public sealed class InvoicesController(ISender sender) : ControllerBase
     /// <response code="404">Invoice not found.</response>
     [HttpPost("{id}/return")]
     [HasPermission(Permissions.ProcessReturn)]
-    //[Idempotent]
+    [Idempotent]
     [ProducesResponseType(typeof(ProcessReturnResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]

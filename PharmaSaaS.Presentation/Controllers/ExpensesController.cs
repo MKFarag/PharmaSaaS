@@ -1,4 +1,5 @@
-﻿using PharmaSaaS.Application.Contracts.Expenses;
+using PharmaSaaS.Presentation.Attributes;
+using PharmaSaaS.Application.Contracts.Expenses;
 using PharmaSaaS.Application.Features.Expenses.Add;
 using PharmaSaaS.Application.Features.Expenses.Delete;
 using PharmaSaaS.Application.Features.Expenses.GetAllByShift;
@@ -36,6 +37,7 @@ public class ExpensesController(ISender sender) : ControllerBase
     /// <response code="400">If the request data is invalid or shift is not open.</response>
     /// <response code="401">If the user is unauthorized.</response>
     [HttpPost]
+    [Idempotent]
     [HasPermission(Permissions.LogExpense)]
     [ProducesResponseType(typeof(ExpenseResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

@@ -20,8 +20,8 @@ public class GetAllPharmaciesQueryHandlerTest : IClassFixture<MapsterTestFixture
     {
         var pharmacies = new List<PharmacyResponse>
         {
-            new(Guid.NewGuid().ToString(), "tenant-1", "Pharmacy A", null, null, true),
-            new(Guid.NewGuid().ToString(), "tenant-1", "Pharmacy B", null, null, true),
+            new(Guid.NewGuid().ToString(), "tenant-1", "Pharmacy A", "Owner A", "01000000000", "a@email.com", null, null, true),
+            new(Guid.NewGuid().ToString(), "tenant-1", "Pharmacy B", "Owner B", "01000000001", "b@email.com", null, null, true),
         };
 
         A.CallTo(() => _pharmacyRepo.GetAllAsync<PharmacyResponse>(A<CancellationToken>.Ignored))

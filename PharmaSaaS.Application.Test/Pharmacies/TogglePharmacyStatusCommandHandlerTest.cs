@@ -35,7 +35,7 @@ public class TogglePharmacyStatusCommandHandlerTest
     public async Task Handle_WhenPharmacyIsActive_TogglesToInactive()
     {
         // Arrange
-        var pharmacy = Pharmacy.Create("Pharmacy", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)));
+        var pharmacy = Pharmacy.Create("Pharmacy", "Owner", "01000000000", "owner@email.com", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)));
 
         A.CallTo(() => _pharmacyRepo.GetAsync(A<string>.Ignored, A<CancellationToken>.Ignored))
             .Returns(pharmacy);
@@ -60,7 +60,7 @@ public class TogglePharmacyStatusCommandHandlerTest
     public async Task Handle_WhenPharmacyIsNotActive_TogglesToActive()
     {
         // Arrange
-        var pharmacy = Pharmacy.Create("Pharmacy", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)));
+        var pharmacy = Pharmacy.Create("Pharmacy", "Owner", "01000000000", "owner@email.com", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)));
         pharmacy.ToggleStatus();
 
         A.CallTo(() => _pharmacyRepo.GetAsync(A<string>.Ignored, A<CancellationToken>.Ignored))
@@ -80,5 +80,32 @@ public class TogglePharmacyStatusCommandHandlerTest
 
         A.CallTo(() => _unitOfWork.SharedCompleteAsync(A<CancellationToken>.Ignored))
             .MustHaveHappenedOnceExactly();
+    }
+
+    [Fact]
+    public void Deactivate_WhenActive_SetsIsActiveToFalse()
+    {
+        // Arrange
+        var pharmacy = Pharmacy.Create("Pharmacy", "Owner", "01000000000", "owner@email.com", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)));
+
+        // Act
+        pharmacy.Deactivate();
+
+        // Assert
+        Assert.False(pharmacy.IsActive);
+    }
+
+    [Fact]
+    public void Deactivate_WhenAlreadyInactive_RemainsInactive()
+    {
+        // Arrange
+        var pharmacy = Pharmacy.Create("Pharmacy", "Owner", "01000000000", "owner@email.com", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)));
+        pharmacy.Deactivate();
+
+        // Act
+        pharmacy.Deactivate();
+
+        // Assert
+        Assert.False(pharmacy.IsActive);
     }
 }

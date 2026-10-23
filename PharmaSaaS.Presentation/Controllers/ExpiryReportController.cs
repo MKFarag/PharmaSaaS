@@ -1,4 +1,5 @@
-﻿using PharmaSaaS.Application.Contracts.ExpiryReports;
+using PharmaSaaS.Presentation.Attributes;
+using PharmaSaaS.Application.Contracts.ExpiryReports;
 using PharmaSaaS.Application.Features.ExpiryReports.Create;
 using PharmaSaaS.Application.Features.ExpiryReports.GetAll;
 using PharmaSaaS.Application.Features.ExpiryReports.Revert;
@@ -63,6 +64,7 @@ public class ExpiryReportController(ISender sender) : ControllerBase
     /// <response code="404">If the product is not found.</response>
     /// <response code="401">If the user is unauthorized.</response>
     [HttpPost("")]
+    [Idempotent]
     [HasPermission(Permissions.LogExpiryReport)]
     [ProducesResponseType(typeof(ExpiryReportResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

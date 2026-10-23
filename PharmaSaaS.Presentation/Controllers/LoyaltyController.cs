@@ -1,4 +1,5 @@
-﻿using PharmaSaaS.Application.Contracts.Loyalty;
+using PharmaSaaS.Presentation.Attributes;
+using PharmaSaaS.Application.Contracts.Loyalty;
 using PharmaSaaS.Application.Features.Loyalty.AddRule;
 using PharmaSaaS.Application.Features.Loyalty.AddTier;
 using PharmaSaaS.Application.Features.Loyalty.DeleteRule;
@@ -49,6 +50,7 @@ public class LoyaltyController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     /// <response code="409">If a tier with the same name already exists.</response>
     [HttpPost("tiers")]
+    [Idempotent]
     [HasPermission(Permissions.ManageLoyalty)]
     [ProducesResponseType(typeof(LoyaltyTierResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -137,6 +139,7 @@ public class LoyaltyController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     /// <response code="404">If the tier is not found.</response>
     [HttpPost("tiers/{tierId}/rules")]
+    [Idempotent]
     [HasPermission(Permissions.ManageLoyalty)]
     [ProducesResponseType(typeof(DiscountRuleResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

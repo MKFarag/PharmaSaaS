@@ -53,6 +53,9 @@ public class UpdateSubscriptionRequestStatusCommandHandlerTest
         A.CallTo(() => _pharmacyRepo.AddAsync(
             A<Pharmacy>.That.Matches(p =>
                 p.Name == "New Pharmacy" &&
+                p.OwnerName == "Owner" &&
+                p.PhoneNumber == "123" &&
+                p.Email == "owner@test.com" &&
                 p.SubscriptionStart == DateOnly.FromDateTime(DateTime.UtcNow) &&
                 p.SubscriptionEnd == DateOnly.FromDateTime(DateTime.UtcNow).AddMonths(6) &&
                 p.IsActive),

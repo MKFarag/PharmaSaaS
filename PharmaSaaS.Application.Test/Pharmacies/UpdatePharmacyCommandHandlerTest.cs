@@ -36,7 +36,7 @@ public class UpdatePharmacyCommandHandlerTest
     public async Task Handle_WhenNameDuplicated_ReturnsDuplicatedNameError()
     {
         // Arrange
-        var pharmacy = Pharmacy.Create("Old Name", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)));
+        var pharmacy = Pharmacy.Create("Old Name", "Owner", "01000000000", "owner@email.com", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)));
 
         A.CallTo(() => _pharmacyRepo.GetAsync(A<string>.Ignored, A<CancellationToken>.Ignored))
             .Returns(pharmacy);
@@ -58,7 +58,7 @@ public class UpdatePharmacyCommandHandlerTest
     public async Task Handle_ValidData_ReturnsSuccess()
     {
         // Arrange
-        var pharmacy = Pharmacy.Create("Old Name", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)));
+        var pharmacy = Pharmacy.Create("Old Name", "Owner", "01000000000", "owner@email.com", DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)));
 
         A.CallTo(() => _pharmacyRepo.GetAsync(A<string>.Ignored, A<CancellationToken>.Ignored))
             .Returns(pharmacy);

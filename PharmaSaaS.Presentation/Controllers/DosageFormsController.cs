@@ -1,4 +1,5 @@
-﻿using PharmaSaaS.Application.Contracts.DosageForms;
+using PharmaSaaS.Presentation.Attributes;
+using PharmaSaaS.Application.Contracts.DosageForms;
 using PharmaSaaS.Application.Features.DosageForms.Add;
 using PharmaSaaS.Application.Features.DosageForms.Delete;
 using PharmaSaaS.Application.Features.DosageForms.Get;
@@ -81,6 +82,7 @@ public class DosageFormsController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     /// <response code="409">If a dosage form with the same name already exists.</response>
     [HttpPost("")]
+    [Idempotent]
     [HasPermission(Permissions.AddDosageForm)]
     [ProducesResponseType(typeof(DosageFormResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

@@ -1,4 +1,5 @@
-﻿using PharmaSaaS.Application.Contracts.Auth;
+using PharmaSaaS.Presentation.Attributes;
+using PharmaSaaS.Application.Contracts.Auth;
 using PharmaSaaS.Application.Features.Auth.ConfirmEmail;
 using PharmaSaaS.Application.Features.Auth.GetRefreshToken;
 using PharmaSaaS.Application.Features.Auth.GetToken;
@@ -140,6 +141,7 @@ public class AuthController(ISender sender) : ControllerBase
     /// <response code="200">If the user was successfully registered.</response>
     /// <response code="400">If the registration data is invalid or email exists.</response>
     [HttpPost("register")]
+    [Idempotent]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)

@@ -53,7 +53,7 @@ public class NotificationService
         if (string.IsNullOrWhiteSpace(_templateOptions.PlatformAdminEmail))
             return;
 
-        var placeholders = BuildPlaceholders("Mohamed", new Dictionary<string, string>
+        var placeholders = BuildPlaceholders(_templateOptions.PlatformAdminName, new Dictionary<string, string>
         {
             { EmailTemplateOptions.Placeholders.PharmacyName, pharmacyName },
             { EmailTemplateOptions.Placeholders.OwnerName, ownerName },
@@ -100,11 +100,45 @@ public class NotificationService
         await EnqueueEmailAsync(requesterEmail, $"{_templateOptions.TitleName} — Subscription Request {statusLabel}", EmailTemplateOptions.TemplatesNames.SubscriptionRequestStatusUpdate, placeholders);
     }
 
+    public async Task SendExpiredSubscriptionsReportAsync(IReadOnlyList<string> deactivatedPharmacyNames)
+    {
+        if (deactivatedPharmacyNames.Count == 0 || string.IsNullOrWhiteSpace(_templateOptions.PlatformAdminEmail))
+            return;
+
+        var placeholders = BuildPlaceholders(_templateOptions.PlatformAdminName, new Dictionary<string, string>
+        {
+            { EmailTemplateOptions.Placeholders.PharmacyList, BuildPharmacyListHtml(deactivatedPharmacyNames) },
+            { EmailTemplateOptions.Placeholders.DeactivationDate, DateTime.UtcNow.ToString("f") },
+            { EmailTemplateOptions.Placeholders.Count, deactivatedPharmacyNames.Count.ToString() }
+        });
+
+        await EnqueueEmailAsync(_templateOptions.PlatformAdminEmail, $"{_templateOptions.TitleName} — Expired Subscriptions Deactivated",
+            EmailTemplateOptions.TemplatesNames.ExpiredSubscriptionsReport, placeholders);
+    }
+
+    public async Task SendPharmacySubscriptionExpiredAsync(string ownerEmail, string ownerName, string pharmacyName, DateOnly subscriptionEnd)
+    {
+        if (string.IsNullOrWhiteSpace(ownerEmail))
+            return;
+
+        var placeholders = BuildPlaceholders(ownerName, new Dictionary<string, string>
+        {
+            { EmailTemplateOptions.Placeholders.PharmacyName, pharmacyName },
+            { EmailTemplateOptions.Placeholders.SubscriptionEnd, subscriptionEnd.ToString("yyyy-MM-dd") }
+        });
+
+        await EnqueueEmailAsync(ownerEmail, $"{_templateOptions.TitleName} — Your Pharmacy Subscription Has Expired",
+            EmailTemplateOptions.TemplatesNames.PharmacySubscriptionExpired, placeholders);
+    }
+
     private async Task EnqueueEmailAsync(string email, string subject, string templateName, Dictionary<string, string> placeholders)
     {
         var body = await TemplateRenderer.RenderAsync(templateName, placeholders);
         _jobManager.Enqueue(() => _emailSender.SendEmailAsync(email, subject, body));
     }
+
+    private static string BuildPharmacyListHtml(IReadOnlyList<string> names)
+        => string.Join("", names.Select(n => $"<li>{n}</li>"));
 
     private Dictionary<string, string> BuildPlaceholders(string userName, Dictionary<string, string>? additionalPlaceholders = null)
     {

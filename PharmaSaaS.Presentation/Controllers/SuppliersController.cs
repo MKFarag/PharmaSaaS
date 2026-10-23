@@ -1,4 +1,5 @@
-﻿using PharmaSaaS.Application.Contracts.Suppliers;
+using PharmaSaaS.Presentation.Attributes;
+using PharmaSaaS.Application.Contracts.Suppliers;
 using PharmaSaaS.Application.Features.Suppliers.Add;
 using PharmaSaaS.Application.Features.Suppliers.Delete;
 using PharmaSaaS.Application.Features.Suppliers.Get;
@@ -94,6 +95,7 @@ public class SuppliersController(ISender sender) : ControllerBase
     /// <response code="401">If the user is unauthorized.</response>
     /// <response code="409">If a supplier with the same name already exists.</response>
     [HttpPost("")]
+    [Idempotent]
     [HasPermission(Permissions.AddSupplier)]
     [ProducesResponseType(typeof(SupplierResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
