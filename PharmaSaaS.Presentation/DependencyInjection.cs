@@ -198,7 +198,7 @@ public static class DependencyInjection
 
                 options.ApiVersionReader = new HeaderApiVersionReader("x-api-version");
             }
-            ).AddApiExplorer(options =>
+            ).AddMvc().AddApiExplorer(options =>
             {
                 options.GroupNameFormat = "'v'V";
                 options.SubstituteApiVersionInUrl = true;
