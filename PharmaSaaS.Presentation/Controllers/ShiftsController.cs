@@ -1,4 +1,3 @@
-using PharmaSaaS.Presentation.Attributes;
 using PharmaSaaS.Application.Contracts.Shifts;
 using PharmaSaaS.Application.Features.Shifts.Close;
 using PharmaSaaS.Application.Features.Shifts.GetAll;

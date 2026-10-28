@@ -1,8 +1,8 @@
+using PharmaSaaS.Application.Contracts.AI;
+using PharmaSaaS.Application.Interfaces.Services;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using PharmaSaaS.Application.Contracts.AI;
-using PharmaSaaS.Application.Interfaces.Services;
 
 namespace PharmaSaaS.Infrastructure.Services;
 

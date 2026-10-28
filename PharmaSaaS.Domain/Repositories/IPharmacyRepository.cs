@@ -8,4 +8,7 @@ public interface IPharmacyRepository
     Task<bool> NameExistsAsync(string tenantId, string name, string excludeId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Pharmacy>> GetActiveWithExpiredSubscriptionAsync(DateOnly today, CancellationToken cancellationToken = default);
     Task AddAsync(Pharmacy pharmacy, CancellationToken cancellationToken = default);
+    Task<SubscriptionPayment?> GetPaymentAsync(int id, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<SubscriptionPayment>> GetPendingPaymentsAsync(CancellationToken cancellationToken = default);
+    Task AddPaymentAsync(SubscriptionPayment payment, CancellationToken cancellationToken = default);
 }

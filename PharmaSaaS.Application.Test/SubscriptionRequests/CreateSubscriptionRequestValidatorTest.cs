@@ -1,5 +1,3 @@
-using PharmaSaaS.Application.Contracts.SubscriptionRequests;
-
 namespace PharmaSaaS.Application.Test.SubscriptionRequests;
 
 public class CreateSubscriptionRequestValidatorTest

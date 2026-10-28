@@ -37,6 +37,8 @@ public class EmailTemplateOptions
         public static readonly string PharmacyList = "{{PharmacyList}}";
         public static readonly string DeactivationDate = "{{DeactivationDate}}";
         public static readonly string Count = "{{Count}}";
+        public static readonly string PaymentDate = "{{PaymentDate}}";
+        public static readonly string ImageUrl = "{{ImageUrl}}";
     }
 
     public partial class TemplatesNames
@@ -48,5 +50,6 @@ public class EmailTemplateOptions
         public static readonly string SubscriptionRequestStatusUpdate = nameof(SubscriptionRequestStatusUpdate);
         public static readonly string ExpiredSubscriptionsReport = nameof(ExpiredSubscriptionsReport);
         public static readonly string PharmacySubscriptionExpired = nameof(PharmacySubscriptionExpired);
+        public static readonly string SubscriptionPaymentNotification = nameof(SubscriptionPaymentNotification);
     }
 }

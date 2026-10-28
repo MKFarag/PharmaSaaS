@@ -21,4 +21,19 @@ public class PharmacyRepository(SharedDbContext context) : IPharmacyRepository
 
     public async Task AddAsync(Pharmacy pharmacy, CancellationToken cancellationToken = default)
         => await context.Pharmacies.AddAsync(pharmacy, cancellationToken);
+
+    public async Task<SubscriptionPayment?> GetPaymentAsync(int id, CancellationToken cancellationToken = default)
+        => await context.SubscriptionPayments
+            .Include(p => p.Pharmacy)
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+
+    public async Task<IReadOnlyList<SubscriptionPayment>> GetPendingPaymentsAsync(CancellationToken cancellationToken = default)
+        => await context.SubscriptionPayments
+            .AsNoTracking()
+            .Include(p => p.Pharmacy)
+            .Where(p => !p.IsVerified)
+            .ToListAsync(cancellationToken);
+
+    public async Task AddPaymentAsync(SubscriptionPayment payment, CancellationToken cancellationToken = default)
+        => await context.SubscriptionPayments.AddAsync(payment, cancellationToken);
 }

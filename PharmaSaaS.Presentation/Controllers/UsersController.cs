@@ -1,4 +1,3 @@
-using PharmaSaaS.Presentation.Attributes;
 using PharmaSaaS.Application.Contracts.Users;
 using PharmaSaaS.Application.Features.Users.Add;
 using PharmaSaaS.Application.Features.Users.Get;

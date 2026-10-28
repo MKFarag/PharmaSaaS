@@ -1,4 +1,3 @@
-using PharmaSaaS.Presentation.Attributes;
 using PharmaSaaS.Application.Contracts.Auth;
 using PharmaSaaS.Application.Features.Auth.ConfirmEmail;
 using PharmaSaaS.Application.Features.Auth.GetRefreshToken;

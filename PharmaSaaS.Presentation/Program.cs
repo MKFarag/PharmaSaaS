@@ -42,6 +42,8 @@ app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
 
+app.UseStaticFiles();
+
 app.MapHangfireDashboard("/jobs", new DashboardOptions
 {
     Authorization =

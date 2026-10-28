@@ -1,4 +1,4 @@
-﻿using FluentValidation.Results;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Security.Claims;
 
@@ -49,5 +49,11 @@ internal static class GlobalExtensions
     {
         internal string? GetId() =>
             user.FindFirstValue(ClaimTypes.NameIdentifier);
+    }
+
+    extension(IFormFile formFile)
+    {
+        internal FileData ToFileData()
+            => new(formFile.FileName, formFile.ContentType, formFile.Length, formFile.OpenReadStream());
     }
 }

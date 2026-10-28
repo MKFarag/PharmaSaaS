@@ -1,4 +1,3 @@
-using PharmaSaaS.Presentation.Attributes;
 using PharmaSaaS.Application.Contracts.Loyalty;
 using PharmaSaaS.Application.Features.Loyalty.AddRule;
 using PharmaSaaS.Application.Features.Loyalty.AddTier;

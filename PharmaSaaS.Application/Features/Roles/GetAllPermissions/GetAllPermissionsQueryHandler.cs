@@ -1,5 +1,3 @@
-using PharmaSaaS.Application.Contracts.Roles;
-
 namespace PharmaSaaS.Application.Features.Roles.GetAllPermissions;
 
 public sealed class GetAllPermissionsQueryHandler : IRequestHandler<GetAllPermissionsQuery, IEnumerable<PermissionResponse>>

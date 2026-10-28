@@ -131,6 +131,25 @@ public class NotificationService
             EmailTemplateOptions.TemplatesNames.PharmacySubscriptionExpired, placeholders);
     }
 
+    public async Task SendSubscriptionPaymentNotificationAsync(string pharmacyName, string ownerName, string phoneNumber, string email, string imageUrl, DateTime submittedAt)
+    {
+        if (string.IsNullOrWhiteSpace(_templateOptions.PlatformAdminEmail))
+            return;
+
+        var placeholders = BuildPlaceholders(_templateOptions.PlatformAdminName, new Dictionary<string, string>
+        {
+            { EmailTemplateOptions.Placeholders.PharmacyName, pharmacyName },
+            { EmailTemplateOptions.Placeholders.OwnerName, ownerName },
+            { EmailTemplateOptions.Placeholders.PhoneNumber, phoneNumber },
+            { EmailTemplateOptions.Placeholders.Email, email },
+            { EmailTemplateOptions.Placeholders.ImageUrl, imageUrl },
+            { EmailTemplateOptions.Placeholders.PaymentDate, submittedAt.ToString("f") }
+        });
+
+        await EnqueueEmailAsync(_templateOptions.PlatformAdminEmail, $"{_templateOptions.TitleName} — New Subscription Payment Proof Received",
+            EmailTemplateOptions.TemplatesNames.SubscriptionPaymentNotification, placeholders);
+    }
+
     private async Task EnqueueEmailAsync(string email, string subject, string templateName, Dictionary<string, string> placeholders)
     {
         var body = await TemplateRenderer.RenderAsync(templateName, placeholders);

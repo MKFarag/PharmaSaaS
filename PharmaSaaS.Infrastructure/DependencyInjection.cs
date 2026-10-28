@@ -23,6 +23,7 @@ public static class DependencyInjection
             services.AddScoped<IReturnService, ReturnService>();
             services.AddScoped<IInventoryFilterService, InventoryFilterService>();
             services.AddScoped<IAIService, AIService>();
+            services.AddScoped<IFileStorageService, FileStorageService>();
 
             services.AddOptions<OpenRouterSettings>().BindConfiguration(nameof(OpenRouterSettings));
             services.AddHttpClient("OpenRouter", client => client.BaseAddress = new Uri("https://openrouter.ai/"));
@@ -53,7 +54,6 @@ public static class DependencyInjection
             services.AddScoped<TenantProvisioningService>();
             services.AddScoped<ICurrentTenantGetter, TenantService>();
             services.AddScoped<ITenantService, TenantService>();
-
 
             services.AddDbContext<ApplicationDbContext>();
 

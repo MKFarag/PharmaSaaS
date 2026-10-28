@@ -17,7 +17,7 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations.Shared
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.10")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -74,6 +74,43 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations.Shared
                     b.ToTable("Pharmacies", (string)null);
                 });
 
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.Shared.SubscriptionPayment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal?>("Amount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsVerified")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("PharmacyId")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PharmacyId");
+
+                    b.ToTable("SubscriptionPayments", (string)null);
+                });
+
             modelBuilder.Entity("PharmaSaaS.Domain.Entities.Shared.SubscriptionRequest", b =>
                 {
                     b.Property<string>("Id")
@@ -110,6 +147,17 @@ namespace PharmaSaaS.Infrastructure.Persistence.Migrations.Shared
                     b.HasKey("Id");
 
                     b.ToTable("SubscriptionRequests", (string)null);
+                });
+
+            modelBuilder.Entity("PharmaSaaS.Domain.Entities.Shared.SubscriptionPayment", b =>
+                {
+                    b.HasOne("PharmaSaaS.Domain.Entities.Shared.Pharmacy", "Pharmacy")
+                        .WithMany()
+                        .HasForeignKey("PharmacyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Pharmacy");
                 });
 #pragma warning restore 612, 618
         }

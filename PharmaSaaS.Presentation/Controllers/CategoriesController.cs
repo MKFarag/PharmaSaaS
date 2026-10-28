@@ -1,4 +1,3 @@
-using PharmaSaaS.Presentation.Attributes;
 using PharmaSaaS.Application.Contracts.Categories;
 using PharmaSaaS.Application.Features.Categories.Add;
 using PharmaSaaS.Application.Features.Categories.Delete;
