@@ -1,509 +1,533 @@
 # 💊 PharmaSaaS — Enterprise Pharmacy Management System
 
-A **multi-tenant SaaS backend API** built for pharmacy chains and independent pharmacies. Designed with **Clean Architecture**, **DDD**, and **CQRS**, it provides complete isolation between tenants while delivering a full operational suite — from point-of-sale and inventory to procurement, CRM, and AI-powered prescription parsing.
+A **fully implemented multi-tenant SaaS backend API** built for pharmacy chains and independent pharmacies. The system is production-ready and covers every phase of pharmacy operations — from point-of-sale and inventory management to procurement, CRM, financial reporting, and AI-powered prescription parsing.
+
+Built on **.NET 10**, using **Clean Architecture**, **DDD-lite**, and a **custom CQRS dispatcher** (no MediatR).
 
 ---
 
 ## 📌 Table of Contents
 
-- [System Overview](#system-overview)
-- [Multi-Tenant Architecture](#multi-tenant-architecture)
-- [Core Features](#core-features)
-- [Database Schema](#database-schema)
-- [ERD Diagrams](#erd-diagrams)
-- [Business Flow](#business-flow)
-- [Architecture Decisions](#architecture-decisions)
-- [Future Expansion](#future-expansion)
+- [Architecture Overview](#architecture-overview)
+- [Project Structure](#project-structure)
+- [Technology Stack](#technology-stack)
+- [Multi-Tenancy Model](#multi-tenancy-model)
+- [Authentication & Authorization](#authentication--authorization)
+- [API Modules](#api-modules)
+- [Cross-Cutting Concerns](#cross-cutting-concerns)
+- [Background Jobs](#background-jobs)
+- [Test Coverage](#test-coverage)
+- [Domain Model](#domain-model)
 
 ---
 
-## System Overview
+## Architecture Overview
 
-PharmaSaaS operates on a **two-database architecture**:
-
-### Shared Database (Platform-level)
-Managed by the platform via a protected Admin Key. Controls pharmacy onboarding, subscription tracking, and subscription requests.
+PharmaSaaS follows **Clean Architecture** with strict layer boundaries:
 
 ```
-SubscriptionRequests
-Pharmacies
+Domain ← Application ← Infrastructure ← Presentation
 ```
 
-Tenant connection strings are **not** stored in the database. They are maintained as configuration data in `AppSettings` and resolved at runtime.
+| Layer | Project | Responsibility |
+|---|---|---|
+| Domain | `PharmaSaaS.Domain` | Entities, repository interfaces, error definitions, Result/Error types, enums, constants |
+| Application | `PharmaSaaS.Application` | CQRS commands/queries/handlers, DTOs, validators, service interfaces & implementations, Mapster mapping |
+| Infrastructure | `PharmaSaaS.Infrastructure` | EF Core DbContexts, entity configurations, repositories, UnitOfWork, Identity, JWT, email, caching, background jobs, tenant resolution |
+| Presentation | `PharmaSaaS.Presentation` | Controllers, middleware, DI wiring, Swagger/ReDoc, rate limiting, health checks |
+| Tests | `PharmaSaaS.Application.Test` | Unit tests for all handlers and services (xUnit + FakeItEasy) |
 
-### Per-Pharmacy Database (Tenant-level)
-Automatically provisioned when a pharmacy is approved and onboarded. Fully isolated. Contains all operational data.
+### Two-Database Architecture
 
-Every authenticated request carries a `PharmacyId` claim inside the JWT. The system resolves the correct tenant database dynamically using a `TenantDbResolver` before processing any operation.
+The system runs on two physically separate databases:
+
+**Shared Database** — platform-level, managed via `[SystemOwner]` JWT:
+- `Pharmacies` — tenant registry with subscription dates and active status
+- `SubscriptionRequests` — pharmacy onboarding intake
+- `SubscriptionPayments` — renewal payment proofs submitted by owners
+
+**Per-Pharmacy Database** — one isolated database per tenant, provisioned automatically at startup:
+- All operational data: products, inventory, customers, invoices, shifts, expenses, purchase orders, suppliers, loyalty, AI usage logs, refresh tokens
+
+Tenant database connection strings are stored in `AppSettings` (not in the shared DB). The correct tenant context is resolved at request time from the `X-Tenant-Id` HTTP header.
 
 ---
 
-## Multi-Tenant Architecture
+## Project Structure
 
-### Tenant Configuration
-
-Each tenant's identity and database connection are stored in `AppSettings`, not in the shared database:
-
-```json
-"Tenants": [
-  {
-    "Id": "pharmacy-1",
-    "Name": "Pharmacy Name",
-    "ConnectionString": "..."
-  }
-]
+```
+PharmaSaaS - without microservices/
+├── PharmaSaaS.Domain/
+│   ├── Entities/                   # 20 domain entities (DDD-lite, private setters, factory methods)
+│   │   ├── Shared/                 # Pharmacy, SubscriptionRequest, SubscriptionPayment
+│   │   └── *.cs                    # All tenant-scoped entities
+│   ├── Repositories/               # IGenericRepository<T>, IPaginatedRepository<T>, IUnitOfWork, custom repo interfaces
+│   ├── Errors/                     # Per-entity error definitions (static readonly Error records)
+│   ├── Abstraction/                # Result<T>, Error, IPaginatedList<T>, EmptyPaginatedList
+│   ├── Enums/                      # Domain enumerations
+│   └── Constants/                  # HTTP status codes, pagination defaults
+│
+├── PharmaSaaS.Application/
+│   ├── Abstractions/Messaging/     # IRequest<T>, IRequestHandler<T>, ISender (custom CQRS)
+│   ├── Features/                   # CQRS handlers organized by module
+│   │   ├── AI/                     # ParsePrescription, SuggestMedications, SetApiKey
+│   │   ├── Auth/                   # Login, Register, ConfirmEmail, ResendConfirm, RefreshToken, RevokeRefresh
+│   │   ├── Categories/             # Add, Get, GetAll, Update, Delete
+│   │   ├── Customers/              # Add, Get, GetAll, Update
+│   │   ├── DosageForms/            # Add, Get, GetAll, Update, Delete
+│   │   ├── Expenses/               # Log, GetAllByShift, Delete
+│   │   ├── ExpiryReports/          # Log, GetAll, Revert
+│   │   ├── Inventory/              # GetAll, Get, UpdateStock, AdjustStock, ToggleRare
+│   │   ├── Invoices/               # Create, GetAll, GetById, ProcessReturn, CheckReturnImpact
+│   │   ├── Loyalty/                # AddTier, UpdateTier, DeleteTier, GetAll, AddRule, UpdateRule, DeleteRule
+│   │   ├── Payments/               # Upload, GetAll, Verify
+│   │   ├── Pharmacies/             # GetAll, Get, Update, ToggleStatus, SetSubscription
+│   │   ├── Products/               # Add, Get, GetAll, GetByBarcode, Update, Delete
+│   │   ├── Profile/                # GetMyProfile, UpdateProfile, ChangePassword, ChangeEmail, ConfirmChangeEmail
+│   │   ├── PurchaseOrders/         # Create, List, Get, GetItems, Update, Approve, Return, Delete
+│   │   ├── Reports/                # Daily, NetProfit, Shortages, Expenses, TopProducts
+│   │   ├── Roles/                  # Add, Get, GetAll, GetPermissions, Update, ToggleStatus
+│   │   ├── Shifts/                 # Open, Close, GetAll, GetById
+│   │   ├── SubscriptionRequests/   # Submit, GetAll, GetById, UpdateStatus
+│   │   ├── SupplierPayments/       # Record, List
+│   │   ├── Suppliers/              # Add, Get, GetAll, Update, Delete, ResetBalance
+│   │   └── Users/                  # Add, Get, Update, ToggleStatus
+│   ├── Contracts/                  # Request DTOs + FluentValidation validators (same file), Response DTOs
+│   ├── Interfaces/
+│   │   ├── Infrastructure/         # IUnitOfWork, ICacheService, INotificationService, IFileStorageService, ICurrentTenantGetter, ITenantService
+│   │   └── Services/               # ICustomerLoyaltyService, IReturnService, IInventoryFilterService, IAIService
+│   ├── Services/                   # InvoiceService, CustomerLoyaltyService, ReturnService, InventoryFilterService, SupplierPaymentService
+│   └── Mapping/                    # MappingConfiguration.cs (single IRegister file, Mapster)
+│
+├── PharmaSaaS.Infrastructure/
+│   ├── Persistence/
+│   │   ├── ApplicationDbContext.cs             # Tenant-scoped EF Core context (ASP.NET Identity)
+│   │   ├── SharedDbContext.cs                  # Platform-level context (Pharmacies, SubscriptionRequests, SubscriptionPayments)
+│   │   ├── Configurations/                     # Per-entity IEntityTypeConfiguration<T> files
+│   │   ├── Repositories/                       # GenericRepository, PaginatedRepository, UserRepository, RoleRepository, PharmacyRepository, SubscriptionRequestRepository
+│   │   └── UnitOfWork.cs                       # Aggregates all repositories
+│   ├── Factories/
+│   │   └── TenantProvisioningService.cs        # Runs migrations and seeds owner account for each tenant at startup
+│   ├── Tenants/
+│   │   └── TenantService.cs                    # Resolves tenant from X-Tenant-Id header, validates subscription
+│   ├── Services/
+│   │   ├── CacheService.cs                     # HybridCache (in-memory + Redis)
+│   │   ├── NotificationService.cs              # MailKit email delivery with HTML templates
+│   │   ├── AIService.cs                        # OpenRouter integration (prescription parsing + medication suggestions)
+│   │   ├── FileStorageService.cs               # Local disk storage for uploaded files
+│   │   ├── RecurringJobService.cs              # Hangfire job implementations
+│   │   └── CustomerLoyaltyService.cs           # Loyalty tier evaluation and discount calculation
+│   ├── Messaging/
+│   │   └── Sender.cs                           # Custom CQRS dispatcher (reflection-based handler resolution)
+│   └── Templates/                              # HTML email templates (confirmation, password reset, status updates)
+│
+├── PharmaSaaS.Presentation/
+│   ├── Controllers/                # 19 controllers (see API Modules section)
+│   ├── Middleware/
+│   │   └── TenantSubscriptionMiddleware.cs     # Validates X-Tenant-Id header and subscription expiry per request
+│   ├── SwaggerProcessors/          # Custom NSwag operation processors (tenant header, idempotency key, API version)
+│   ├── Settings/
+│   │   └── RateLimitingOptions.cs  # Typed config for 4 rate limiting policies
+│   ├── DependencyInjection.cs      # All service registrations wired here
+│   ├── GlobalExtensions.cs         # result.ToProblem() — translates Result failures to RFC 7807 ProblemDetails
+│   └── Program.cs                  # App bootstrap, middleware pipeline, Hangfire recurring jobs
+│
+└── PharmaSaaS.Application.Test/   # ~95 test files covering all handlers and services
 ```
 
-This keeps infrastructure-level credentials out of application data and simplifies environment-specific configuration.
+---
 
-### Shared Database Administration
+## Technology Stack
 
-Platform management endpoints are protected using a `[SystemOwner]` authorization attribute backed by JWT tokens. Only users with the system owner role can access these operations:
+| Concern | Library / Version |
+|---|---|
+| Runtime | .NET 10 |
+| Web framework | ASP.NET Core 10 |
+| ORM | Entity Framework Core 10 (SQL Server) |
+| Identity | ASP.NET Core Identity + EF |
+| Authentication | JWT Bearer (`Microsoft.AspNetCore.Authentication.JwtBearer` 10) |
+| Mapping | Mapster 10 (entity → response DTO only) |
+| Validation | FluentValidation 12 + `SharpGrip.FluentValidation.AutoValidation.Mvc` |
+| Caching | `Microsoft.Extensions.Caching.Hybrid` (HybridCache — in-memory + Redis) |
+| Distributed cache | StackExchange Redis |
+| Background jobs | Hangfire 1.8 (SQL Server storage, basic auth dashboard) |
+| Email | MailKit 4 |
+| API docs | NSwag 14 (Swagger UI + ReDoc) |
+| API versioning | `Asp.Versioning.Http` 10 |
+| Rate limiting | ASP.NET Core built-in rate limiter (4 policies) |
+| Health checks | `AspNetCore.HealthChecks.SqlServer` + `AspNetCore.HealthChecks.Hangfire` |
+| Logging | Serilog 10 (structured request logging) |
+| AI | OpenRouter API (HTTP client, `google/gemini-2.0-flash-001`) |
+| Dynamic LINQ | `System.Linq.Dynamic.Core` (pagination sort/filter) |
+| Unit tests | xUnit 2.9 + FakeItEasy 9 + coverlet |
 
-- Pharmacy management
-- Subscription management
-- Subscription request review
+---
 
-### Tenant Database Authentication
+## Multi-Tenancy Model
 
-Each tenant database uses its own full authentication stack, completely independent of the shared database:
-- **ASP.NET Identity** — user management and password hashing
-- **JWT Authentication** — stateless token-based access
-- **Roles** — Owner, Manager, Pharmacist, Cashier
-- **Permissions** — granular operation-level access control
+Every authenticated API request (except `[SystemOwner]` and `[NoTenantRequired]` endpoints) must include:
 
-### Subscription Model
+```
+X-Tenant-Id: <tenantId>
+```
 
-All pharmacies use the same feature set. There are no subscription plans or feature tiers in Version 1. Subscription status is controlled exclusively through three fields on the `Pharmacies` table:
+The `TenantSubscriptionMiddleware` runs after authentication/authorization and:
+1. Skips `[SystemOwner]` and `[NoTenantRequired]` endpoints
+2. Rejects requests missing the header with `400`
+3. Rejects requests with an unknown tenant ID with `404`
+4. Rejects requests where `tenant.EndDate < today` with `403` (includes the `expiredAt` date)
+
+Tenant databases are provisioned at application startup via `TenantProvisioningService`, which runs EF Core migrations and seeds a system owner account for each tenant defined in `TenantSettings`.
+
+### Subscription Lifecycle
 
 | Field | Purpose |
 |---|---|
-| `SubscriptionStart` | When the active subscription period began |
-| `SubscriptionEnd` | When the current subscription expires |
-| `IsActive` | Manual override to enable or disable a pharmacy |
+| `SubscriptionStart` | When the current subscription period began |
+| `SubscriptionEnd` | Expiry date — enforced by middleware per request |
+| `IsActive` | Manual override; also deactivated automatically by a daily Hangfire job |
 
-Expired subscriptions block write operations while preserving read access to historical data.
+Expired subscriptions block all write operations but preserve read access to historical data.
 
----
-
-## Core Features
-
-### 🔐 Authentication & Access Control
-- Employee login with email and password
-- Role-based access: Owner, Manager, Pharmacist, Cashier
-- Granular permissions per operation
-- Password management (change, reset)
-
-### 🏪 Pharmacy Onboarding
-- Submit a subscription request (public, IP rate-limited, idempotent)
-- Admin reviews and approves, rejects, or marks as contacted
-- Approved requests automatically create a new pharmacy tenant record
-- Pharmacy management (list, get, update name, toggle active status, set subscription end date)
-
-### 💊 Products & Inventory
-- Add and manage products (name, barcode, concentration, dosage form, category)
-- Track stock quantity and purchase price per product
-- Set target stock levels
-- Manually flag a product as out of stock
-- View low-stock and shortage reports
-- Log expired stock with automatic quantity deduction
-
-### 🛒 Point of Sale
-- Open a daily shift with an opening cash balance
-- Create sales invoices for customers
-- Apply loyalty discounts automatically at checkout
-- Log returns per invoice
-- Record daily expenses (rent, utilities, etc.)
-- Close shift with actual cash count and view discrepancy report
-
-### 📦 Procurement
-- Manage suppliers
-- Create purchase orders with products, quantities, and unit costs
-- Log supplier payments (single or multiple orders per payment)
-- Support end-of-month settlement with discount/interest notes
-
-### 👥 Customers & Loyalty
-- Create customer profiles with phone number
-- Track cumulative spend per customer
-- Define loyalty tiers (e.g. Silver at 2,000 EGP)
-- Define discount rules per tier (e.g. 2% off invoices above 500 EGP)
-- Automatic tier upgrades and discount application
-
-### 📊 Reports
-- Daily Sales Report
-- Profit Report
-- Expense Report
-- Shortage Report
-- Top Selling Products Report
-
-### 🤖 AI Prescription Parser
-- Upload a photo of a handwritten prescription
-- Get back a list of detected drug names ready for POS search
-- Usage is rate-limited per pharmacy per month
+**Subscription Renewal Flow:**
+1. Pharmacy owner uploads a payment proof image via `POST /api/subscription-payments/{pharmacyId}` (public endpoint, no auth required)
+2. System owner reviews pending proofs via `GET /api/subscription-payments`
+3. System owner verifies and specifies months to extend via `PUT /api/subscription-payments/{id}/verify` → `SubscriptionEnd` is updated automatically
 
 ---
 
-## Database Schema
+## Authentication & Authorization
 
-### Shared Database
+### Tenant Authentication (per-pharmacy)
 
-**Pharmacies:** Id - TenantId - Name - SubscriptionStart - SubscriptionEnd - IsActive
+- **Registration** — `POST /api/auth/register` creates an employee account. Email confirmation required before first login.
+- **Login** — `POST /api/auth/login` validates credentials, checks subscription status, returns a JWT + refresh token.
+- **Token refresh** — `POST /api/auth/refresh` issues a new JWT; `POST /api/auth/revoke-refresh` invalidates it.
+- **Email flows** — confirm, resend-confirm, forget-password, reset-password.
+- **JWT claims** — include `PharmacyId`, `UserId`, `RoleId`, and all granted permissions.
 
-**SubscriptionRequests:** Id - PharmacyName - OwnerName - PhoneNumber - Email - CreatedAt - Status
+### Permission System
 
----
+Authorization is enforced at the action level via `[HasPermission(Permissions.XYZ)]`. Permissions are stored as role claims. Roles are fully customizable per tenant — each role can be granted any subset of the defined permissions.
 
-### Tenant Database (Per-Pharmacy)
+Built-in roles: Owner, Manager, Pharmacist, Cashier. Custom roles can be created, updated, enabled/disabled.
 
-Tables are ordered by implementation priority.
+### Platform Authorization (`[SystemOwner]`)
 
----
-
-#### 🔐 Identity & Access
-
-**AspNetUsers:** Id - FullName - Email - PasswordHash - PhoneNumber - UserName - NormalizedEmail - NormalizedUserName - SecurityStamp - ConcurrencyStamp - EmailConfirmed - PhoneNumberConfirmed - TwoFactorEnabled - LockoutEnd - LockoutEnabled - AccessFailedCount
-
-**AspNetRoles:** Id - Name - NormalizedName - ConcurrencyStamp
-
-**AspNetUserRoles:** UserId - RoleId
-
-**AspNetUserClaims:** Id - UserId - ClaimType - ClaimValue
-
-**AspNetRoleClaims:** Id - RoleId - ClaimType - ClaimValue
-
-**AspNetUserLogins:** LoginProvider - ProviderKey - ProviderDisplayName - UserId
-
-**AspNetUserTokens:** UserId - LoginProvider - Name - Value
-
-**Permissions:** Id - Name
-
-**RolePermissions:** RoleId - PermissionId
+Shared database management endpoints are protected by `[SystemOwner]`. Access requires a JWT from the platform's seeded system owner account.
 
 ---
 
-#### 💊 Products & Inventory
+## API Modules
 
-**Categories:** Id - Name
+All 19 controllers with their endpoints:
 
-**DosageForms:** Id - Name
+### Auth (`/api/auth`)
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/auth` | Login — returns JWT + refresh token |
+| POST | `/api/auth/refresh` | Refresh access token |
+| POST | `/api/auth/revoke-refresh` | Revoke refresh token |
+| POST | `/api/auth/register` | Register new employee account |
+| POST | `/api/auth/confirm` | Confirm email with token |
+| POST | `/api/auth/resend-confirm` | Resend confirmation email |
+| POST | `/api/auth/forget-password` | Send password reset email |
+| POST | `/api/auth/reset-password` | Reset password with token |
 
-**Products:** Id - Name - Barcode - Concentration - MaxStorageTemperature - IsActive - CategoryId - DosageFormId
+### Profile (`/api/profile`)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/profile` | Get my profile details |
+| PUT | `/api/profile` | Update my name |
+| PUT | `/api/profile/change-password` | Change my password |
+| PUT | `/api/profile/change-email` | Request email change (sends confirmation) |
+| POST | `/api/profile/confirm-change-email` | Confirm the new email with token |
 
-**Inventory:** Id - Quantity - SellingPrice - TargetStock - IsManualShortage - ProductId
+### Subscription Requests (`/api/SubscriptionRequests`) — public submit, `[SystemOwner]` manage
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/SubscriptionRequests` | Submit onboarding request (public, IP rate-limited, idempotent) |
+| GET | `/api/SubscriptionRequests` | List all requests (filterable by status) |
+| GET | `/api/SubscriptionRequests/{id}` | Get request details |
+| PUT | `/api/SubscriptionRequests/{id}/status` | Update status → Approved auto-creates Pharmacy |
 
-**ExpiryReports:** Id - ExpiredQuantity - ReportDate - Notes - ProductId - ReportedByEmployeeId
+### Subscription Payments (`/api/subscription-payments`)
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/subscription-payments/{pharmacyId}` | Upload payment proof image (public, no auth) |
+| GET | `/api/subscription-payments` | List pending proofs (`[SystemOwner]`) |
+| PUT | `/api/subscription-payments/{id}/verify` | Verify payment + extend subscription (`[SystemOwner]`) |
 
----
+### Pharmacies (`/api/Pharmacies`) — `[SystemOwner]` only
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/Pharmacies` | List all tenants |
+| GET | `/api/Pharmacies/{id}` | Get pharmacy details |
+| PUT | `/api/Pharmacies/{id}` | Update pharmacy name |
+| PUT | `/api/Pharmacies/toggle-status/{id}` | Toggle IsActive |
+| PUT | `/api/Pharmacies/{id}/subscription` | Set subscription end date |
 
-#### 🛒 Point of Sale
+### Users / Employees (`/api/Users`)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/Users` | List all employees |
+| GET | `/api/Users/{id}` | Get employee details |
+| POST | `/api/Users` | Add employee (idempotent) |
+| PUT | `/api/Users/{id}` | Update employee details or role |
+| PUT | `/api/Users/{id}/toggle-status` | Enable/disable employee account |
 
-**DailyShifts:** Id - ShiftDate - OpeningBalance - ExpectedBalance - ActualBalance - TotalVisa - TotalCash - Status - EmployeeId
+### Roles (`/api/Roles`)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/Roles` | List all roles |
+| GET | `/api/Roles/permissions` | List all available permission values |
+| GET | `/api/Roles/{id}` | Get role details with permissions |
+| POST | `/api/Roles` | Create role (idempotent) |
+| PUT | `/api/Roles/{id}` | Update role name and permissions |
+| PUT | `/api/Roles/toggle-status/{id}` | Enable/disable role |
 
-**Customers:** Id - FullName - PhoneNumber - TotalSpend - UserId - CurrentTierId
+### Products (`/api/products`)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/products` | List products (filterable by search, categoryId, dosageFormId) — paginated |
+| GET | `/api/products/{id}` | Get product details |
+| GET | `/api/products/barcode/{barcode}` | Barcode lookup (POS scanner) |
+| POST | `/api/products` | Create product (barcode unique + name+concentration+dosageForm composite unique) |
+| PUT | `/api/products/{id}` | Update product |
+| DELETE | `/api/products/{id}` | Delete product (blocked if inventory or invoice history exists) |
 
-**SalesInvoices:** Id - Total - DiscountAmount - FinalAmount - PaymentMethod - ShiftId - CustomerId
+### Inventory (`/api/inventory`)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/inventory` | List current stock levels |
+| GET | `/api/inventory/{productId}` | Get single inventory record |
+| PUT | `/api/inventory/{productId}` | Update quantity, selling price, and target stock |
+| PATCH | `/api/inventory/{productId}/rare` | Toggle `IsRare` flag (manual shortage marker) |
+| PATCH | `/api/inventory/{productId}/stock` | Adjust stock quantity (increment/decrement) |
 
-**InvoiceItems:** Id - Quantity - UnitPrice - InvoiceId - ProductId
+### Expiry Reports (`/api/expiry-report`)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/expiry-report` | List all expiry reports |
+| POST | `/api/expiry-report` | Log expired stock (auto-deducts quantity from inventory) |
+| DELETE | `/api/expiry-report/{id}` | Revert expiry report (re-adds quantity to inventory) |
 
-**Returns:** Id - Quantity - RefundAmount - ReturnDate - InvoiceId - ProductId
+### Customers (`/api/customers`)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/customers` | List customers (searchable by name or phone) — paginated |
+| GET | `/api/customers/{id}` | Get customer profile with loyalty tier and invoice history |
+| POST | `/api/customers` | Add customer (phone number unique per pharmacy) |
+| PUT | `/api/customers/{id}` | Update customer details |
 
-**Expenses:** Id - Amount - Description - Date - ShiftId
+### Loyalty (`/api/loyalty`)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/loyalty/tiers` | List all tiers with their discount rules |
+| POST | `/api/loyalty/tiers` | Create loyalty tier (e.g. Silver at 2,000 EGP) |
+| PUT | `/api/loyalty/tiers/{id}` | Update tier — re-evaluates all customers against new threshold |
+| DELETE | `/api/loyalty/tiers/{id}` | Delete tier (blocked if any customers are assigned) |
+| POST | `/api/loyalty/tiers/{tierId}/rules` | Add discount rule to tier (e.g. 2% off invoices above 500 EGP) |
+| PUT | `/api/loyalty/rules/{ruleId}` | Update discount rule |
+| DELETE | `/api/loyalty/rules/{ruleId}` | Delete discount rule |
 
----
+### Shifts (`/api/shifts`)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/shifts` | List shifts (filterable by date) — paginated |
+| GET | `/api/shifts/{id}` | Get shift detail with full reconciliation summary |
+| POST | `/api/shifts/open` | Open daily shift with opening cash balance |
+| POST | `/api/shifts/{id}/close` | Close shift — calculates expected balance and cash discrepancy |
 
-#### 👥 Loyalty
+### Invoices (`/api/invoices`)
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/invoices` | Create sales invoice — applies loyalty discount, deducts inventory, updates customer spend |
+| POST | `/api/invoices/{id}/return` | Process return — re-adds inventory, returns refund amount |
+| GET | `/api/invoices` | List invoices (filterable by shiftId, customerId, date) — paginated |
+| GET | `/api/invoices/{id}` | Invoice detail with all items and returns |
+| GET | `/api/invoices/{id}/return/preview` | Preview return impact before committing |
 
-**LoyaltyTiers:** Id - Name - SpendThreshold
+### Expenses (`/api/expenses`)
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/expenses` | Log petty cash expense against active shift |
+| GET | `/api/expenses/shift/{shiftId}` | List expenses for a specific shift |
+| DELETE | `/api/expenses/{id}` | Delete expense (only if shift is still open) |
 
-**LoyaltyDiscountRules:** Id - MinInvoiceAmount - DiscountPercent - TierId
+### Suppliers (`/api/suppliers`)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/suppliers` | List all suppliers (cached) with outstanding balance and last order date |
+| GET | `/api/suppliers/{id}` | Get supplier details |
+| POST | `/api/suppliers` | Add supplier (name unique per pharmacy) |
+| PUT | `/api/suppliers/{id}` | Update supplier info |
+| DELETE | `/api/suppliers/{id}` | Delete supplier (blocked if purchase orders exist) |
+| PATCH | `/api/suppliers/{id}/reset-balance` | Reset outstanding balance to zero |
 
----
+### Purchase Orders (`/api/purchase-orders`)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/purchase-orders` | List purchase orders (filterable by supplierId) — paginated |
+| GET | `/api/purchase-orders/{id}` | Purchase order detail |
+| GET | `/api/purchase-orders/{id}/items` | Get items filtered by status (Received / Missing) |
+| POST | `/api/purchase-orders` | Create PO — does not immediately update inventory |
+| PUT | `/api/purchase-orders/{id}` | Update pending PO details |
+| PUT | `/api/purchase-orders/{id}/approve` | Approve / receive PO — adds quantities to inventory, supports partial receipt and missing items |
+| PUT | `/api/purchase-orders/{id}/return` | Return received PO items — deducts from inventory |
+| DELETE | `/api/purchase-orders/{id}` | Delete PO (blocked if already received) |
 
-#### 📦 Procurement
+### Supplier Payments (`/api/supplier-payments`)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/supplier-payments` | List payments (filterable by supplierId) |
+| POST | `/api/supplier-payments` | Record payment — can reference one or multiple purchase orders |
 
-**Suppliers:** Id - Name - ContactInfo
+### Reports (`/api/reports`)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/reports/daily` | Daily summary: total sales, returns, expenses, discrepancy, net revenue, top 5 products |
+| GET | `/api/reports/profit` | Net profit for date range: `Sales − Expenses − Cash Discrepancies` |
+| GET | `/api/reports/shortages` | All shortage products: auto (≤25% of target stock) and/or manually flagged |
+| GET | `/api/reports/expenses` | All expenses within date range |
+| GET | `/api/reports/top-products` | Top-selling products by quantity (configurable limit, default 10) |
 
-**PurchaseOrders:** Id - OrderDate - TotalAmount - SupplierId
+### Categories (`/api/Categories`)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/Categories` | List all categories (cached) |
+| GET | `/api/Categories/{id}` | Get category |
+| POST | `/api/Categories` | Add category (name unique) |
+| PUT | `/api/Categories/{id}` | Update category name |
+| DELETE | `/api/Categories/{id}` | Delete category (blocked if products exist) |
 
-**POItems:** Id - Quantity - UnitCost - PurchaseOrderId - ProductId
+### Dosage Forms (`/api/DosageForms`)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/DosageForms` | List all dosage forms (cached) |
+| GET | `/api/DosageForms/{id}` | Get dosage form |
+| POST | `/api/DosageForms` | Add dosage form (name unique) |
+| PUT | `/api/DosageForms/{id}` | Update dosage form name |
+| DELETE | `/api/DosageForms/{id}` | Delete dosage form (blocked if products exist) |
 
-**SupplierPayments:** Id - PaidAmount - PaymentDate - Notes - SupplierId
+### AI (`/api/AI`)
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/AI/parse-prescription` | Upload prescription image (JPG/PNG, max 5 MB) → returns detected drug names |
+| POST | `/api/AI/suggest-medications` | Describe symptoms in Arabic or English → returns suggested medications |
+| PUT | `/api/AI/api-key` | Set or clear a custom OpenRouter API key for the pharmacy |
 
-**SupplierPaymentOrders:** SupplierPaymentId - PurchaseOrderId
-
----
-
-#### 🤖 AI
-
-**AIUsageLogs:** Id - UsedAt - RequestCount
-
----
-
-## ERD Diagrams
-
-### Shared Database
-
-```mermaid
-erDiagram
-    Pharmacies {
-        int Id PK
-        string TenantId
-        string Name
-        date SubscriptionStart
-        date SubscriptionEnd
-        bool IsActive
-    }
-    SubscriptionRequests {
-        string Id PK
-        string PharmacyName
-        string OwnerName
-        string PhoneNumber
-        string Email
-        datetime CreatedAt
-        string Status
-    }
-```
-
-### Per-Pharmacy Database
-
-```mermaid
-erDiagram
-    Roles {
-        uuid Id PK
-        string Name
-    }
-    Permissions {
-        uuid Id PK
-        string Name
-    }
-    RolePermissions {
-        uuid RoleId FK
-        uuid PermissionId FK
-    }
-    ApplicationUser {
-        uuid Id PK
-        string FullName
-        string Email
-        string PasswordHash
-        uuid RoleId FK
-    }
-    Categories {
-        uuid Id PK
-        string Name
-    }
-    DosageForms {
-        uuid Id PK
-        string Name
-    }
-    Products {
-        uuid Id PK
-        string Name
-        string Barcode
-        string Concentration
-        decimal MaxStorageTemperature
-        bool IsActive
-        uuid CategoryId FK
-        uuid DosageFormId FK
-    }
-    Inventory {
-        uuid Id PK
-        int Quantity
-        decimal SellingPrice
-        int TargetStock
-        bool IsManualShortage
-        uuid ProductId FK
-    }
-    ExpiryReports {
-        uuid Id PK
-        int ExpiredQuantity
-        date ReportDate
-        string Notes
-        uuid ProductId FK
-        uuid ReportedByEmployeeId FK
-    }
-    LoyaltyTiers {
-        uuid Id PK
-        string Name
-        decimal SpendThreshold
-    }
-    LoyaltyDiscountRules {
-        uuid Id PK
-        decimal MinInvoiceAmount
-        decimal DiscountPercent
-        uuid TierId FK
-    }
-    Customers {
-        uuid Id PK
-        string FullName
-        string PhoneNumber
-        decimal TotalSpend
-        uuid UserId FK
-        uuid CurrentTierId FK
-    }
-    DailyShifts {
-        uuid Id PK
-        date ShiftDate
-        decimal OpeningBalance
-        decimal ExpectedBalance
-        decimal ActualBalance
-        decimal TotalVisa
-        decimal TotalCash
-        string Status
-        uuid EmployeeId FK
-    }
-    SalesInvoices {
-        uuid Id PK
-        decimal Total
-        decimal DiscountAmount
-        decimal FinalAmount
-        string PaymentMethod
-        uuid ShiftId FK
-        uuid CustomerId FK
-    }
-    InvoiceItems {
-        uuid Id PK
-        int Quantity
-        decimal UnitPrice
-        uuid InvoiceId FK
-        uuid ProductId FK
-    }
-    Returns {
-        uuid Id PK
-        int Quantity
-        decimal RefundAmount
-        date ReturnDate
-        uuid InvoiceId FK
-        uuid ProductId FK
-    }
-    Expenses {
-        uuid Id PK
-        decimal Amount
-        string Description
-        date Date
-        uuid ShiftId FK
-    }
-    Suppliers {
-        uuid Id PK
-        string Name
-        string ContactInfo
-    }
-    PurchaseOrders {
-        uuid Id PK
-        date OrderDate
-        decimal TotalAmount
-        uuid SupplierId FK
-    }
-    POItems {
-        uuid Id PK
-        int Quantity
-        decimal UnitCost
-        uuid PurchaseOrderId FK
-        uuid ProductId FK
-    }
-    SupplierPayments {
-        uuid Id PK
-        decimal PaidAmount
-        date PaymentDate
-        string Notes
-        uuid SupplierId FK
-    }
-    SupplierPaymentOrders {
-        uuid SupplierPaymentId FK
-        uuid PurchaseOrderId FK
-    }
-    AIUsageLogs {
-        uuid Id PK
-        date UsedAt
-        int RequestCount
-    }
-
-    Roles ||--o{ RolePermissions : "has"
-    Permissions ||--o{ RolePermissions : "in"
-    Roles ||--o{ ApplicationUser : "assigned to"
-    Categories ||--o{ Products : "categorizes"
-    DosageForms ||--o{ Products : "classifies"
-    Products ||--o{ Inventory : "tracked in"
-    Products ||--o{ ExpiryReports : "reported in"
-    Products ||--o{ InvoiceItems : "sold as"
-    Products ||--o{ POItems : "ordered as"
-    Products ||--o{ Returns : "returned as"
-    LoyaltyTiers ||--o{ LoyaltyDiscountRules : "has rules"
-    LoyaltyTiers ||--o{ Customers : "assigned to"
-    Customers ||--o{ SalesInvoices : "makes"
-    DailyShifts ||--o{ SalesInvoices : "contains"
-    DailyShifts ||--o{ Expenses : "has"
-    SalesInvoices ||--o{ InvoiceItems : "includes"
-    SalesInvoices ||--o{ Returns : "has"
-    Suppliers ||--o{ PurchaseOrders : "fulfills"
-    Suppliers ||--o{ SupplierPayments : "receives"
-    PurchaseOrders ||--o{ POItems : "includes"
-    PurchaseOrders ||--o{ SupplierPaymentOrders : "covered by"
-    SupplierPayments ||--o{ SupplierPaymentOrders : "covers"
-    ApplicationUser ||--o{ DailyShifts : "runs"
-    ApplicationUser ||--o{ ExpiryReports : "reports"
-    ApplicationUser ||--o| Customers : "has online profile"
-```
+**AI quota:** Each pharmacy gets **30 free calls/month** across both AI endpoints. When exhausted, the API responds with `429` and a `retryAfter` timestamp. Pharmacies can bring their own OpenRouter API key to bypass the quota.
 
 ---
 
-## Business Flow
+## Cross-Cutting Concerns
 
-### 1. Pharmacy Onboarding
+### Rate Limiting (4 policies)
+| Policy | Applied To |
+|---|---|
+| `IpLimit` | Public endpoints (subscription request submission, payment upload) |
+| `UserLimit` | Per-user throttle on sensitive operations |
+| `Concurrency` | AI and write-heavy endpoints |
+| `Sliding` | Read/report endpoints |
 
-1. A prospective customer submits a subscription request with their pharmacy name, owner name, phone number, and email.
-2. The request is saved to the shared database with a `Pending` status.
-3. An email notification is sent to the platform team.
-4. The request is reviewed manually and its status updated to `Contacted`, `Approved`, or `Rejected`.
-5. Upon approval, a new `Pharmacy` entity is created in the shared database with a generated `TenantId`, and an email notification is sent with the status update. The tenant's database connection string and configuration are maintained in `AppSettings`.
+### Idempotency
+Endpoints decorated with `[Idempotent]` require an `Idempotency-Key` header. The key is surfaced in Swagger via a custom NSwag operation processor.
 
-### 2. Daily Operations
+### Caching
+- **HybridCache** (in-memory L1 + Redis L2) used for categories, dosage forms, supplier lists
+- Cache is invalidated on mutations via `ICacheService`
 
-Each working day starts by opening a shift with the cash drawer balance. Throughout the day, invoices are created at the POS — the system checks the customer's loyalty tier, applies any eligible discount, deducts inventory, and updates the customer's total spend. Expenses are logged as they occur. At day-end, the shift is closed with the actual cash count, and the system immediately surfaces any discrepancy.
+### Error Handling
+- All business failures use the **Result Pattern** — no exceptions for domain errors
+- Failed results are translated to RFC 7807 `ProblemDetails` via `result.ToProblem()` in `GlobalExtensions.cs`
+- Unhandled exceptions caught by `app.UseExceptionHandler()`
 
-### 3. Inventory Management
+### Logging
+- **Serilog** structured request logging via `UseSerilogRequestLogging()`
+- Configurable sinks via `appsettings.json`
 
-Stock levels are monitored continuously. When a product drops to 50% of its target stock, it appears on the low-stock watch list. At 25%, it is automatically flagged as a shortage. Staff can also manually flag products that are unavailable in the market regardless of quantity. Expired stock is handled through expiry reports which deduct from quantity and create an audit trail.
-
-### 4. Procurement
-
-When stock runs low, a purchase order is created against a supplier with the required products, quantities, and unit costs. Upon delivery, the order is recorded and inventory is updated automatically. Payments to suppliers are logged separately and can cover multiple orders in a single transaction — supporting both immediate payment and end-of-month settlement with notes for any discounts or interest applied.
-
-### 5. Loyalty & Discounts
-
-The pharmacy manager defines tiers (e.g. Silver at 2,000 EGP cumulative spend) and discount rules per tier (e.g. 2% off any invoice above 500 EGP). As customers make purchases, their total spend accumulates and their tier upgrades automatically. Discounts are applied at invoice creation without manual intervention.
-
-### 6. Financial Reporting
-
-The profit report calculates: `Total Sales - Cost of Goods Sold - Total Expenses - Total Shift Discrepancies`. This gives management an accurate view of profitability for any date range. Advanced analytics and cross-pharmacy reporting are planned for future versions.
-
-### 7. AI Prescription Parsing
-
-A staff member photographs a handwritten prescription and submits it to the AI endpoint. The system sends the image to an LLM via OpenRouter and returns a list of detected drug names. Usage is tracked per pharmacy — when the monthly limit is reached, the API responds with a `retryAfter` timestamp instead of a result.
+### Health Checks
+Available at `GET /health`:
+- SQL Server (shared DB)
+- Hangfire server
 
 ---
 
-## Architecture Decisions
+## Background Jobs
 
-**No ConnectionString in the Shared Database**
-Tenant connection strings are treated as infrastructure configuration, not application data. Storing them in `AppSettings` keeps database credentials out of the shared DB and makes environment-specific overrides straightforward.
+Two recurring Hangfire jobs registered at startup:
 
-**SystemOwner JWT for Platform Endpoints**
-The shared database management layer uses a `[SystemOwner]` authorization attribute backed by JWT tokens. A dedicated system owner account with a fixed email is seeded during application startup, avoiding the need for a separate identity provider while keeping platform operations secure and auditable.
+| Job | Schedule | Action |
+|---|---|---|
+| `RemoveExpiredRefreshTokens` | Every N days (configured by `RefreshToken.AutoRemoveAfterDays`) | Purges expired refresh tokens from all tenant databases |
+| `DeactivateExpiredPharmacySubscriptions` | Daily | Sets `IsActive = false` on pharmacies whose `SubscriptionEnd` has passed |
 
-**Flat Subscription Model**
-Version 1 has no multi-plan system. All pharmacies access the same feature set. Subscription validity is determined solely by date range and the `IsActive` flag, avoiding plan migration complexity for the MVP.
-
-**Single-Pharmacy Operation (MVP)**
-Each tenant operates as a single logical unit. There are no branches in Version 1. This eliminates cross-branch inventory reconciliation, branch-scoped reporting, and user-branch assignment complexity from the initial scope.
-
-**Request-Based Onboarding**
-Pharmacies are not self-served through a registration endpoint. A subscription request initiates a manual review process, giving the platform team control over tenant provisioning during the early growth phase.
+Hangfire dashboard available at `/jobs` (basic auth protected via `Hangfire:Username` and `Hangfire:Password` in config).
 
 ---
 
-## Future Expansion
+## Test Coverage
 
-- **Multi-Branch Support** — Branches table, branch-scoped inventory, user-branch assignment, and branch comparison reports. Intentionally excluded from Version 1 to reduce MVP scope.
-- **Subscription Plans** — Tiered plans with feature flags, branch limits, and user limits, once the customer base justifies differentiated offerings.
-- **Advanced Analytics** — Customer behavior reports, supplier performance reports, and cross-period trend analysis.
-- **Self-Service Onboarding** — Automated tenant provisioning triggered by a payment event, removing the manual review step.
+~95 unit test files in `PharmaSaaS.Application.Test` using **xUnit + FakeItEasy**. Every command handler, query handler, and domain service has dedicated tests.
+
+| Module | Test Files |
+|---|---|
+| Categories | 5 (Add, Delete, GetAll, GetById, Update) |
+| Customers | 5 (Add, GetAll, GetById, Update, validator) |
+| Dosage Forms | 5 (Add, Delete, GetAll, GetById, Update) |
+| Expenses | 3 (Log, GetAllByShift, Delete) |
+| Expiry Reports | 3 (Log, GetAll, Revert) |
+| Inventory | 4 (GetAll, Get, UpdateStock, AdjustStock, ToggleRare) |
+| Invoices | 5 (Create, GetAll, GetById, ProcessReturn, CheckReturnImpact) |
+| Loyalty | 7 (AddTier, UpdateTier, DeleteTier, GetAll, AddRule, UpdateRule, DeleteRule) |
+| Subscription Payments | 3 (Upload, GetAll, Verify) |
+| Pharmacies | 5 (GetAll, Get, Update, ToggleStatus, SetSubscription) |
+| Products | 6 (Add, Delete, GetAll, GetById, GetByBarcode, Update) |
+| Profile | 5 (GetMyProfile, UpdateProfile, ChangePassword, ChangeEmail, ConfirmChangeEmail) |
+| Purchase Orders | 8 (Create, List, Get, GetItems, Update, Approve, ReturnItems, Delete) |
+| Roles | 5 (Add, Get, GetAll, GetPermissions, Update, ToggleStatus) |
+| Services | 5 (CustomerLoyalty, Invoice, PurchaseOrder, Return, SupplierPayment) |
+| Shifts | 4 (Open, Close, GetAll, GetById) |
+| Subscription Requests | 5 (Submit, GetAll, GetById, UpdateStatus, validator) |
+| Supplier Payments | 2 (Record, List) |
+| Suppliers | 6 (Add, GetAll, GetById, Update, Delete, ResetBalance) |
+| Users | 4 (Add, Get, Update, ToggleStatus) |
+
+---
+
+## Domain Model
+
+### Tenant-Scoped Entities (per-pharmacy database)
+
+| Entity | Key Fields |
+|---|---|
+| `Category` | Id, Name |
+| `DosageForm` | Id, Name |
+| `Product` | Id, Name, Barcode, Concentration, MaxStorageTemperature, CategoryId, DosageFormId |
+| `Inventory` | Id, ProductId, Quantity, SellingPrice, TargetStock, IsRare |
+| `ExpiryReport` | Id, ProductId, ExpiredQuantity, Notes, ReportDate |
+| `Customer` | Id, FullName, PhoneNumber, TotalSpend, CurrentTierId |
+| `LoyaltyTier` | Id, Name, SpendThreshold |
+| `DiscountRule` | Id, TierId, MinInvoiceAmount, DiscountPercent |
+| `Shift` | Id, Date, Status, OpeningBalance, TotalSales, TotalReturns, TotalExpenses, ActualBalance |
+| `Invoice` | Id, ShiftId, CustomerId, Total, DiscountAmount, FinalAmount |
+| `InvoiceItem` | Id, InvoiceId, ProductId, Quantity, UnitPrice |
+| `Return` | Id, InvoiceId, ProductId, Quantity, RefundAmount |
+| `Expense` | Id, ShiftId, Amount, Description, Date |
+| `Supplier` | Id, Name, ContactInfo, Balance, LastOrderDate |
+| `PurchaseOrder` | Id, SupplierId, OrderDate, TotalAmount, Status |
+| `PurchaseOrderItem` | Id, PurchaseOrderId, ProductId, Quantity, ReceivedQuantity, UnitCost, Status |
+| `SupplierPayment` | Id, SupplierId, Amount, PaidAt, linked OrderIds |
+| `AIUsageLog` | Id, PharmacyId, Month, UsageCount, CustomApiKey |
+| `RefreshToken` | Id, UserId, Token, ExpiresAt |
+| `Role` | Id, Name, IsActive, Permissions (claims) |
+| `User` (ApplicationUser) | Id, FullName, Email, IsActive, RoleId |
+
+### Shared Entities (shared database)
+
+| Entity | Key Fields |
+|---|---|
+| `Pharmacy` | Id, TenantId, Name, SubscriptionStart, SubscriptionEnd, IsActive |
+| `SubscriptionRequest` | Id, PharmacyName, OwnerName, PhoneNumber, Email, Status, CreatedAt |
+| `SubscriptionPayment` | Id, PharmacyId, ImagePath, VerifiedAmount, ExtendedByMonths, IsVerified, UploadedAt |

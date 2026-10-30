@@ -1,7 +1,7 @@
 # 💊 PharmaSaaS — System Analysis
 
-> **Single source of truth** for all modules, API endpoints, actors, inputs/outputs, use cases, and role requirements.  
-> Each module section contains a table of endpoints. Column meaning:
+> **Single source of truth** for all modules, API endpoints, actors, inputs/outputs, and role requirements.
+> All modules below are **fully implemented**. This document reflects the actual running codebase.
 >
 > | Column | Meaning |
 > |---|---|
@@ -10,87 +10,119 @@
 > | **Path** | HTTP Method + Route |
 > | **Input** | Request body / query params |
 > | **Output** | Response body / status code |
-> | **Description** | Plain-language summary |
-> | **Use Cases** | Ordered step-by-step logic |
-> | **Roles** | Which roles are authorized |
-> | **Receiver** | System or user that consumes the response |
+> | **Roles / Auth** | Authorization requirement |
 
 ---
 
 ## Module Index
 
-| Module | Description |
-|---|---|
-| [Auth](#auth) | Employee login, JWT issuance |
-| [Subscription Requests](#subscription-requests) | Public onboarding request submission and platform review |
-| [Pharmacies](#pharmacies) | Pharmacy tenant management (CRUD, status toggle, subscription dates) |
-| [Employees](#employees) | Employee accounts and role assignment |
-| [Products](#products) | Product catalog, barcode lookup, storage info |
-| [Inventory](#inventory) | Stock levels, shortage flags, expiry reports |
-| [Customers](#customers) | Customer profiles and invoice history |
-| [Loyalty](#loyalty) | Tier definitions and automatic discount rules |
-| [Shifts](#shifts) | Daily shift lifecycle and cash reconciliation |
-| [Invoices](#invoices) | POS sales invoices, discount application, returns |
-| [Expenses](#expenses) | Petty cash expenses linked to shifts |
-| [Suppliers](#suppliers) | Supplier management |
-| [Purchase Orders](#purchase-orders) | Procurement orders and inventory auto-update |
-| [Supplier Payments](#supplier-payments) | Payment recording covering single or multiple orders |
-| [Reports](#reports) | Daily sales, profit, expense, shortage, and top-selling reports |
-| [AI](#ai) | Prescription image parsing via OpenRouter |
-| [Lookups](#lookups) | Categories and dosage form reference data |
+| Module | Endpoints | Auth |
+|---|---|---|
+| [Auth](#auth) | 8 | Public (IP rate-limited) |
+| [Profile](#profile) | 5 | `[Authorize]` + permission |
+| [Subscription Requests](#subscription-requests) | 4 | Public submit · `[SystemOwner]` manage |
+| [Subscription Payments](#subscription-payments) | 3 | Public upload · `[SystemOwner]` manage |
+| [Pharmacies](#pharmacies) | 5 | `[SystemOwner]` |
+| [Users / Employees](#users--employees) | 5 | `[Authorize]` + permission |
+| [Roles](#roles) | 6 | `[Authorize]` + permission |
+| [Categories](#categories) | 5 | `[Authorize]` + permission |
+| [Dosage Forms](#dosage-forms) | 5 | `[Authorize]` + permission |
+| [Products](#products) | 6 | `[Authorize]` + permission |
+| [Inventory](#inventory) | 5 | `[Authorize]` + permission |
+| [Expiry Reports](#expiry-reports) | 3 | `[Authorize]` + permission |
+| [Customers](#customers) | 4 | `[Authorize]` + permission |
+| [Loyalty](#loyalty) | 7 | `[Authorize]` + permission |
+| [Shifts](#shifts) | 4 | `[Authorize]` + permission |
+| [Invoices](#invoices) | 5 | `[Authorize]` + permission |
+| [Expenses](#expenses) | 3 | `[Authorize]` + permission |
+| [Suppliers](#suppliers) | 6 | `[Authorize]` + permission |
+| [Purchase Orders](#purchase-orders) | 8 | `[Authorize]` + permission |
+| [Supplier Payments](#supplier-payments) | 2 | `[Authorize]` + permission |
+| [Reports](#reports) | 5 | `[Authorize]` + permission |
+| [AI](#ai) | 3 | `[Authorize]` + permission |
 
 ---
 
 ## Auth
 
-> **Single endpoint.** The xlsx spec defines only `Login`. Register, email confirmation, password reset, and refresh tokens are implemented but deviate from this spec (see `tasks/tasks.md`).
+> Route prefix: `/Auth` (no `/api/` prefix). All endpoints are public. Rate-limited by IP.
 
-| Name | Actor | Path | Input | Output | Description |
-|---|---|---|---|---|---|
-| Login | Any Employee | `POST /api/auth/login` | `{ email, password }` | `{ token, role }` | Authenticates an employee and returns a JWT containing PharmacyId, BranchId, and RoleId claims. |
+| Name | Path | Input | Output |
+|---|---|---|---|
+| Login | `POST /Auth` | `{ email, password }` | `{ token, refreshToken, role }` |
+| Refresh Token | `POST /Auth/refresh` | `{ token, refreshToken }` | `{ token, refreshToken }` |
+| Revoke Refresh | `POST /Auth/revoke-refresh` | `{ token, refreshToken }` | `200 OK` |
+| Register | `POST /Auth/register` | `{ fullName, email, password }` | `{ id }` · email confirmation sent |
+| Confirm Email | `POST /Auth/confirm` | `{ userId, token }` | `200 OK` |
+| Resend Confirm | `POST /Auth/resend-confirm` | `{ email }` | `200 OK` |
+| Forget Password | `POST /Auth/forget-password` | `{ email }` | `200 OK` · reset code sent by email |
+| Reset Password | `POST /Auth/reset-password` | `{ email, token, newPassword }` | `200 OK` |
 
-**Use Cases — Login:**
-1. Validate credentials
-2. Check account is active
+**Login use cases:**
+1. Validate credentials against tenant `ApplicationDbContext`
+2. Check `IsActive = true` on the user account
 3. Check pharmacy subscription is not expired
-4. Generate JWT with PharmacyId and RoleId claims
-5. Return token
+4. Generate JWT with `PharmacyId`, `UserId`, `RoleId`, and permission claims
+5. Issue refresh token, return both
 
-**Roles:** All Roles | **Receiver:** Employee
+**Register notes:** Creates account with `IsActive = false`. Sends confirmation email. User cannot log in until email is confirmed.
+
+---
+
+## Profile
+
+> Route prefix: `/api/profile`. Requires `[Authorize]`. PharmacyId resolved from JWT.
+
+| Name | Path | Input | Output |
+|---|---|---|---|
+| Get My Profile | `GET /api/profile` | — | `{ id, fullName, email, role }` |
+| Update Profile | `PUT /api/profile` | `{ fullName }` | `204 No Content` |
+| Change Password | `PUT /api/profile/change-password` | `{ currentPassword, newPassword }` | `204 No Content` |
+| Change Email | `PUT /api/profile/change-email` | `{ newEmail, password }` | `204 No Content` · confirmation email sent to new address |
+| Confirm Email Change | `POST /api/profile/confirm-change-email` | `{ userId, newEmail, token }` | `204 No Content` |
 
 ---
 
 ## Subscription Requests
 
-> Accessible by the **public** (no auth) for submission. Management endpoints protected by `[SystemOwner]`.
+> Submit is public (IP rate-limited, idempotent via `Idempotency-Key` header). Management requires `[SystemOwner]`.
 
-| Name | Actor | Path | Input | Output | Description |
-|---|---|---|---|---|---|
-| Submit Subscription Request | Public | `POST /api/SubscriptionRequests` | `{ pharmacyName, ownerName, phoneNumber, email }` | `{ id }` | Submits a new pharmacy onboarding request. Saved with Status=Pending. Triggers an email notification to the platform team. |
-| Get Subscription Request | SystemOwner | `GET /api/SubscriptionRequests/{id}` | — | `{ id, pharmacyName, ownerName, phoneNumber, email, createdAt, status }` | Retrieves details of a specific subscription request by ID. |
-| List Subscription Requests | SystemOwner | `GET /api/subscription-requests` | `?status` (optional) | `[{ id, pharmacyName, ownerName, phoneNumber, email, createdAt, status }]` | Returns all subscription requests. Can be filtered by status (Pending, Contacted, Approved, Rejected). |
-| Update Request Status | SystemOwner | `PUT /api/SubscriptionRequests/{id}/status` | `{ status }` | `204 No Content` | Updates the status. On Approved → Pharmacy entity auto-created in shared DB with generated TenantId. |
+| Name | Path | Input | Output |
+|---|---|---|---|
+| Submit Request | `POST /api/SubscriptionRequests` | `{ pharmacyName, ownerName, phoneNumber, email }` | `{ id }` |
+| List Requests | `GET /api/SubscriptionRequests` | `?status` (optional filter) | `[{ id, pharmacyName, ownerName, phoneNumber, email, createdAt, status }]` |
+| Get Request | `GET /api/SubscriptionRequests/{id}` | — | `{ id, pharmacyName, ownerName, phoneNumber, email, createdAt, status }` |
+| Update Status | `PUT /api/SubscriptionRequests/{id}/status` | `{ status }` | `204 No Content` |
 
-**Use Cases — Submit Subscription Request:**
+**Status values:** `Pending` → `Contacted` → `Approved` / `Rejected`
+
+**On Approved:** A new `Pharmacy` entity is created in the shared DB with a generated `TenantId`. Status notification email sent to requester.
+
+**Submit use cases:**
 1. Validate all fields present
 2. Check email not already submitted
-3. Create SubscriptionRequest with Status=Pending
-4. Send email notification
+3. Create `SubscriptionRequest` with `Status = Pending`
+4. Send email notification to platform team
 5. Return request id
 
-**Use Cases — List Subscription Requests:**
-1. Validate [SystemOwner]
-2. Apply optional status filter
-3. Return results ordered by CreatedAt desc
+---
 
-**Use Cases — Update Request Status:**
-1. Validate [SystemOwner]
-2. Validate id exists
-3. Validate status is one of: Contacted, Approved, Rejected
-4. Update status
-5. If Approved → create Pharmacy entity with TenantId, send status notification email
+## Subscription Payments
 
-**Status values:** `Pending` | `Contacted` | `Approved` | `Rejected`
+> Upload is public (`[NoTenantRequired]`, IP rate-limited). Management requires `[SystemOwner]`.
+
+| Name | Path | Input | Output |
+|---|---|---|---|
+| Upload Payment Proof | `POST /api/subscription-payments/{pharmacyId}` | `multipart/form-data` image (JPG/PNG) | `201 Created` |
+| List Pending Proofs | `GET /api/subscription-payments` | — | `[{ id, pharmacyId, uploadedAt, imageUrl }]` |
+| Verify Payment | `PUT /api/subscription-payments/{id}/verify` | `{ extendByMonths, amount }` | `204 No Content` |
+
+**Verify use cases:**
+1. Validate payment exists and belongs to a known pharmacy
+2. Check payment is not already verified (`409` if so)
+3. Record verified amount
+4. Extend `Pharmacy.SubscriptionEnd` by `extendByMonths`
+5. Return `204`
 
 ---
 
@@ -98,423 +130,389 @@
 
 > All endpoints protected by `[SystemOwner]`.
 
-| Name | Actor | Path | Input | Output | Description |
-|---|---|---|---|---|---|
-| List Pharmacies | SystemOwner | `GET /api/Pharmacies` | — | `[{ id, tenantId, name, subscriptionStart, subscriptionEnd, isActive }]` | Returns all registered pharmacy tenants. |
-| Get Pharmacy | SystemOwner | `GET /api/Pharmacies/{id}` | — | `{ id, tenantId, name, subscriptionStart, subscriptionEnd, isActive }` | Retrieves details of a specific pharmacy. Returns 404 if not found. |
-| Update Pharmacy | SystemOwner | `PUT /api/Pharmacies/{id}` | `{ name }` | `204 No Content` | Updates the name. Checks for duplicate name under same tenant. Returns 409 if name exists. |
-| Toggle Pharmacy Status | SystemOwner | `PUT /api/Pharmacies/toggle-status/{id}` | — | `204 No Content` | Toggles the IsActive flag. Disabled pharmacies block write operations. |
-| Set Pharmacy Subscription | SystemOwner | `PUT /api/Pharmacies/{id}/subscription` | `{ end (date) }` | `204 No Content` | Sets the subscription end date. The end date must be in the future. |
+| Name | Path | Input | Output |
+|---|---|---|---|
+| List Pharmacies | `GET /api/Pharmacies` | — | `[{ id, tenantId, name, subscriptionStart, subscriptionEnd, isActive }]` |
+| Get Pharmacy | `GET /api/Pharmacies/{id}` | — | `{ id, tenantId, name, subscriptionStart, subscriptionEnd, isActive }` |
+| Update Pharmacy | `PUT /api/Pharmacies/{id}` | `{ name }` | `204 No Content` |
+| Toggle Status | `PUT /api/Pharmacies/toggle-status/{id}` | — | `204 No Content` |
+| Set Subscription | `PUT /api/Pharmacies/{id}/subscription` | `{ end (date) }` | `204 No Content` |
 
-**Use Cases — Toggle Pharmacy Status:**
-1. Validate [SystemOwner]
-2. Validate id exists
-3. Toggle IsActive
-4. Return 204
-
-**Use Cases — Set Pharmacy Subscription:**
-1. Validate [SystemOwner]
-2. Validate id exists
-3. Validate end date is in future
-4. Set SubscriptionEnd
-5. Return 204
+**Set Subscription:** `end` must be a future date. Sets `SubscriptionEnd` directly (for admin overrides). Normal renewal goes through Subscription Payments.
 
 ---
 
-## Employees
+## Users / Employees
 
-> Tenant-scoped. PharmacyId extracted from JWT.
+> Route prefix: `/api/Users`. Tenant-scoped. PharmacyId from JWT.
+> **No delete endpoint** — users are disabled via `toggle-status` instead (soft disable).
 
-| Name | Actor | Path | Input | Output | Description |
-|---|---|---|---|---|---|
-| List Employees | Manager / Owner | `GET /api/Users` | — (PharmacyId from JWT) | `[{ id, fullName, role }]` | Returns all employees in the pharmacy. |
-| Add Employee | Owner / Manager | `POST /api/Users` | `{ fullName, email, password, roleId }` | `{ id }` | Creates a new employee account under the pharmacy. |
-| Update Employee | Owner / Manager | `PUT /api/Users/{id}` | `{ fullName, roleId }` | `204 No Content` | Updates employee details or reassigns their role/branch. |
-| Delete Employee | Owner | `DELETE /api/Users/{id}` | — | `204 No Content` | Removes an employee account. Soft delete. |
+| Name | Path | Input | Output |
+|---|---|---|---|
+| List Users | `GET /api/Users` | — | `[{ id, fullName, email, role, isActive }]` |
+| Get User | `GET /api/Users/{id}` | — | `{ id, fullName, email, role, isActive }` |
+| Add User | `POST /api/Users` | `{ fullName, email, password, roleId }` | `{ id, fullName, email, role }` |
+| Update User | `PUT /api/Users/{id}` | `{ fullName, roleId }` | `204 No Content` |
+| Toggle Status | `PUT /api/Users/{id}/toggle-status` | — | `204 No Content` |
 
-**Use Cases — Add Employee:**
-1. Validate all fields
-2. Check email not already used
-3. Create ApplicationUser
-4. Assign role
-5. Return id
+**Add User:** Idempotent (requires `Idempotency-Key` header). Email must be unique within the pharmacy. Account is active by default (no email confirmation required when created by admin).
 
-**Use Cases — Delete Employee:**
-1. Validate employee belongs to pharmacy
-2. Check employee has no open shifts
-3. Soft delete account
+---
 
-**Roles:** Owner, Manager | **Receiver:** Employee / Management
+## Roles
+
+> Route prefix: `/api/Roles`. Tenant-scoped. Permissions are stored as ASP.NET Identity role claims.
+
+| Name | Path | Input | Output |
+|---|---|---|---|
+| List Roles | `GET /api/Roles` | — | `[{ id, name, isActive, permissionsCount }]` |
+| List All Permissions | `GET /api/Roles/permissions` | — | `[{ value, displayName }]` |
+| Get Role | `GET /api/Roles/{id}` | — | `{ id, name, isActive, permissions: [] }` |
+| Add Role | `POST /api/Roles` | `{ name, permissions: [] }` | `{ id, name, isActive, permissions }` |
+| Update Role | `PUT /api/Roles/{id}` | `{ name, permissions: [] }` | `204 No Content` |
+| Toggle Status | `PUT /api/Roles/toggle-status/{id}` | — | `204 No Content` |
+
+**Add Role:** Idempotent. Name must be unique within the pharmacy. Returns `409` on duplicate name.
+
+---
+
+## Categories
+
+> Route prefix: `/api/Categories`. Tenant-scoped. Results cached via HybridCache.
+
+| Name | Path | Input | Output |
+|---|---|---|---|
+| List Categories | `GET /api/Categories` | — | `[{ id, name }]` |
+| Get Category | `GET /api/Categories/{id}` | — | `{ id, name }` |
+| Add Category | `POST /api/Categories` | `{ name }` | `{ id }` |
+| Update Category | `PUT /api/Categories/{id}` | `{ name }` | `204 No Content` |
+| Delete Category | `DELETE /api/Categories/{id}` | — | `204 No Content` |
+
+**Delete:** Returns `409` if any products reference this category.
+
+---
+
+## Dosage Forms
+
+> Route prefix: `/api/DosageForms`. Tenant-scoped. Results cached via HybridCache.
+
+| Name | Path | Input | Output |
+|---|---|---|---|
+| List Dosage Forms | `GET /api/DosageForms` | — | `[{ id, name }]` |
+| Get Dosage Form | `GET /api/DosageForms/{id}` | — | `{ id, name }` |
+| Add Dosage Form | `POST /api/DosageForms` | `{ name }` | `{ id }` |
+| Update Dosage Form | `PUT /api/DosageForms/{id}` | `{ name }` | `204 No Content` |
+| Delete Dosage Form | `DELETE /api/DosageForms/{id}` | — | `204 No Content` |
+
+**Delete:** Returns `409` if any products reference this dosage form.
 
 ---
 
 ## Products
 
-> Tenant-scoped. PharmacyId extracted from JWT.
+> Route prefix: `/api/products`. Tenant-scoped. Paginated list.
 
-| Name | Actor | Path | Input | Output | Description |
-|---|---|---|---|---|---|
-| List Products | Any Employee | `GET /api/products` | `?search&categoryId&dosageFormId` (optional) | `[{ id, name, barcode, concentration, category, dosageForm }]` | Returns all products with optional filters. |
-| Get Product by Barcode | Any Employee | `GET /api/products/barcode/{barcode}` | — | `{ id, name, barcode, concentration, maxStorageTemperature, category, dosageForm }` | Looks up a product by barcode. Used by POS scanner. Returns 404 if not found. |
-| Get Product | Any Employee | `GET /api/products/{id}` | — | `{ id, name, barcode, concentration, maxStorageTemperature, category, dosageForm }` | Retrieves full product details by ID. |
-| Create Product | Manager / Pharmacist | `POST /api/products` | `{ name, barcode, concentration?, maxStorageTemperature?, categoryId, dosageFormId }` | `{ id }` | Creates a new product. Checks barcode uniqueness and composite (name+concentration+dosageForm) uniqueness. |
-| Update Product | Manager / Pharmacist | `PUT /api/products/{id}` | `{ name, barcode, concentration?, maxStorageTemperature?, categoryId, dosageFormId }` | `204 No Content` | Updates product details. |
-| Delete Product | Manager | `DELETE /api/products/{id}` | — | `204 No Content` | Deletes a product. Only if it has no inventory or invoice history. |
+| Name | Path | Input | Output |
+|---|---|---|---|
+| List Products | `GET /api/products` | `?search&categoryId&dosageFormId` (paginated) | `IPaginatedList<{ id, name, barcode, concentration, category, dosageForm }>` |
+| Get Product | `GET /api/products/{id}` | — | `{ id, name, barcode, concentration, maxStorageTemperature, category, dosageForm }` |
+| Barcode Lookup | `GET /api/products/barcode/{barcode}` | — | `{ id, name, barcode, concentration, maxStorageTemperature, category, dosageForm }` |
+| Create Product | `POST /api/products` | `{ name, barcode, concentration?, maxStorageTemperature?, categoryId, dosageFormId }` | `{ id }` |
+| Update Product | `PUT /api/products/{id}` | `{ name, barcode, concentration?, maxStorageTemperature?, categoryId, dosageFormId }` | `204 No Content` |
+| Delete Product | `DELETE /api/products/{id}` | — | `204 No Content` |
 
-**Use Cases — Create Product:**
-1. Validate product belongs to pharmacy
-2. Check barcode not duplicate in pharmacy
-3. Check (name + concentration + dosageFormId) composite not duplicate
-4. Validate categoryId and dosageFormId exist
-5. Create product
-6. Return id
+**Create uniqueness checks:**
+- Barcode unique within the pharmacy
+- `(name + concentration + dosageFormId)` composite unique within the pharmacy
 
-**Use Cases — Delete Product:**
-1. Validate product belongs to pharmacy
-2. Check no inventory records exist
-3. Check no invoice items reference product
-4. Delete product
-
-**Roles:** Owner, Manager, Pharmacist (read: all) | **Receiver:** Employee / POS Screen
+**Delete:** Returns `409` if any inventory records or invoice items reference this product.
 
 ---
 
 ## Inventory
 
-> Tenant-scoped. PharmacyId extracted from JWT.
+> Route prefix: `/api/Inventory`. Tenant-scoped. Paginated list with query filters.
+> The old separate `/shortages`, `/stock-level`, and `/out-of-stock` sub-routes **no longer exist**.
+> All filtering is done via query params on `GET /api/Inventory`.
 
-| Name | Actor | Path | Input | Output | Description |
-|---|---|---|---|---|---|
-| List Inventory | Any Employee | `GET /api/inventory` | — (PharmacyId from JWT) | `[{ product, quantity, sellingPrice, targetStock, isRare }]` | Returns current stock levels per product. `isRare` flags products rare in the market. |
-| Update Stock | Pharmacist / Manager | `PUT /api/inventory/{productId}` | `{ quantity, sellingPrice, targetStock }` | `204 No Content` | Updates quantity, selling price, and target stock for a product. |
-| Toggle Rare Flag | Pharmacist / Manager | `PATCH /api/inventory/{productId}/shortage` | — (no body, toggles automatically) | `204 No Content` | Toggles the `isRare` flag. Marks product as rare/scarce regardless of stock quantity. |
-| Rare Products Report | Manager / Owner | `GET /api/inventory/shortages` | — | `[{ product, quantity, targetStock, isRare }]` | Returns all products currently flagged as rare (`isRare = true`). |
-| Stock Level Report | Manager / Owner | `GET /api/inventory/stock-level?belowTarget={bool}` | `belowTarget: bool` | `[{ product, quantity, targetStock, isRare }]` | Returns products filtered by stock level relative to their target. Only products with a configured `targetStock` are included. |
-| Out-of-Stock Report | Manager / Owner | `GET /api/inventory/out-of-stock` | — | `[{ product, quantity, targetStock, isRare }]` | Returns all products with zero quantity (completely out of stock). |
-| Log Expiry Report | Pharmacist | `POST /api/inventory/expiry-report` | `{ productId, expiredQuantity, notes? }` | `204 No Content` | Records expired stock and automatically deducts the expired quantity from inventory. |
+| Name | Path | Input | Output |
+|---|---|---|---|
+| List Inventory | `GET /api/Inventory` | `?isRare=bool&belowTarget=bool&outOfStock=bool&searchValue&pageNumber&pageSize` | `IPaginatedList<{ product, quantity, sellingPrice, targetStock, isRare }>` |
+| Get Inventory | `GET /api/Inventory/{productId}` | — | `{ product, quantity, sellingPrice, targetStock, isRare, lastUpdated }` |
+| Update Stock | `PUT /api/Inventory/{productId}` | `{ quantity, sellingPrice, targetStock }` | `204 No Content` |
+| Toggle Rare | `PATCH /api/Inventory/{productId}/rare` | — (no body, toggles automatically) | `204 No Content` |
+| Adjust Stock | `PATCH /api/Inventory/{productId}/stock` | `{ adjustment }` (positive or negative integer) | `204 No Content` |
 
-**Use Cases — Log Expiry Report:**
+**Inventory filter params (all optional, combinable):**
+- `isRare=true` — products manually flagged as rare/scarce
+- `belowTarget=true` — products below their `targetStock`
+- `outOfStock=true` — products with `quantity = 0`
+- `searchValue` — search by product name
+
+**Shortage thresholds:**
+- Auto shortage: `quantity ≤ 25%` of `targetStock`
+- Manual shortage: `IsRare = true` (toggled regardless of quantity)
+- Both flags can be active simultaneously
+
+---
+
+## Expiry Reports
+
+> Route prefix: `/api/expiry-report`. Tenant-scoped.
+
+| Name | Path | Input | Output |
+|---|---|---|---|
+| List Expiry Reports | `GET /api/expiry-report` | `?year` (optional filter) | `IPaginatedList<{ id, product, expiredQuantity, notes, reportDate }>` |
+| Log Expiry Report | `POST /api/expiry-report` | `{ productId, expiredQuantity, notes? }` | `204 No Content` |
+| Revert Expiry Report | `DELETE /api/expiry-report/{id}` | — | `204 No Content` |
+
+**Log use cases:**
 1. Validate product belongs to pharmacy
-2. Check expiredQuantity <= current quantity
-3. Create ExpiryReport record
-4. Deduct expiredQuantity from Inventory.Quantity
-5. Return 204
+2. Check `expiredQuantity ≤ current inventory quantity`
+3. Create `ExpiryReport` record
+4. Deduct `expiredQuantity` from `Inventory.Quantity`
 
-**Use Cases — Stock Level Report:**
-1. Extract PharmacyId
-2. Filter: targetStock set AND (quantity < targetStock if belowTarget=true, else quantity >= targetStock)
-3. Return list
-
-**Roles:** Owner, Manager, Pharmacist (write); All Employees (read) | **Receiver:** Employee / Management / Procurement Team
+**Revert:** Re-adds the expired quantity back to inventory and deletes the report.
 
 ---
 
 ## Customers
 
-> Tenant-scoped. PharmacyId extracted from JWT.
+> Route prefix: `/api/customers`. Tenant-scoped. Paginated list.
 
-| Name | Actor | Path | Input | Output | Description |
-|---|---|---|---|---|---|
-| List Customers | Any Employee | `GET /api/customers` | `?search` (optional name or phone) | `[{ id, fullName, phone, totalSpend, currentTier }]` | Returns all customers with optional search. |
-| Customer Profile | Manager / Owner | `GET /api/customers/{id}` | — | `{ id, fullName, phone, totalSpend, currentTier, invoiceHistory }` | Returns full customer profile including invoice history and loyalty tier. |
-| Add Customer | Any Employee | `POST /api/customers` | `{ fullName, phoneNumber }` | `{ id }` | Registers a new customer. Creates with TotalSpend=0. |
-| Update Customer | Any Employee | `PUT /api/customers/{id}` | `{ fullName, phoneNumber }` | `204 No Content` | Updates customer contact details. |
+| Name | Path | Input | Output |
+|---|---|---|---|
+| List Customers | `GET /api/customers` | `?search` (name or phone, paginated) | `IPaginatedList<{ id, fullName, phoneNumber, totalSpend, currentTier }>` |
+| Get Customer | `GET /api/customers/{id}` | — | `{ id, fullName, phoneNumber, totalSpend, currentTier, invoiceHistory }` |
+| Add Customer | `POST /api/customers` | `{ fullName, phoneNumber }` | `{ id }` |
+| Update Customer | `PUT /api/customers/{id}` | `{ fullName, phoneNumber }` | `204 No Content` |
 
-**Use Cases — Add Customer:**
-1. Validate fullName and phoneNumber present
-2. Check phoneNumber not duplicate in pharmacy
-3. Create customer with TotalSpend=0
-4. Return id
-
-**Roles:** All Employees | **Receiver:** POS Screen / Customer
+**Add use cases:**
+1. Check `phoneNumber` not duplicate within pharmacy
+2. Create customer with `TotalSpend = 0`, `CurrentTierId = null`
 
 ---
 
 ## Loyalty
 
-> Tier-based discount system. Tenant-scoped.
+> Route prefix: `/api/loyalty`. Tenant-scoped. Tier-based discount system.
 
-| Name | Actor | Path | Input | Output | Description |
-|---|---|---|---|---|---|
-| List Tiers | Manager / Owner | `GET /api/loyalty/tiers` | — | `[{ id, name, spendThreshold, discountRules }]` | Returns all loyalty tiers and their discount rules. |
-| Create Tier | Manager | `POST /api/loyalty/tiers` | `{ name, spendThreshold }` | `{ id }` | Defines a new loyalty tier (e.g. Silver at 2000 EGP cumulative spend). |
-| Update Tier | Manager | `PUT /api/loyalty/tiers/{id}` | `{ name, spendThreshold }` | `204 No Content` | Updates tier. Re-evaluates all customers against new threshold. |
-| Delete Tier | Manager | `DELETE /api/loyalty/tiers/{id}` | — | `204 No Content` | Deletes a tier. Only allowed if no customers are currently assigned to it. |
-| Add Discount Rule | Manager | `POST /api/loyalty/tiers/{tierId}/rules` | `{ minInvoiceAmount, discountPercent }` | `{ id }` | Adds a discount rule to a tier (e.g. 2% off invoices above 500 EGP for Silver members). |
-| Update Discount Rule | Manager | `PUT /api/loyalty/rules/{ruleId}` | `{ minInvoiceAmount, discountPercent }` | `204 No Content` | Updates an existing discount rule. |
-| Delete Discount Rule | Manager | `DELETE /api/loyalty/rules/{ruleId}` | — | `204 No Content` | Removes a discount rule from a tier. |
+| Name | Path | Input | Output |
+|---|---|---|---|
+| List Tiers | `GET /api/loyalty/tiers` | — | `[{ id, name, spendThreshold, discountRules: [] }]` |
+| Create Tier | `POST /api/loyalty/tiers` | `{ name, spendThreshold }` | `{ id }` |
+| Update Tier | `PUT /api/loyalty/tiers/{id}` | `{ name, spendThreshold }` | `204 No Content` |
+| Delete Tier | `DELETE /api/loyalty/tiers/{id}` | — | `204 No Content` |
+| Add Rule | `POST /api/loyalty/tiers/{tierId}/rules` | `{ minInvoiceAmount, discountPercent }` | `{ id }` |
+| Update Rule | `PUT /api/loyalty/rules/{ruleId}` | `{ minInvoiceAmount, discountPercent }` | `204 No Content` |
+| Delete Rule | `DELETE /api/loyalty/rules/{ruleId}` | — | `204 No Content` |
 
-**Use Cases — Delete Tier:**
-1. Validate tier belongs to pharmacy
-2. Check no customers have CurrentTierId = this tier
-3. Delete tier and its rules
+**Update Tier:** Re-evaluates all customers against the new `spendThreshold` and updates `CurrentTierId` for any that qualify.
 
-**Use Cases — Add Discount Rule:**
-1. Validate tier belongs to pharmacy
-2. Validate minInvoiceAmount > 0 and discountPercent > 0
-3. Create rule
-4. Return id
+**Delete Tier:** Returns `409` if any customers currently have `CurrentTierId = this tier`.
 
-**Roles:** Owner, Manager | **Receiver:** POS Screen (discount application during invoicing)
+**How discounts are applied at invoice creation:**
+- If `customer.CurrentTier` has rules, find the rule where `invoice.Total ≥ rule.MinInvoiceAmount`
+- Apply `DiscountPercent` → `FinalAmount = Total - DiscountAmount`
 
 ---
 
 ## Shifts
 
-> Daily shift lifecycle. One open shift per pharmacy per day.
+> Route prefix: `/api/shifts`. One open shift allowed per pharmacy per day.
 
-| Name | Actor | Path | Input | Output | Description |
-|---|---|---|---|---|---|
-| List Shifts | Manager / Owner | `GET /api/shifts` | `?date` (optional) | `[{ id, date, employee, status, openingBalance }]` | Returns shifts with optional filtering by date. |
-| Shift Detail | Manager / Owner | `GET /api/shifts/{id}` | — | `{ id, date, employee, openingBalance, expectedBalance, actualBalance, discrepancy, totalSales, totalReturns, totalExpenses }` | Returns full details and reconciliation summary of a specific shift. |
-| Open Shift | Cashier / Pharmacist | `POST /api/shifts/open` | `{ openingBalance }` | `{ id }` | Opens the daily shift. Only one open shift allowed per pharmacy per day. |
-| Close Shift | Manager / Owner | `POST /api/shifts/{id}/close` | `{ actualBalance }` | `{ expectedBalance, discrepancy }` | Closes the shift, calculates expected balance, and surfaces any cash discrepancy. |
+| Name | Path | Input | Output |
+|---|---|---|---|
+| List Shifts | `GET /api/shifts` | `?date` (optional, paginated) | `IPaginatedList<{ id, date, openedBy, status, openingBalance }>` |
+| Get Shift | `GET /api/shifts/{id}` | — | `{ id, date, openedBy, status, openingBalance, totalSales, totalReturns, totalExpenses, expectedBalance, actualBalance, discrepancy }` |
+| Open Shift | `POST /api/shifts/open` | `{ openingBalance }` | `{ id }` |
+| Close Shift | `POST /api/shifts/{id}/close` | `{ actualBalance }` | `{ expectedBalance, discrepancy }` |
 
-**Use Cases — Open Shift:**
-1. Validate PharmacyId from JWT
-2. Check no open shift already exists for pharmacy today
-3. Create shift with Status=Open
-4. Return shift id
+**Open use cases:**
+1. Check no open shift already exists for this pharmacy today
+2. Create shift with `Status = Open`
 
-**Use Cases — Close Shift:**
-1. Validate shift belongs to pharmacy
-2. Check shift is currently Open
-3. Calculate: `ExpectedBalance = OpeningBalance + TotalSales - TotalReturns - TotalExpenses`
-4. Calculate: `Discrepancy = ActualBalance - ExpectedBalance`
-5. Set Status=Closed
-6. Return reconciliation result
-
-**Roles:** Owner, Manager (list/close); Owner, Manager, Pharmacist, Cashier (open) | **Receiver:** Management / Cashier
+**Close use cases:**
+1. Validate shift belongs to pharmacy and is `Open`
+2. Calculate `ExpectedBalance = OpeningBalance + TotalSales − TotalReturns − TotalExpenses`
+3. Calculate `Discrepancy = ActualBalance − ExpectedBalance`
+4. Set `Status = Closed`
+5. Return reconciliation result
 
 ---
 
 ## Invoices
 
-> POS sales flow. Requires an open shift.
+> Route prefix: `/api/invoices`. Requires an open shift.
 
-| Name | Actor | Path | Input | Output | Description |
-|---|---|---|---|---|---|
-| List Invoices | Any Employee | `GET /api/invoices` | `?shiftId&customerId&date` (optional) | `[{ id, finalAmount, customer, shift, itemCount }]` | Returns invoices with optional filters. |
-| Invoice Detail | Any Employee | `GET /api/invoices/{id}` | — | `{ id, items, customer, total, discountAmount, finalAmount, returns }` | Returns full invoice details including all items and any returns. |
-| Create Invoice | Cashier / Pharmacist | `POST /api/invoices` | `{ shiftId, customerId?, items: [{ productId, quantity, unitPrice }] }` | `{ id, total, discountAmount, finalAmount }` | Creates a sales invoice, applies loyalty discount if eligible, deducts inventory, and updates customer total spend. |
-| Process Return | Cashier / Pharmacist | `POST /api/invoices/{id}/returns` | `{ productId, quantity }` | `{ refundAmount }` | Processes a product return linked to an existing invoice. Re-adds quantity to inventory. |
+| Name | Path | Input | Output |
+|---|---|---|---|
+| List Invoices | `GET /api/invoices` | `?shiftId&customerId&date` (paginated) | `IPaginatedList<{ id, finalAmount, customer, shift, itemCount }>` |
+| Get Invoice | `GET /api/invoices/{id}` | — | `{ id, items, customer, total, discountAmount, finalAmount, returns }` |
+| Create Invoice | `POST /api/invoices` | `{ shiftId, customerId?, items: [{ productId, quantity, unitPrice }] }` | `{ id, total, discountAmount, finalAmount }` |
+| Process Return | `POST /api/invoices/{id}/return` | `{ productId, quantity }` | `{ refundAmount }` |
+| Preview Return Impact | `GET /api/invoices/{id}/return/preview` | `?productId&quantity` | `{ refundAmount, newInventoryQuantity }` |
 
-**Use Cases — Create Invoice:**
-1. Validate shift is Open and belongs to pharmacy
-2. Validate all productIds belong to pharmacy
-3. Check sufficient quantity in inventory for each item
-4. Calculate `Total = sum of (quantity * unitPrice)`
-5. If customerId provided → check customer tier and discount rules
-6. If `Total >= MinInvoiceAmount` for tier → apply DiscountPercent
-7. `FinalAmount = Total - DiscountAmount`
-8. Create invoice and items
+**Create Invoice use cases:**
+1. Validate shift is `Open` and belongs to pharmacy
+2. Validate all `productId`s belong to pharmacy
+3. Check sufficient inventory quantity for each item
+4. Calculate `Total = Σ (quantity × unitPrice)`
+5. If `customerId` provided → check customer's tier and discount rules
+6. If `Total ≥ MinInvoiceAmount` for the tier rule → apply `DiscountPercent`
+7. `FinalAmount = Total − DiscountAmount`
+8. Create invoice and line items
 9. Deduct quantities from inventory
-10. Update Customer.TotalSpend
-11. Re-evaluate customer tier
+10. Update `Customer.TotalSpend`
+11. Re-evaluate customer tier (may upgrade)
 12. Return invoice summary
 
-**Use Cases — Process Return:**
+**Process Return use cases:**
 1. Validate invoice belongs to pharmacy
-2. Validate productId was part of that invoice
-3. Check return quantity <= originally sold quantity
-4. Create Return record
+2. Validate `productId` was part of that invoice
+3. Check `returnQuantity ≤ originally sold quantity`
+4. Create `Return` record
 5. Re-add quantity to inventory
-6. Calculate `refundAmount = quantity * original unitPrice`
-7. Return refund amount
-
-**Roles:** Owner, Manager, Pharmacist, Cashier | **Receiver:** Customer / Employee
+6. Calculate `refundAmount = quantity × original unitPrice`
 
 ---
 
 ## Expenses
 
-> Petty cash expenses tied to shifts. Tenant-scoped.
+> Route prefix: `/api/expenses`. Tenant-scoped. Tied to shifts.
 
-| Name | Actor | Path | Input | Output | Description |
-|---|---|---|---|---|---|
-| List Expenses | Manager / Owner | `GET /api/expenses` | `?shiftId` (optional) | `[{ id, amount, description, date }]` | Returns expenses logged against a shift. |
-| Log Expense | Cashier / Pharmacist | `POST /api/expenses` | `{ shiftId, amount, description }` | `{ id }` | Records a petty cash expense (rent, electricity, etc.) against the active shift. |
-| Delete Expense | Manager | `DELETE /api/expenses/{id}` | — | `204 No Content` | Removes an expense. Only allowed if the linked shift is still open. |
+| Name | Path | Input | Output |
+|---|---|---|---|
+| Log Expense | `POST /api/expenses` | `{ shiftId, amount, description }` | `{ id }` |
+| List by Shift | `GET /api/expenses/shift/{shiftId}` | — | `[{ id, amount, description, date }]` |
+| Delete Expense | `DELETE /api/expenses/{id}` | — | `204 No Content` |
 
-**Use Cases — Log Expense:**
-1. Validate shiftId belongs to pharmacy
-2. Check shift is currently Open
-3. Validate amount > 0
+**Log use cases:**
+1. Validate `shiftId` belongs to pharmacy
+2. Check shift is currently `Open`
+3. Validate `amount > 0`
 4. Create expense record
-5. Return id
 
-**Use Cases — Delete Expense:**
-1. Validate expense belongs to pharmacy
-2. Check linked shift is still Open
-3. Delete expense
-
-**Roles:** Owner, Manager (list/delete); Owner, Manager, Pharmacist, Cashier (log) | **Receiver:** Pharmacy System
+**Delete:** Returns `409` if the linked shift is already closed.
 
 ---
 
 ## Suppliers
 
-> Supplier registry. Tenant-scoped.
+> Route prefix: `/api/suppliers`. Tenant-scoped. List is cached.
+> **Balance semantics:** Negative balance = pharmacy owes money to supplier. Balance decrements automatically when a purchase order is created. Reset sets it to zero.
 
-| Name | Actor | Path | Input | Output | Description |
-|---|---|---|---|---|---|
-| List Suppliers | Manager / Owner | `GET /api/suppliers` | — | `[{ id, name, contactInfo, balance, lastOrderDate }]` | Returns a cached list of all suppliers registered under the pharmacy. Includes the outstanding balance and date of the last order. |
-| Get Supplier | Manager / Owner | `GET /api/suppliers/{id}` | — | `{ id, name, contactInfo, balance, lastOrderDate }` | Returns full supplier details. Returns 404 if not found. |
-| Add Supplier | Manager | `POST /api/suppliers` | `{ name, contactInfo? }` | `{ id, name, contactInfo, balance, lastOrderDate }` | Registers a new supplier. Checks for duplicate name. |
-| Update Supplier | Manager | `PUT /api/suppliers/{id}` | `{ name, contactInfo? }` | `204 No Content` | Updates supplier info. Checks for duplicate name excluding self. |
-| Delete Supplier | Manager | `DELETE /api/suppliers/{id}` | — | `204 No Content` | Deletes a supplier. Only if no purchase orders are linked. |
-| Reset Balance | Manager | `PATCH /api/suppliers/{id}/reset-balance` | — | `204 No Content` | Resets the supplier's outstanding balance to zero, indicating all debts have been settled. |
+| Name | Path | Input | Output |
+|---|---|---|---|
+| List Suppliers | `GET /api/suppliers` | — (cached) | `[{ id, name, contactInfo, balance, lastOrderDate }]` |
+| Get Supplier | `GET /api/suppliers/{id}` | — | `{ id, name, contactInfo, balance, lastOrderDate }` |
+| Add Supplier | `POST /api/suppliers` | `{ name, contactInfo? }` | `{ id, name, contactInfo, balance, lastOrderDate }` |
+| Update Supplier | `PUT /api/suppliers/{id}` | `{ name, contactInfo? }` | `204 No Content` |
+| Delete Supplier | `DELETE /api/suppliers/{id}` | — | `204 No Content` |
+| Reset Balance | `PATCH /api/suppliers/{id}/reset-balance` | — | `204 No Content` |
 
-**Balance semantics:** A negative balance indicates the pharmacy owes the supplier money. The balance automatically decrements by the total amount each time a purchase order is created for that supplier. Reset Balance sets it back to 0.
-
-**Use Cases — Delete Supplier:**
-1. Validate supplier belongs to pharmacy
-2. Check no purchase orders linked
-3. Delete
-
-**Use Cases — Reset Balance:**
-1. Validate supplier belongs to pharmacy
-2. Set Balance = 0
-3. Return 204
-
-**Roles:** Owner, Manager | **Receiver:** Management / Procurement
+**Delete:** Returns `409` if any purchase orders are linked to this supplier.
 
 ---
 
 ## Purchase Orders
 
-> Procurement flow. Links to suppliers and updates inventory on receipt.
+> Route prefix: `/api/purchase-orders`. Tenant-scoped. Paginated list.
+> **Two-phase flow:** Create (pending) → Approve (receive into inventory).
+> Approve supports partial receipt — each item can have a `receivedQuantity` less than ordered, and items not delivered can be flagged as `isMissing`.
 
-| Name | Actor | Path | Input | Output | Description |
-|---|---|---|---|---|---|
-| List Purchase Orders | Manager / Owner | `GET /api/purchase-orders` | `?supplierId&date` (optional) | `[{ id, supplier, orderDate, totalAmount, itemCount }]` | Returns purchase orders with optional filters. |
-| Purchase Order Detail | Manager / Owner | `GET /api/purchase-orders/{id}` | — | `{ id, supplier, orderDate, totalAmount, items: [{ product, quantity, unitCost }] }` | Returns full details of a purchase order including all items. |
-| Create Purchase Order | Manager | `POST /api/purchase-orders` | `{ supplierId, items: [{ productId, quantity, unitCost }] }` | `{ id, totalAmount }` | Creates a new purchase order. Validates all productIds. Does NOT immediately update inventory. |
-| Receive Purchase Order | Manager / Pharmacist | `PUT /api/purchase-orders/{id}/receive` | — | `204 No Content` | Marks the PO as received and automatically adds quantities to inventory. |
-| Delete Purchase Order | Manager | `DELETE /api/purchase-orders/{id}` | — | `204 No Content` | Deletes a PO. Only if not yet received. |
+| Name | Path | Input | Output |
+|---|---|---|---|
+| List POs | `GET /api/purchase-orders` | `?supplierId` (paginated) | `IPaginatedList<{ id, supplier, orderDate, totalAmount, status, itemCount }>` |
+| Get PO | `GET /api/purchase-orders/{id}` | — | `{ id, supplier, orderDate, totalAmount, status, items }` |
+| Get PO Items by Status | `GET /api/purchase-orders/{id}/items` | `?status` (`Received` / `Missing`) | `[{ product, orderedQuantity, receivedQuantity, unitCost, status }]` |
+| Create PO | `POST /api/purchase-orders` | `{ supplierId, items: [{ productId, quantity, unitCost }] }` | `{ id, totalAmount }` |
+| Update PO | `PUT /api/purchase-orders/{id}` | `{ supplierId, items: [] }` | `{ id, totalAmount }` |
+| Approve / Receive PO | `PUT /api/purchase-orders/{id}/approve` | `{ items: [{ productId, receivedQuantity, unitCost, isMissing }] }` | `204 No Content` |
+| Return PO Items | `PUT /api/purchase-orders/{id}/return` | `{ items: [{ productId, quantityToReturn, returnReason }] }` | `204 No Content` |
+| Delete PO | `DELETE /api/purchase-orders/{id}` | — | `204 No Content` |
 
-**Use Cases — Create Purchase Order:**
-1. Validate supplierId belongs to pharmacy
-2. Validate all productIds belong to pharmacy
-3. Calculate `TotalAmount = sum(quantity * unitCost)`
-4. Create PO with Status=Pending
-5. Return id and totalAmount
+**Create PO:** Does **not** update inventory. Sets `Status = Pending`. Decrements supplier balance by `TotalAmount`.
 
-**Use Cases — Receive Purchase Order:**
-1. Validate PO belongs to pharmacy
-2. Check PO status is Pending
-3. For each item: add quantity to Inventory and update sellingPrice
-4. Set PO Status=Received
-5. Return 204
+**Update PO:** Only allowed while `Status = Pending`. Returns `409` if already received.
 
-**Roles:** Owner, Manager | **Receiver:** Inventory System / Management
+**Approve PO:** Idempotent (requires `Idempotency-Key`). Adds `receivedQuantity` to inventory for each item. Items marked `isMissing = true` are recorded but do not affect inventory. Sets `Status = Received`.
+
+**Return PO Items:** Deducts returned quantities from inventory. Only allowed on received POs.
+
+**Delete PO:** Returns `409` if `Status = Received`.
 
 ---
 
 ## Supplier Payments
 
-> Payment recording. Can cover a single or multiple purchase orders.
+> Route prefix: `/api/supplier-payments`. Tenant-scoped.
+> A single payment can cover one or multiple purchase orders.
 
-| Name | Actor | Path | Input | Output | Description |
-|---|---|---|---|---|---|
-| List Payments | Manager / Owner | `GET /api/supplier-payments` | `?supplierId` (optional) | `[{ id, supplier, amount, paidAt, orderIds }]` | Returns payments with optional supplier filter. |
-| Record Payment | Manager | `POST /api/supplier-payments` | `{ supplierId, amount, orderIds[] }` | `{ id }` | Records a payment to a supplier. Can reference one or more purchase orders. |
+| Name | Path | Input | Output |
+|---|---|---|---|
+| List Payments | `GET /api/supplier-payments` | `?supplierId` (optional) | `[{ id, supplier, amount, paidAt, orderIds }]` |
+| Record Payment | `POST /api/supplier-payments` | `{ supplierId, amount, orderIds[] }` | `{ id }` |
 
-**Use Cases — Record Payment:**
-1. Validate supplierId belongs to pharmacy
-2. Validate all orderIds belong to pharmacy and to that supplier
-3. Validate amount > 0
-4. Create payment record linking to orders
-5. Return id
-
-**Roles:** Owner, Manager | **Receiver:** Accounting / Supplier
+**Record Payment use cases:**
+1. Validate `supplierId` belongs to pharmacy
+2. Validate all `orderIds` belong to pharmacy and to that supplier
+3. Validate `amount > 0`
+4. Create payment record linking to all referenced orders
 
 ---
 
 ## Reports
 
-> Analytics and reporting. All tenant-scoped via JWT PharmacyId.
+> Route prefix: `/api/reports`. Tenant-scoped. Rate-limited (sliding window).
 
-| Name | Actor | Path | Input | Output | Description |
-|---|---|---|---|---|---|
-| Daily Report | Manager / Owner | `GET /api/reports/daily` | `?date` (optional) | `{ date, totalSales, totalReturns, totalExpenses, discrepancy, netRevenue, topProducts }` | Full daily summary for a branch: sales, returns, expenses, shift discrepancy, and top selling products. |
-| Net Profit Report | Owner | `GET /api/reports/profit` | `?from&to` | `{ totalSales, totalCOGS, totalExpenses, totalDiscrepancies, netProfit }` | Net profit for a date range. Formula: `Net Profit = Total Sales - COGS - Total Expenses - Total Shift Discrepancies`. |
-| Shortage Report | Manager / Pharmacist | `GET /api/reports/shortages` | — | `[{ product, quantity, targetStock, type }]` | All products in shortage — auto (<=25% target stock) or manually flagged. |
-| Expense Report | Owner / Manager | `GET /api/reports/expenses` | `?from&to` | `[{ id, amount, description, date, shift }]` | All expenses logged within the given date range. |
-| Top Selling Products | Owner / Manager | `GET /api/reports/top-products` | `?from&to&limit` (default 10) | `[{ product, totalQuantitySold, totalRevenue }]` | Top-selling products by quantity sold within the date range. |
+| Name | Path | Input | Output |
+|---|---|---|---|
+| Daily Report | `GET /api/reports/daily` | `?date` (optional, defaults to today) | `{ date, totalSales, totalReturns, totalExpenses, discrepancy, netRevenue, topProducts[5] }` |
+| Net Profit Report | `GET /api/reports/profit` | `?from&to` | `{ totalSales, totalExpenses, totalDiscrepancies, netProfit }` |
+| Shortage Report | `GET /api/reports/shortages` | — | `[{ product, quantity, targetStock, shortageType }]` |
+| Expense Report | `GET /api/reports/expenses` | `?from&to` | `[{ id, amount, description, date, shiftDate }]` |
+| Top Products Report | `GET /api/reports/top-products` | `?from&to&limit` (default 10) | `[{ product, totalQuantitySold, totalRevenue }]` |
 
-**Use Cases — Net Profit Report:**
-1. Extract PharmacyId from JWT
-2. Aggregate sales in date range
-3. Calculate COGS from inventory purchase prices
-4. Sum expenses in date range
-5. Sum negative discrepancies
-6. Calculate net profit
-7. Return breakdown
+**Net Profit formula:**
+```
+Net Profit = Total Sales − Total Expenses − |Negative Shift Discrepancies|
+```
+> Purchase order costs are funded by owner capital and are excluded from this calculation.
 
-**Use Cases — Shortage Report:**
-1. Extract PharmacyId
-2. Filter inventory where `isAutoShortage=true` OR `isManualShortage=true`
-3. Return with shortage type indicator
+**Shortage Report — shortageType values:** `Manual` · `Auto` · `Both`
+- `Auto`: `quantity ≤ 25%` of `targetStock`
+- `Manual`: `IsRare = true`
 
-**Roles:** Owner, Manager (most); Owner only (profit report); Owner, Manager, Pharmacist (shortage)
+**Top Products:** Ranked by `totalQuantitySold` descending. Revenue is `Σ (quantity × unitPrice at time of sale)`.
+
+**Date validation:** If `from > to`, returns `400 Bad Request`.
 
 ---
 
 ## AI
 
-> Prescription parsing via OpenRouter LLM. Rate-limited per pharmacy per month.
+> Route prefix: `/api/AI`. Tenant-scoped.
+> **Free quota:** 30 calls/month per pharmacy shared across both AI operations (parse-prescription + suggest-medications).
+> When quota is exhausted → `429` with `{ retryAfter: "<first-day-of-next-month UTC>" }`.
+> Pharmacies can bring their own OpenRouter API key to bypass the quota entirely.
 
-| Name | Actor | Path | Input | Output | Description |
-|---|---|---|---|---|---|
-| Parse Prescription | Pharmacist / Cashier | `POST /api/ai/parse-prescription` | `{ imageBase64 }` | `{ detectedDrugs: ["Amoxicillin", "Paracetamol"] }` OR `{ retryAfter: "2024-01-15T08:00:00" }` | Accepts a base64 image of a handwritten prescription, sends it to an LLM via OpenRouter, and returns detected drug names ready for POS search. Returns `retryAfter` if monthly limit is reached. |
+| Name | Path | Input | Output |
+|---|---|---|---|
+| Parse Prescription | `POST /api/AI/parse-prescription` | `multipart/form-data` image (JPG/JPEG/PNG, max 5 MB) | `{ detectedDrugs: ["Amoxicillin", ...] }` OR `429` |
+| Suggest Medications | `POST /api/AI/suggest-medications` | `{ description }` (Arabic or English, max 500 chars) | `{ suggestions: ["Paracetamol", ...] }` OR `429` |
+| Set API Key | `PUT /api/AI/api-key` | `{ apiKey }` (or `null` to clear) | `204 No Content` |
 
-**Use Cases — Parse Prescription:**
-1. Validate imageBase64 present
-2. Check AIUsageLogs for current pharmacy this month
-3. If limit reached → return 429 with `retryAfter` timestamp
-4. Send image to OpenRouter API
-5. Parse LLM response → extract drug names
-6. Log usage in AIUsageLogs
-7. Return detected drug names
+**Parse Prescription use cases:**
+1. Validate image: size ≤ 5 MB, extension in `[jpg, jpeg, png]`, blocked binary signatures rejected
+2. Check `AIUsageLog` for current pharmacy this month
+3. If limit reached and no custom key configured → return `429`
+4. If custom key configured → use it (bypass quota)
+5. Send image to OpenRouter (`google/gemini-2.0-flash-001`)
+6. Parse LLM response → extract drug names
+7. Increment usage in `AIUsageLog`
+8. Return detected names
 
-**Roles:** Owner, Manager, Pharmacist, Cashier | **Receiver:** POS Screen / Pharmacist
+**Suggest Medications:** Same quota logic. Accepts free-text symptom/need description in Arabic or English.
 
----
-
-## Lookups
-
-> Reference data: Categories and Dosage Forms. Tenant-scoped.
-
-| Name | Actor | Path | Input | Output | Description |
-|---|---|---|---|---|---|
-| List Categories | Any Employee | `GET /api/Categories` | — | `[{ id, name }]` | Returns all product categories (Medicine, Cosmetic, Medical Accessory). |
-| Add Category | Manager | `POST /api/Categories` | `{ name }` | `{ id }` | Adds a new product category. Checks for name duplicates. |
-| List Dosage Forms | Any Employee | `GET /api/DosageForms` | — | `[{ id, name }]` | Returns all dosage forms (Tablet, Syrup, Capsule, Injection). |
-| Add Dosage Form | Manager | `POST /api/DosageForms` | `{ name }` | `{ id }` | Adds a new dosage form. Checks for name duplicates. |
-
-**Roles:** Owner, Manager (write); All Roles (read) | **Receiver:** Employee / POS Screen
-
----
-
-## Implementation Status
-
-| Module | Status |
-|---|---|
-| Auth | ✅ Implemented (extended beyond spec: register, confirm email, reset password, refresh tokens) |
-| Subscription Requests | ✅ Implemented |
-| Pharmacies | ✅ Implemented |
-| Employees (Users + Roles) | ✅ Implemented |
-| Products | ✅ Implemented |
-| Inventory | ✅ Implemented |
-| Lookups (Categories + DosageForms) | ✅ Implemented |
-| Customers | ✅ Implemented |
-| Loyalty | ✅ Implemented |
-| Shifts | ✅ Implemented |
-| Invoices | ✅ Implemented |
-| Expenses | ✅ Implemented |
-| Suppliers | ✅ Implemented |
-| Purchase Orders | ✅ Implemented |
-| Supplier Payments | ✅ Implemented |
-| Reports | ❌ Not yet implemented |
-| AI | ❌ Not yet implemented |
+**Set API Key:** Stored encrypted on the pharmacy's `AIUsageLog` record. Send `null` to revert to platform-only mode.
